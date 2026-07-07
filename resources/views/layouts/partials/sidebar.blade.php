@@ -12,8 +12,8 @@
           <!--change to offline or busy as needed-->
         </div>
         <div class="nav-profile-text d-flex flex-column pr-3">
-          <span class="font-weight-medium mb-2">Henry Klein</span>
-          <span class="font-weight-normal">$8,753.00</span>
+          <span class="font-weight-medium mb-2">{{ Auth::user()->name }}</span>
+          <span class="font-weight-normal text-muted" style="font-size: 0.75rem;">{{ Auth::user()->role->name ?? 'User' }}</span>
         </div>
         <span class="badge badge-danger text-white ml-3 rounded">3</span>
       </a>
@@ -24,6 +24,39 @@
         <span class="menu-title">Dashboard</span>
       </a>
     </li>
+    @if(hasPermission('roles.view') || hasPermission('user-permissions.view') || hasPermission('staff.view'))
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="collapse" href="#access-control" aria-expanded="false" aria-controls="access-control">
+        <i class="mdi mdi-security menu-icon"></i>
+        <span class="menu-title">Access Control</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="access-control">
+        <ul class="nav flex-column sub-menu">
+          @if(hasPermission('roles.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('roles.index') }}">Roles</a>
+          </li>
+          @endif
+          @if(hasPermission('roles.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('role-permissions.index') }}">Role Permissions</a>
+          </li>
+          @endif
+          @if(hasPermission('user-permissions.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('user-permissions.index') }}">User Permissions</a>
+          </li>
+          @endif
+          @if(hasPermission('staff.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('staff.index') }}">Staff Management</a>
+          </li>
+          @endif
+        </ul>
+      </div>
+    </li>
+    @endif
     <li class="nav-item">
       <a class="nav-link" data-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
         <i class="mdi mdi-crosshairs-gps menu-icon"></i>

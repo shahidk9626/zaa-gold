@@ -13,15 +13,17 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'role_id',
+        'status',
+        'phone',
+        'whatsapp_number',
+        'referred_by_staff_id',
+        'profile_completed',
+        'profile_image',
     ];
 
     /**
@@ -45,5 +47,25 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function staffDetail()
+    {
+        return $this->hasOne(StaffDetail::class);
+    }
+
+    public function staffDocuments()
+    {
+        return $this->hasMany(StaffDocument::class);
+    }
+
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'user_permissions')->withPivot('allowed');
     }
 }

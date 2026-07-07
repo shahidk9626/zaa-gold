@@ -65,5 +65,96 @@
     <!-- Custom js for this page -->
     <script src="{{ asset('assets/js/dashboard.js') }}"></script>
     <!-- End custom js for this page -->
+
+    <!-- Access Control Libraries & Custom Validators -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/additional-methods.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            if (typeof $.validator !== 'undefined') {
+                // Name validation (only letters and spaces, min 3 chars)
+                $.validator.addMethod("lettersnspaces", function(value, element) {
+                    return this.optional(element) || /^[a-zA-Z\s]+$/.test(value);
+                }, "Only alphabets and spaces are allowed");
+
+                // Indian mobile validation (starts 6-9, exactly 10 digits)
+                $.validator.addMethod("indianmobile", function(value, element) {
+                    return this.optional(element) || /^[6-9]\d{9}$/.test(value);
+                }, "Please enter a valid 10-digit Indian mobile number starting with 6-9");
+
+                // Aadhaar validation (exactly 12 digits, numeric)
+                $.validator.addMethod("aadhar", function(value, element) {
+                    return this.optional(element) || /^\d{12}$/.test(value);
+                }, "Aadhaar number must be exactly 12 digits");
+
+                // PAN validation
+                $.validator.addMethod("pan", function(value, element) {
+                    return this.optional(element) || /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(value.toUpperCase());
+                }, "Please enter a valid PAN card number (e.g. ABCDE1234F)");
+
+                // Pincode validation (exactly 6 digits)
+                $.validator.addMethod("pincode_custom", function(value, element) {
+                    return this.optional(element) || /^\d{6}$/.test(value);
+                }, "Pincode must be exactly 6 digits");
+
+                // Date of birth validation (cannot be in the future)
+                $.validator.addMethod("pastdate", function(value, element) {
+                    if (!value) return true;
+                    let inputDate = new Date(value);
+                    let today = new Date();
+                    inputDate.setHours(0,0,0,0);
+                    today.setHours(0,0,0,0);
+                    return inputDate <= today;
+                }, "Date cannot be a future date");
+
+                // File size validation (max 2MB)
+                $.validator.addMethod("filesize", function(value, element, param) {
+                    if (this.optional(element)) return true;
+                    if (element.files && element.files.length > 0) {
+                        for (let i = 0; i < element.files.length; i++) {
+                            if (element.files[i].size > param) {
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                }, "File size must not exceed 2 MB.");
+
+                // File extension validation (jpg, jpeg, png, pdf)
+                $.validator.addMethod("extension_custom", function(value, element, param) {
+                    if (this.optional(element)) return true;
+                    let ext = value.split('.').pop().toLowerCase();
+                    let allowed = param.split('|');
+                    return allowed.includes(ext);
+                }, "Invalid file type. Only jpg, jpeg, png, pdf are allowed.");
+
+                // Strong password validation
+                $.validator.addMethod("strong_password", function(value, element) {
+                    return this.optional(element) || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(value);
+                }, "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character");
+
+                // Configure default validate options
+                $.validator.setDefaults({
+                    errorElement: 'p',
+                    errorClass: 'text-danger text-xs mt-1 error-message',
+                    highlight: function(element, errorClass, validClass) {
+                        $(element).addClass('border-danger');
+                    },
+                    unhighlight: function(element, errorClass, validClass) {
+                        $(element).removeClass('border-danger');
+                    },
+                    errorPlacement: function(error, element) {
+                        let parent = element.closest('.form-group') || element.parent();
+                        parent.find('.error-message').remove();
+                        error.appendTo(parent);
+                    }
+                });
+            }
+        });
+    </script>
+    @stack('scripts')
   </body>
 </html>
