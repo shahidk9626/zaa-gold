@@ -101,12 +101,15 @@
       <li class="nav-item nav-profile dropdown border-0">
         <a class="nav-link dropdown-toggle" id="profileDropdown" href="#" data-toggle="dropdown">
           <img class="nav-profile-img mr-2" alt="" src="{{ asset('assets/images/faces/face1.jpg') }}" />
-          <span class="profile-name">Henry Klein</span>
+          <span class="profile-name">{{ Auth::check() ? Auth::user()->name : 'Guest' }}</span>
         </a>
         <div class="dropdown-menu navbar-dropdown w-100" aria-labelledby="profileDropdown">
           <a class="dropdown-item" href="#">
             <i class="mdi mdi-cached mr-2 text-success"></i> Activity Log </a>
-          <a class="dropdown-item" href="#">
+          <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+            @csrf
+          </form>
+          <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
             <i class="mdi mdi-logout mr-2 text-primary"></i> Signout </a>
         </div>
       </li>
