@@ -100,6 +100,40 @@
       </div>
     </li>
     @endif
+
+    @if(hasPermission('product.view') || hasPermission('gold-price.view') || hasPermission('inventory.view') || hasPermission('kyc.view'))
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="collapse" href="#masters-menu" aria-expanded="false" aria-controls="masters-menu">
+        <i class="mdi mdi-database menu-icon"></i>
+        <span class="menu-title">Masters</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="masters-menu">
+        <ul class="nav flex-column sub-menu">
+          @if(hasPermission('product.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('products.index') }}">Products</a>
+          </li>
+          @endif
+          @if(hasPermission('gold-price.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('gold-prices.index') }}">Gold Prices</a>
+          </li>
+          @endif
+          @if(hasPermission('inventory.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('inventory.index') }}">Inventory</a>
+          </li>
+          @endif
+          @if(hasPermission('kyc.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('kyc.index') }}">KYC Review</a>
+          </li>
+          @endif
+        </ul>
+      </div>
+    </li>
+    @endif
     <!-- <li class="nav-item">
       <a class="nav-link" data-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
         <i class="mdi mdi-crosshairs-gps menu-icon"></i>

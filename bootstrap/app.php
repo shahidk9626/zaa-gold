@@ -19,6 +19,14 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->group(base_path('routes/roleRoute.php'));
             Route::middleware('web')
                 ->group(base_path('routes/dashboardRoute.php'));
+            Route::middleware('web')
+                ->group(base_path('routes/productRoute.php'));
+            Route::middleware('web')
+                ->group(base_path('routes/goldPriceRoute.php'));
+            Route::middleware('web')
+                ->group(base_path('routes/inventoryRoute.php'));
+            Route::middleware('web')
+                ->group(base_path('routes/kycRoute.php'));
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {

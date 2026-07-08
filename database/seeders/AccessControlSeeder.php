@@ -29,6 +29,10 @@ class AccessControlSeeder extends Seeder
             'Staff Commission' => ['view', 'status', 'export'],
             'Reports' => ['view'],
             'Settings' => ['view'],
+            'Product' => ['view', 'create', 'edit', 'delete', 'status'],
+            'Gold Price' => ['view', 'create', 'edit', 'delete', 'status', 'history'],
+            'Inventory' => ['view', 'create', 'edit', 'delete', 'status', 'adjust'],
+            'KYC' => ['view', 'create', 'edit', 'delete', 'approve', 'reject', 'download'],
         ];
 
         foreach ($modules as $moduleName => $actions) {
