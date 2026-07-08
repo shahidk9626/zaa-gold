@@ -42,6 +42,7 @@
                                 <th>Product Name</th>
                                 <th>SKU</th>
                                 <th>Weight</th>
+                                <th>Live Price</th>
                                 <th>Purity</th>
                                 <th>Category</th>
                                 <th class="text-center">Status</th>
@@ -104,9 +105,14 @@
                 { data: 'name', className: 'font-weight-bold align-middle' },
                 { data: 'sku', className: 'align-middle' },
                 { 
-                    data: 'weight', 
+                    data: 'weight_in_grams', 
                     className: 'align-middle',
                     render: function(data) { return `${parseFloat(data).toFixed(2)} g`; }
+                },
+                { 
+                    data: 'calculated_price', 
+                    className: 'align-middle font-weight-bold text-success',
+                    render: $.fn.dataTable.render.number(',', '.', 2, '₹')
                 },
                 { 
                     data: 'purity', 

@@ -29,8 +29,16 @@
                         </div>
 
                         <div class="col-md-4 form-group">
-                            <label for="weight" class="text-dark">Weight (Grams) <span class="text-danger">*</span></label>
-                            <input type="number" step="0.01" name="weight" id="weight" required value="{{ $product->weight }}" class="form-control bg-white text-dark">
+                            <label for="gold_type" class="text-dark">Gold Type <span class="text-danger">*</span></label>
+                            <select name="gold_type" id="gold_type" required class="form-control bg-white text-dark">
+                                <option value="24K" {{ $product->gold_type === '24K' ? 'selected' : '' }}>24K Gold</option>
+                                <option value="22K" {{ $product->gold_type === '22K' ? 'selected' : '' }}>22K Gold</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 form-group">
+                            <label for="weight_in_grams" class="text-dark">Weight (Grams) <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" name="weight_in_grams" id="weight_in_grams" required value="{{ $product->weight_in_grams }}" class="form-control bg-white text-dark">
                         </div>
 
                         <div class="col-md-4 form-group">
@@ -48,12 +56,12 @@
                             </select>
                         </div>
 
-                        <div class="col-md-6 form-group">
+                        <div class="col-md-4 form-group">
                             <label for="display_order" class="text-dark">Display Order</label>
                             <input type="number" name="display_order" id="display_order" value="{{ $product->display_order }}" class="form-control bg-white text-dark">
                         </div>
 
-                        <div class="col-md-6 form-group">
+                        <div class="col-md-4 form-group">
                             <label for="status" class="text-dark">Status <span class="text-danger">*</span></label>
                             <select name="status" id="status" required class="form-control bg-white text-dark">
                                 <option value="active" {{ $product->status === 'active' ? 'selected' : '' }}>Active</option>

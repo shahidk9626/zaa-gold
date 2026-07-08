@@ -57,15 +57,23 @@
         <div class="card bg-white text-dark border shadow-sm p-4">
             <h5 class="text-primary font-weight-bold mb-4">Bullion Specification Details</h5>
             <div class="row">
-                <div class="col-md-4 mb-4">
+                <div class="col-md-2 mb-4">
+                    <label class="small text-muted d-block uppercase">Gold Type</label>
+                    <span class="font-weight-bold text-dark" style="font-size: 1.1rem;">{{ $product->gold_type }}</span>
+                </div>
+                <div class="col-md-2 mb-4">
                     <label class="small text-muted d-block uppercase">Weight</label>
-                    <span class="font-weight-bold text-dark" style="font-size: 1.1rem;">{{ number_format($product->weight, 2) }} Grams</span>
+                    <span class="font-weight-bold text-dark" style="font-size: 1.1rem;">{{ number_format($product->weight_in_grams, 2) }} g</span>
                 </div>
-                <div class="col-md-4 mb-4">
+                <div class="col-md-2 mb-4">
                     <label class="small text-muted d-block uppercase">Purity</label>
-                    <span class="font-weight-bold text-dark" style="font-size: 1.1rem;">{{ number_format($product->purity, 2) }}% Pure Gold</span>
+                    <span class="font-weight-bold text-dark" style="font-size: 1.1rem;">{{ number_format($product->purity, 2) }}%</span>
                 </div>
-                <div class="col-md-4 mb-4">
+                <div class="col-md-3 mb-4">
+                    <label class="small text-muted d-block uppercase">Live Calculated Price</label>
+                    <span class="font-weight-bold text-success" style="font-size: 1.1rem;">₹{{ number_format($product->getCurrentPrice(), 2) }}</span>
+                </div>
+                <div class="col-md-3 mb-4">
                     <label class="small text-muted d-block uppercase">Status</label>
                     <span class="badge {{ $product->status === 'active' ? 'badge-success' : 'badge-secondary' }}">{{ ucfirst($product->status) }}</span>
                 </div>

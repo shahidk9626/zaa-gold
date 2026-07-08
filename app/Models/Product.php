@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\LogsActivity;
 use App\Traits\HasCreatorUpdater;
+use App\Services\ProductPricingService;
 
 class Product extends Model
 {
@@ -15,7 +16,8 @@ class Product extends Model
         'name',
         'slug',
         'sku',
-        'weight',
+        'gold_type',
+        'weight_in_grams',
         'purity',
         'category',
         'description',
@@ -27,9 +29,23 @@ class Product extends Model
 
     protected $casts = [
         'gallery_images' => 'array',
-        'weight' => 'decimal:2',
+        'weight_in_grams' => 'decimal:2',
         'purity' => 'decimal:2',
     ];
+
+    protected $appends = [
+        'calculated_price',
+    ];
+
+    public function getCurrentPrice()
+    {
+        return app(ProductPricingService::class)->calculatePrice($this);
+    }
+
+    public function getCalculatedPriceAttribute()
+    {
+        return $this->getCurrentPrice();
+    }
 
     public function inventory()
     {

@@ -33,6 +33,8 @@ class AccessControlSeeder extends Seeder
             'Gold Price' => ['view', 'create', 'edit', 'delete', 'status', 'history'],
             'Inventory' => ['view', 'create', 'edit', 'delete', 'status', 'adjust'],
             'KYC' => ['view', 'create', 'edit', 'delete', 'approve', 'reject', 'download'],
+            'EMI Plan' => ['view', 'create', 'edit', 'delete', 'status', 'view_details'],
+            'Purchase Preview' => ['view', 'calculate', 'continue'],
         ];
 
         foreach ($modules as $moduleName => $actions) {

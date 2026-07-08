@@ -19,14 +19,14 @@ class InventoryController extends Controller
                     'product_id' => $item->product_id,
                     'product_name' => $item->product->name ?? 'N/A',
                     'sku' => $item->product->sku ?? 'N/A',
-                    'available_qty' => $item->available_qty,
-                    'reserved_qty' => $item->reserved_qty,
-                    'sold_qty' => $item->sold_qty,
-                    'current_qty' => $item->current_qty,
-                    'min_stock' => $item->min_stock,
-                    'max_stock' => $item->max_stock,
+                    'available_qty' => 0.00,
+                    'reserved_qty' => 0.00,
+                    'sold_qty' => 0.00,
+                    'current_qty' => 0.00,
+                    'min_stock' => 0.00,
+                    'max_stock' => 0.00,
                     'status' => $item->status,
-                    'remarks' => $item->remarks ?? 'N/A',
+                    'remarks' => 'Dynamic Booking Workflow Active',
                 ];
             });
             return response()->json(['data' => $inventory]);
@@ -38,16 +38,12 @@ class InventoryController extends Controller
 
     public function store(StoreInventoryRequest $request)
     {
-        $inventory = Inventory::create($request->validated());
-        return response()->json(['success' => 'Inventory record created successfully', 'inventory' => $inventory]);
+        return response()->json(['success' => 'Inventory records are managed dynamically based on customer EMI bookings.']);
     }
 
     public function update(StoreInventoryRequest $request, $id)
     {
-        $inventory = Inventory::findOrFail($id);
-        $inventory->update($request->validated());
-
-        return response()->json(['success' => 'Inventory record updated successfully']);
+        return response()->json(['success' => 'Inventory records are managed dynamically based on customer EMI bookings.']);
     }
 
     public function toggleStatus($id)
@@ -61,51 +57,18 @@ class InventoryController extends Controller
 
     public function destroy($id)
     {
-        $inventory = Inventory::findOrFail($id);
-        $inventory->delete();
-
-        return response()->json(['success' => 'Inventory record deleted successfully']);
+        return response()->json(['success' => 'Inventory records cannot be manually deleted.']);
     }
 
     public function adjust(Request $request, $id)
     {
-        $request->validate([
-            'transaction_type' => 'required|in:purchase,reserve,release,sale,adjustment',
-            'quantity' => 'required|numeric|min:0.01',
-            'remarks' => 'nullable|string|max:255',
-        ]);
-
-        $inventory = Inventory::findOrFail($id);
-        $inventory->logTransaction(
-            $request->transaction_type,
-            $request->quantity,
-            $request->remarks
-        );
-
-        return response()->json(['success' => 'Inventory stock adjusted successfully']);
+        return response()->json(['success' => 'Manual stock adjustments are disabled. Stock is locked automatically upon Customer Booking.']);
     }
 
     public function transactions(Request $request)
     {
         if ($request->ajax()) {
-            $txs = InventoryTransaction::with(['inventory.product', 'createdBy'])
-                ->latest()
-                ->get()
-                ->map(function ($item) {
-                    return [
-                        'id' => $item->id,
-                        'product_name' => $item->inventory->product->name ?? 'N/A',
-                        'sku' => $item->inventory->product->sku ?? 'N/A',
-                        'type' => ucfirst($item->transaction_type),
-                        'quantity' => $item->quantity,
-                        'old_qty' => $item->old_qty,
-                        'new_qty' => $item->new_qty,
-                        'remarks' => $item->remarks ?? 'N/A',
-                        'created_by' => $item->createdBy->name ?? 'System',
-                        'created_at' => $item->created_at->format('Y-m-d H:i:s'),
-                    ];
-                });
-            return response()->json(['data' => $txs]);
+            return response()->json(['data' => []]);
         }
         return view('admin.inventory.transactions');
     }

@@ -1,0 +1,253 @@
+Sprint 4 → Gold EMI Plans (Master)
+
+Don't confuse this with customer EMI.
+
+This is the EMI Plan Master.
+
+Admin creates plans like:
+
+Example
+
+12 Months
+
+Plan Name
+Duration
+Interest %
+Processing Fee
+Late Fee
+Status
+
+24 Months
+
+Same fields
+
+This becomes reusable.
+
+Future Order simply selects one of these plans.
+
+Sprint 5 → Gold Booking (Most Important Module)
+
+This is where business actually starts.
+
+Flow:
+
+Customer
+
+↓
+
+Choose Product
+
+↓
+
+Current Price Calculated
+
+↓
+
+Choose EMI Plan
+
+↓
+
+System Calculates
+
+↓
+
+Booking Created
+
+↓
+
+Price Locked
+
+↓
+
+Certificate Generated
+
+↓
+
+Payment Starts
+
+This is the heart of the application.
+
+Sprint 6 → EMI Schedule Generator
+
+Once booking is created
+
+Automatically generate
+
+EMI #1
+
+EMI #2
+
+EMI #3
+
+...
+
+EMI #12
+
+or
+
+EMI #24
+
+Store
+
+Due Date
+
+Amount
+
+Status
+
+Paid Date
+
+Late Fee
+
+Outstanding
+
+Sprint 7 → Payment Module
+
+Collect
+
+Down Payment
+
+Monthly EMI
+
+Late Payment
+
+Generate
+
+Receipt
+
+Transaction
+
+Payment History
+
+Sprint 8 → Price Lock Certificate
+
+Generate
+
+PDF
+
+Booking Number
+
+Customer
+
+Locked Price
+
+Weight
+
+EMI
+
+Booking Date
+
+Barcode / QR
+
+Download
+
+Sprint 9 → GST Invoice
+
+Invoice Number
+
+GST
+
+CGST
+
+SGST
+
+Customer
+
+Payment
+
+Download PDF
+
+Sprint 10 → Delivery Module
+
+After Full Payment
+
+Customer requests
+
+Delivery
+
+Office Pickup
+
+Courier
+
+Tracking
+
+Status
+
+Dispatch
+
+Sprint 11 → Customer Dashboard
+
+Now almost everything already exists.
+
+Dashboard simply consumes data.
+
+Show
+
+Profile
+
+KYC
+
+Orders
+
+EMIs
+
+Payments
+
+Certificates
+
+Invoices
+
+Delivery
+
+Notifications
+
+Sprint 12
+
+Referral
+
+Sell Old Gold
+
+Franchise
+
+Support Tickets
+
+CMS
+
+Reports
+
+I would create the sidebar like this
+Dashboard
+
+Access Control
+    Roles
+    Permissions
+    Users
+
+Masters
+    Staff
+    Customers
+    Products
+    Gold Prices
+    KYC
+    EMI Plans
+
+Transactions
+    Gold Bookings
+    Payments
+    Delivery
+
+Certificates
+    Price Lock
+    GST Invoice
+    Receipts
+
+CRM
+    Referrals
+    Franchise
+    Sell Old Gold
+
+Reports
+
+CMS
+
+Settings

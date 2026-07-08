@@ -101,7 +101,7 @@
     </li>
     @endif
 
-    @if(hasPermission('product.view') || hasPermission('gold-price.view') || hasPermission('inventory.view') || hasPermission('kyc.view'))
+    @if(hasPermission('product.view') || hasPermission('gold-price.view') || hasPermission('inventory.view') || hasPermission('kyc.view') || hasPermission('emi-plan.view'))
     <li class="nav-item">
       <a class="nav-link" data-toggle="collapse" href="#masters-menu" aria-expanded="false" aria-controls="masters-menu">
         <i class="mdi mdi-database menu-icon"></i>
@@ -130,6 +130,27 @@
             <a class="nav-link" href="{{ route('kyc.index') }}">KYC Review</a>
           </li>
           @endif
+          @if(hasPermission('emi-plan.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('emi-plans.index') }}">EMI Plans</a>
+          </li>
+          @endif
+        </ul>
+      </div>
+    </li>
+    @endif
+    @if(hasPermission('purchase-preview.view'))
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="collapse" href="#transactions-menu" aria-expanded="false" aria-controls="transactions-menu">
+        <i class="mdi mdi-currency-usd menu-icon"></i>
+        <span class="menu-title">Transactions</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="transactions-menu">
+        <ul class="nav flex-column sub-menu">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('purchase-preview.index') }}">Purchase Preview</a>
+          </li>
         </ul>
       </div>
     </li>

@@ -27,6 +27,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->group(base_path('routes/inventoryRoute.php'));
             Route::middleware('web')
                 ->group(base_path('routes/kycRoute.php'));
+            Route::middleware('web')
+                ->group(base_path('routes/emiPlanRoute.php'));
+            Route::middleware('web')
+                ->group(base_path('routes/productPurchaseRoute.php'));
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
