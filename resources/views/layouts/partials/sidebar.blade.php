@@ -48,9 +48,52 @@
             <a class="nav-link" href="{{ route('user-permissions.index') }}">User Permissions</a>
           </li>
           @endif
+        </ul>
+      </div>
+    </li>
+    @endif
+
+    @if(hasPermission('customer.view') || hasPermission('customer.create'))
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="collapse" href="#customer-menu" aria-expanded="false" aria-controls="customer-menu">
+        <i class="mdi mdi-account-multiple menu-icon"></i>
+        <span class="menu-title">Customer</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="customer-menu">
+        <ul class="nav flex-column sub-menu">
+          @if(hasPermission('customer.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('customers.index') }}">Customer List</a>
+          </li>
+          @endif
+          @if(hasPermission('customer.create'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('customers.create') }}">Add Customer</a>
+          </li>
+          @endif
+        </ul>
+      </div>
+    </li>
+    @endif
+
+    @if(hasPermission('staff.view') || hasPermission('staff.create'))
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="collapse" href="#staff-menu" aria-expanded="false" aria-controls="staff-menu">
+        <i class="mdi mdi-account-card-details menu-icon"></i>
+        <span class="menu-title">Staff</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="staff-menu">
+        <ul class="nav flex-column sub-menu">
           @if(hasPermission('staff.view'))
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('staff.index') }}">Staff Management</a>
+            <a class="nav-link" href="{{ route('staff.index') }}">Staff List</a>
+          </li>
+          @endif
+          @if(hasPermission('staff.create'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('staff.create') }}">Add Staff</a>
           </li>
           @endif
         </ul>

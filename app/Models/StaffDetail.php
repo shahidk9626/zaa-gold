@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StaffDetail extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, \App\Traits\LogsActivity, \App\Traits\HasCreatorUpdater;
 
     protected $fillable = [
         'user_id',
@@ -38,6 +38,8 @@ class StaffDetail extends Model
         'pan_number',
         'aadhar_number',
         'created_by',
+        'created_by_id',
+        'updated_by_id',
     ];
 
     public function user()

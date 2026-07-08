@@ -22,9 +22,9 @@ class AccessControlSeeder extends Seeder
         $modules = [
             'Dashboard' => ['view'],
             'Roles' => ['view', 'create', 'edit', 'delete', 'status'],
-            'Staff' => ['view', 'create', 'edit', 'delete', 'status'],
+            'Staff' => ['view', 'create', 'edit', 'delete', 'status', 'export', 'import', 'view_details'],
             'User Permissions' => ['view', 'edit'],
-            'Customers' => ['view', 'create', 'edit', 'delete', 'status', 'purchase_membership'],
+            'Customer' => ['view', 'create', 'edit', 'delete', 'status', 'export', 'import', 'view_details'],
             'Plans' => ['view', 'create', 'edit', 'delete', 'status', 'preview'],
             'Staff Commission' => ['view', 'status', 'export'],
             'Reports' => ['view'],
@@ -99,8 +99,7 @@ class AccessControlSeeder extends Seeder
         // 4. Assign staff permissions to Staff Role
         $staffPermSlugs = [
             'dashboard.view',
-            'customers.view',
-            'customers.purchase_membership',
+            'customer.view',
             'staff-commission.view'
         ];
         $staffPerms = Permission::whereIn('slug', $staffPermSlugs)->get();

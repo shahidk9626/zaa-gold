@@ -11,7 +11,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, \App\Traits\LogsActivity;
 
     protected $fillable = [
         'name',
@@ -62,6 +62,26 @@ class User extends Authenticatable
     public function staffDocuments()
     {
         return $this->hasMany(StaffDocument::class);
+    }
+
+    public function customerDetail()
+    {
+        return $this->hasOne(CustomerDetail::class);
+    }
+
+    public function customerDocuments()
+    {
+        return $this->hasManyThrough(CustomerDocument::class, CustomerDetail::class, 'user_id', 'customer_detail_id');
+    }
+
+    public function referredBy()
+    {
+        return $this->belongsTo(User::class, 'referred_by_staff_id');
+    }
+
+    public function referrals()
+    {
+        return $this->hasMany(User::class, 'referred_by_staff_id');
     }
 
     public function permissions()
