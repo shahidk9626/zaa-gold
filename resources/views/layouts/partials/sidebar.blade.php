@@ -57,7 +57,7 @@
       </div>
     </li>
     @endif
-    <li class="nav-item">
+    <!-- <li class="nav-item">
       <a class="nav-link" data-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
         <i class="mdi mdi-crosshairs-gps menu-icon"></i>
         <span class="menu-title">Basic UI Elements</span>
@@ -105,8 +105,8 @@
       <span class="nav-link" href="#">
         <span class="menu-title">Docs</span>
       </span>
-    </li>
-    <li class="nav-item">
+    </li> -->
+    <!-- <li class="nav-item">
       <a class="nav-link" href="https://www.bootstrapdash.com/demo/breeze-free/documentation/documentation.html">
         <i class="mdi mdi-file-document-box menu-icon"></i>
         <span class="menu-title">Documentation</span>
@@ -123,6 +123,6 @@
           </ul>
         </div>
       </div>
-    </li>
+    </li> -->
   </ul>
 </nav>
