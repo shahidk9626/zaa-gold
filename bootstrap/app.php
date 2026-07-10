@@ -33,6 +33,8 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->group(base_path('routes/purchasePreviewRoute.php'));
             Route::middleware('web')
                 ->group(base_path('routes/emiCalculatorRoute.php'));
+            Route::middleware('web')
+                ->group(base_path('routes/bookingRoute.php'));
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {

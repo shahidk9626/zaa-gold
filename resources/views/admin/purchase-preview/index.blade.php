@@ -137,25 +137,68 @@
 
         // Continue button trigger
         $('#continueBtn').on('click', function () {
-            // Log Preview Continue action
-            $.ajax({
-                url: "{{ route('purchase-preview.log-activity') }}",
-                type: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    action: 'continue',
-                    description: `Customer attempted checkout path from Purchase Preview for Product ID: ${selectedProductId}, Plan ID: ${selectedEmiPlanId}`,
-                    record_id: selectedProductId,
-                    new_data: { customer_id: selectedCustomerId, product_id: selectedProductId, emi_plan_id: selectedEmiPlanId }
-                }
-            });
+            if (!selectedCustomerId || !selectedProductId || !selectedEmiPlanId) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Selection Required',
+                    text: 'Please select a customer, product, and EMI plan first.',
+                    confirmButtonColor: '#3f50f6'
+                });
+                return;
+            }
 
             Swal.fire({
-                title: 'Continue to Booking?',
-                text: 'Booking Module will be implemented in next sprint.',
-                icon: 'info',
+                title: 'Confirm Gold Booking',
+                text: "You are about to lock today's gold price and create your booking. After confirmation, the locked price cannot change even if market gold prices change.",
+                icon: 'question',
+                showCancelButton: true,
                 confirmButtonColor: '#3f50f6',
-                confirmButtonText: 'Understood'
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirm Booking',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Processing Booking...',
+                        text: 'Creating booking record and generating price lock certificate.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    $.ajax({
+                        url: "{{ route('bookings.store') }}",
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            customer_id: selectedCustomerId,
+                            product_id: selectedProductId,
+                            emi_plan_id: selectedEmiPlanId,
+                            remarks: 'Booking created via Admin purchase preview panel.'
+                        },
+                        success: function (response) {
+                            Swal.close();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Booking Confirmed!',
+                                text: response.message,
+                                confirmButtonColor: '#3f50f6'
+                            }).then(() => {
+                                window.location.href = response.redirect_url;
+                            });
+                        },
+                        error: function (xhr) {
+                            Swal.close();
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Booking Failed',
+                                text: xhr.responseJSON.error || 'Failed to create booking transaction.',
+                                confirmButtonColor: '#ff3ca6'
+                            });
+                        }
+                    });
+                }
             });
         });
     });

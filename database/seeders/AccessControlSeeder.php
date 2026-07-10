@@ -37,6 +37,7 @@ class AccessControlSeeder extends Seeder
             'Purchase Preview' => ['view', 'calculate', 'continue'],
             'EMI Outstanding' => ['export'],
             'EMI Calculator' => ['view'],
+            'Booking' => ['view', 'create', 'edit', 'delete', 'view_details', 'export', 'download_certificate', 'change_status'],
         ];
 
         foreach ($modules as $moduleName => $actions) {
