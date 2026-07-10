@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Product;
 use App\Models\EmiPlan;
 use App\Models\GoldPrice;
@@ -10,7 +9,7 @@ use App\Services\ProductPricingService;
 use App\Services\EmiCalculationService;
 use Illuminate\Http\Request;
 
-class ProductPurchasePreviewController extends Controller
+class EmiCalculatorController extends Controller
 {
     protected $pricingService;
     protected $emiService;
@@ -26,19 +25,15 @@ class ProductPurchasePreviewController extends Controller
         // Fetch active products
         $products = Product::where('status', 'active')->orderBy('name')->get();
         
-        // Fetch customers (users with customer detail)
-        $customers = User::whereHas('customerDetail')->orderBy('name')->get();
-        
         // Fetch active EMI plans
         $emiPlans = EmiPlan::where('status', 'active')->orderBy('display_order')->get();
 
-        return view('admin.purchase-preview.index', compact('products', 'customers', 'emiPlans'));
+        return view('admin.emi-calculator.index', compact('products', 'emiPlans'));
     }
 
     public function calculate(Request $request)
     {
         $request->validate([
-            'customer_id' => 'required|exists:users,id',
             'product_id' => 'required|exists:products,id',
             'emi_plan_id' => 'nullable|exists:emi_plans,id',
         ]);
@@ -78,6 +73,9 @@ class ProductPurchasePreviewController extends Controller
             }
 
             $calculations = $this->emiService->calculate($plan, $productPrice);
+
+            // Log activity
+            $this->logActivityDirect('calculator_run', "EMI calculator run for Product: {$product->name}, Plan: {$plan->plan_name}, Price: ₹{$productPrice}", $product->id, null, ['product_id' => $product->id, 'emi_plan_id' => $plan->id]);
 
             return response()->json(array_merge([
                 'product_name' => $product->name,
@@ -135,68 +133,15 @@ class ProductPurchasePreviewController extends Controller
         ]);
     }
 
-    public function logActivity(Request $request)
-    {
-        $request->validate([
-            'action' => 'required|string',
-            'description' => 'required|string',
-            'record_id' => 'nullable|integer',
-            'old_data' => 'nullable|array',
-            'new_data' => 'nullable|array',
-        ]);
-
-        $this->logPurchasePreviewActivity(
-            $request->action,
-            $request->description,
-            $request->record_id,
-            $request->old_data,
-            $request->new_data
-        );
-
-        return response()->json(['success' => true]);
-    }
-
-    protected function logPurchasePreviewActivity($action, $description, $recordId = null, $old = null, $new = null)
-    {
-        $userAgent = request()->header('User-Agent');
-        $browser = 'Unknown';
-        if (!empty($userAgent)) {
-            if (strpos($userAgent, 'MSIE') !== false || strpos($userAgent, 'Trident') !== false) $browser = 'Internet Explorer';
-            elseif (strpos($userAgent, 'Firefox') !== false) $browser = 'Firefox';
-            elseif (strpos($userAgent, 'Chrome') !== false) $browser = 'Chrome';
-            elseif (strpos($userAgent, 'Safari') !== false) $browser = 'Safari';
-            elseif (strpos($userAgent, 'Opera') !== false || strpos($userAgent, 'OPR') !== false) $browser = 'Opera';
-            elseif (strpos($userAgent, 'Edge') !== false) $browser = 'Edge';
-        }
-
-        \App\Models\ActivityLog::create([
-            'module_name' => 'purchase_preview',
-            'record_id' => $recordId,
-            'action_type' => $action,
-            'old_data' => $old,
-            'new_data' => $new,
-            'description' => $description,
-            'created_by_id' => auth()->id(),
-            'ip_address' => request()->ip(),
-            'browser' => $browser,
-            'user_agent' => $userAgent,
-        ]);
-    }
-
-    /**
-     * Fetch EMI Outstanding details as JSON
-     */
     public function getOutstandingDetails(Request $request)
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'emi_plan_id' => 'required|exists:emi_plans,id',
-            'customer_id' => 'nullable|exists:users,id',
         ]);
 
         $product = Product::findOrFail($request->product_id);
         $plan = EmiPlan::findOrFail($request->emi_plan_id);
-        $customer = $request->customer_id ? User::find($request->customer_id) : null;
 
         $productPrice = $this->pricingService->calculateCurrentProductPrice($product);
         $latestPrice = GoldPrice::where('status', 'active')->latest('effective_date')->first() 
@@ -207,17 +152,11 @@ class ProductPurchasePreviewController extends Controller
         $calculations = $this->emiService->calculate($plan, $productPrice);
         $schedule = $this->emiService->generateOutstandingSchedule($plan, $productPrice);
 
-        $customerName = $customer ? $customer->name : 'N/A';
-        $this->logPurchasePreviewActivity(
-            'outstanding_preview',
-            "Outstanding Statement previewed for Customer: {$customerName}, Product: {$product->name}, Plan: {$plan->plan_name}",
-            $product->id,
-            null,
-            ['customer_id' => $request->customer_id, 'product_id' => $request->product_id, 'emi_plan_id' => $request->emi_plan_id]
-        );
+        // Log Calculator Outstanding Preview
+        $this->logActivityDirect('calculator_outstanding_preview', "EMI Calculator outstanding statement previewed for Product: {$product->name}, Plan: {$plan->plan_name}", $product->id, null, ['product_id' => $product->id, 'emi_plan_id' => $plan->id]);
 
         return response()->json([
-            'customer_name' => $customer ? $customer->name : null,
+            'customer_name' => null, // No customer in calculator mode
             'product_name' => $product->name,
             'sku' => $product->sku,
             'weight_in_grams' => $product->weight_in_grams,
@@ -237,20 +176,15 @@ class ProductPurchasePreviewController extends Controller
         ]);
     }
 
-    /**
-     * Export EMI Outstanding statement as PDF
-     */
     public function exportOutstandingPdf(Request $request)
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'emi_plan_id' => 'required|exists:emi_plans,id',
-            'customer_id' => 'nullable|exists:users,id',
         ]);
 
         $product = Product::findOrFail($request->product_id);
         $plan = EmiPlan::findOrFail($request->emi_plan_id);
-        $customer = $request->customer_id ? User::find($request->customer_id) : null;
 
         $productPrice = $this->pricingService->calculateCurrentProductPrice($product);
         $latestPrice = GoldPrice::where('status', 'active')->latest('effective_date')->first() 
@@ -261,17 +195,11 @@ class ProductPurchasePreviewController extends Controller
         $calculations = $this->emiService->calculate($plan, $productPrice);
         $schedule = $this->emiService->generateOutstandingSchedule($plan, $productPrice);
 
-        $customerName = $customer ? $customer->name : 'N/A';
-        $this->logPurchasePreviewActivity(
-            'outstanding_pdf_download',
-            "Outstanding Statement PDF downloaded for Customer: {$customerName}, Product: {$product->name}, Plan: {$plan->plan_name}",
-            $product->id,
-            null,
-            ['customer_id' => $request->customer_id, 'product_id' => $request->product_id, 'emi_plan_id' => $request->emi_plan_id]
-        );
+        // Log Calculator Outstanding PDF download
+        $this->logActivityDirect('calculator_pdf_download', "EMI Calculator outstanding statement PDF downloaded for Product: {$product->name}, Plan: {$plan->plan_name}", $product->id, null, ['product_id' => $product->id, 'emi_plan_id' => $plan->id]);
 
         $pdfData = [
-            'customer' => $customer,
+            'customer' => null,
             'product' => $product,
             'plan' => $plan,
             'pricePerGram' => $pricePerGram,
@@ -284,6 +212,54 @@ class ProductPurchasePreviewController extends Controller
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.purchase-preview.outstanding-pdf', $pdfData);
         
-        return $pdf->download("EMI_Outstanding_Statement_{$product->sku}.pdf");
+        return $pdf->download("EMI_Calculator_Statement_{$product->sku}.pdf");
+    }
+
+    public function logActivity(Request $request)
+    {
+        $request->validate([
+            'action' => 'required|string',
+            'description' => 'required|string',
+            'record_id' => 'nullable|integer',
+            'old_data' => 'nullable|array',
+            'new_data' => 'nullable|array',
+        ]);
+
+        $this->logActivityDirect(
+            $request->action,
+            $request->description,
+            $request->record_id,
+            $request->old_data,
+            $request->new_data
+        );
+
+        return response()->json(['success' => true]);
+    }
+
+    protected function logActivityDirect($action, $description, $recordId = null, $old = null, $new = null)
+    {
+        $userAgent = request()->header('User-Agent');
+        $browser = 'Unknown';
+        if (!empty($userAgent)) {
+            if (strpos($userAgent, 'MSIE') !== false || strpos($userAgent, 'Trident') !== false) $browser = 'Internet Explorer';
+            elseif (strpos($userAgent, 'Firefox') !== false) $browser = 'Firefox';
+            elseif (strpos($userAgent, 'Chrome') !== false) $browser = 'Chrome';
+            elseif (strpos($userAgent, 'Safari') !== false) $browser = 'Safari';
+            elseif (strpos($userAgent, 'Opera') !== false || strpos($userAgent, 'OPR') !== false) $browser = 'Opera';
+            elseif (strpos($userAgent, 'Edge') !== false) $browser = 'Edge';
+        }
+
+        \App\Models\ActivityLog::create([
+            'module_name' => 'emi_calculator',
+            'record_id' => $recordId,
+            'action_type' => $action,
+            'old_data' => $old,
+            'new_data' => $new,
+            'description' => $description,
+            'created_by_id' => auth()->id(),
+            'ip_address' => request()->ip(),
+            'browser' => $browser,
+            'user_agent' => $userAgent,
+        ]);
     }
 }

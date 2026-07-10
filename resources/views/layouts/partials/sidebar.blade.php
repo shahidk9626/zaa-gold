@@ -140,7 +140,7 @@
       </div>
     </li>
     @endif
-    @if(hasPermission('purchase-preview.view'))
+    @if(hasPermission('purchase-preview.view') || hasPermission('emi-calculator.view'))
     <li class="nav-item">
       <a class="nav-link" data-toggle="collapse" href="#transactions-menu" aria-expanded="false" aria-controls="transactions-menu">
         <i class="mdi mdi-currency-usd menu-icon"></i>
@@ -149,9 +149,16 @@
       </a>
       <div class="collapse" id="transactions-menu">
         <ul class="nav flex-column sub-menu">
+          @if(hasPermission('purchase-preview.view'))
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('purchase-preview.index') }}">Emi Calculator</a>
+            <a class="nav-link" href="{{ route('purchase-preview.index') }}">Customer Plan purchase</a>
           </li>
+          @endif
+          @if(hasPermission('emi-calculator.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('emi-calculator.index') }}">EMI Calculator</a>
+          </li>
+          @endif
         </ul>
       </div>
     </li>

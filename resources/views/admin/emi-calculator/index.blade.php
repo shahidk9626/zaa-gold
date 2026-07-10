@@ -5,23 +5,11 @@
     <!-- Configuration Selector Step -->
     <div class="col-12 mb-4">
         <div class="card bg-white border shadow-sm p-4">
-            <h4 class="card-title text-dark">Product Purchase Preview & EMI Planner</h4>
-            <p class="card-description text-muted">Generate dynamic transaction previews and verify custom EMI interest parameters</p>
+            <h4 class="card-title text-dark">EMI Calculator Tool</h4>
+            <p class="card-description text-muted">A public simulation tool for evaluating dynamic product valuations and repayment structures. No database writes or customer bindings will be committed.</p>
 
-            <form id="previewSelectForm" class="row">
-                <div class="col-md-6 form-group">
-                    <label for="customerId" class="text-dark font-weight-bold">Select Customer <span class="text-danger">*</span></label>
-                    <select id="customerId" required class="form-control bg-white text-dark select2-selector">
-                        <option value="">Choose Customer...</option>
-                        @foreach($customers as $customer)
-                            <option value="{{ $customer->id }}" data-name="{{ $customer->name }}">
-                                {{ $customer->name }} ({{ $customer->email }})
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="col-md-6 form-group">
+            <form id="calculatorSelectForm" class="row">
+                <div class="col-md-12 form-group">
                     <label for="productId" class="text-dark font-weight-bold">Select Product <span class="text-danger">*</span></label>
                     <select id="productId" required class="form-control bg-white text-dark select2-selector">
                         <option value="">Choose Bullion Product...</option>
@@ -103,70 +91,44 @@
     </div>
 </div>
 
+<!-- Reusable Financial Summary Component -->
 @include('admin.partials.financial-summary', [
-    'showCustomer' => true,
-    'showBooking' => true,
-    'outstandingUrl' => route('purchase-preview.outstanding'),
-    'pdfUrl' => route('purchase-preview.outstanding.pdf')
+    'showCustomer' => false,
+    'showBooking' => false,
+    'outstandingUrl' => route('emi-calculator.outstanding'),
+    'pdfUrl' => route('emi-calculator.outstanding.pdf')
 ])
 @endsection
 
 @push('scripts')
 <script>
-    let selectedCustomerId = null;
     let selectedProductId = null;
     let selectedEmiPlanId = null;
     let productDetails = {};
 
     $(document).ready(function () {
-        // Trigger customer/product selections
-        $('#customerId, #productId').on('change', function () {
-            selectedCustomerId = $('#customerId').val();
+        // Trigger product selection
+        $('#productId').on('change', function () {
             selectedProductId = $('#productId').val();
             
             // Reset summaries
             $('#summaryRow').slideUp();
             selectedEmiPlanId = null;
 
-            if (selectedCustomerId && selectedProductId) {
+            if (selectedProductId) {
                 loadProductAndPlans();
             } else {
                 $('#step2Row').slideUp();
             }
         });
-
-        // Continue button trigger
-        $('#continueBtn').on('click', function () {
-            // Log Preview Continue action
-            $.ajax({
-                url: "{{ route('purchase-preview.log-activity') }}",
-                type: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    action: 'continue',
-                    description: `Customer attempted checkout path from Purchase Preview for Product ID: ${selectedProductId}, Plan ID: ${selectedEmiPlanId}`,
-                    record_id: selectedProductId,
-                    new_data: { customer_id: selectedCustomerId, product_id: selectedProductId, emi_plan_id: selectedEmiPlanId }
-                }
-            });
-
-            Swal.fire({
-                title: 'Continue to Booking?',
-                text: 'Booking Module will be implemented in next sprint.',
-                icon: 'info',
-                confirmButtonColor: '#3f50f6',
-                confirmButtonText: 'Understood'
-            });
-        });
     });
 
     function loadProductAndPlans() {
         $.ajax({
-            url: "{{ route('purchase-preview.calculate') }}",
+            url: "{{ route('emi-calculator.calculate') }}",
             type: 'POST',
             data: {
                 _token: '{{ csrf_token() }}',
-                customer_id: selectedCustomerId,
                 product_id: selectedProductId
             },
             success: function (response) {
@@ -242,19 +204,6 @@
 
                 $('#emiPlanList').html(plansHtml);
                 $('#step2Row').slideDown();
-
-                // Log Product Preview action
-                $.ajax({
-                    url: "{{ route('purchase-preview.log-activity') }}",
-                    type: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        action: 'product_preview',
-                        description: `Customer viewed product preview details for Product: ${response.product_name}`,
-                        record_id: selectedProductId,
-                        new_data: { product_id: selectedProductId, calculated_price: response.product_price }
-                    }
-                });
             },
             error: function (xhr) {
                 $('#step2Row').slideUp();
@@ -277,18 +226,15 @@
 
         // Fetch detailed calculations for summary
         $.ajax({
-            url: "{{ route('purchase-preview.calculate') }}",
+            url: "{{ route('emi-calculator.calculate') }}",
             type: 'POST',
             data: {
                 _token: '{{ csrf_token() }}',
-                customer_id: selectedCustomerId,
                 product_id: selectedProductId,
                 emi_plan_id: planId
             },
             success: function (response) {
                 // Populate summary
-                let custName = $('#customerId option:selected').text().trim();
-                $('#sumCustomerName').text(custName);
                 $('#sumProductSpecs').text(`${response.product_name} (${parseFloat(response.weight_in_grams).toFixed(2)}g, ${response.gold_type})`);
                 $('#sumPlanName').text(`${response.plan_name} (${response.duration_months} Months)`);
                 
@@ -339,19 +285,6 @@
                 $('#sumLateFee').text(`₹${parseFloat(response.late_fee).toLocaleString()} / Default`);
 
                 $('#summaryRow').slideDown();
-
-                // Log EMI Plan Selection & Preview Calculation action
-                $.ajax({
-                    url: "{{ route('purchase-preview.log-activity') }}",
-                    type: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        action: 'emi_selection',
-                        description: `EMI Plan ${response.plan_name} selected for dynamic calculation preview`,
-                        record_id: planId,
-                        new_data: { emi_plan_id: planId, installment: response.installment, total_payable: response.total_payable }
-                    }
-                });
             },
             error: function (xhr) {
                 $('#summaryRow').slideUp();

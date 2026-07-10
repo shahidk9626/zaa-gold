@@ -35,6 +35,8 @@ class AccessControlSeeder extends Seeder
             'KYC' => ['view', 'create', 'edit', 'delete', 'approve', 'reject', 'download'],
             'EMI Plan' => ['view', 'create', 'edit', 'delete', 'status', 'view_details'],
             'Purchase Preview' => ['view', 'calculate', 'continue'],
+            'EMI Outstanding' => ['export'],
+            'EMI Calculator' => ['view'],
         ];
 
         foreach ($modules as $moduleName => $actions) {

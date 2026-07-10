@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>EMI Outstanding Statement - ZAA Gold</title>
+    <style>
+        @page {
+            margin: 45px 35px;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #333;
+            font-size: 11px;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+        }
+        .header-table {
+            width: 100%;
+            border-bottom: 2px solid #3f50f6;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .header-table td {
+            vertical-align: top;
+        }
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3f50f6;
+            margin: 0 0 5px 0;
+        }
+        .company-details {
+            font-size: 10px;
+            color: #555;
+            line-height: 1.3;
+        }
+        .statement-title {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: right;
+            color: #222;
+            margin-top: 5px;
+            text-transform: uppercase;
+        }
+        .statement-subtitle {
+            font-size: 10px;
+            text-align: right;
+            color: #666;
+            margin-top: 2px;
+        }
+        .section-header {
+            font-size: 11px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #3f50f6;
+            padding: 5px 8px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .info-table {
+            width: 100%;
+            margin-bottom: 15px;
+            border-collapse: collapse;
+        }
+        .info-table td {
+            padding: 4px 6px;
+            width: 25%;
+            vertical-align: top;
+        }
+        .info-label {
+            color: #777;
+            font-weight: bold;
+            font-size: 9px;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        .info-value {
+            font-size: 11px;
+            color: #111;
+            font-weight: 500;
+        }
+        .summary-table {
+            width: 100%;
+            margin-bottom: 15px;
+            border-collapse: collapse;
+        }
+        .summary-table td {
+            padding: 5px 8px;
+            border-bottom: 1px solid #f2f2f2;
+        }
+        .summary-table tr.highlight td {
+            background-color: #f8f9ff;
+            font-weight: bold;
+            border-top: 1px solid #dcdffb;
+            border-bottom: 2px solid #3f50f6;
+        }
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .schedule-table th {
+            background-color: #4a5568;
+            color: white;
+            font-weight: bold;
+            text-align: left;
+            padding: 6px 8px;
+            font-size: 9px;
+            text-transform: uppercase;
+            border: 1px solid #4a5568;
+        }
+        .schedule-table td {
+            padding: 6px 8px;
+            border: 1px solid #e2e8f0;
+            font-size: 10px;
+        }
+        .schedule-table tr:nth-child(even) {
+            background-color: #f7fafc;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .text-primary {
+            color: #3f50f6;
+        }
+        .text-success {
+            color: #24b47e;
+        }
+        .footer {
+            position: fixed;
+            bottom: -15px;
+            left: 0;
+            right: 0;
+            height: 25px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 5px;
+            font-size: 9px;
+            color: #718096;
+        }
+        .footer-left {
+            float: left;
+        }
+        .footer-right {
+            float: right;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 5px;
+            font-size: 9px;
+            font-weight: bold;
+            background-color: #edf2f7;
+            color: #4a5568;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <table class="header-table">
+        <tr>
+            <td>
+                <div class="company-name">ZAA GOLD</div>
+                <div class="company-details">
+                    ZAA Gold Bullion Trading LLC<br>
+                    123 Financial District, Sector 4<br>
+                    support@zaagold.com | +91 98765 43210
+                </div>
+            </td>
+            <td>
+                <div class="statement-title">Outstanding Statement</div>
+                <div class="statement-subtitle">Repayment Preview & Amortization Schedule</div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Customer Information -->
+    <div class="section-header">Customer & Product Information</div>
+    <table class="info-table">
+        <tr>
+            <td>
+                <div class="info-label">Customer Name</div>
+                <div class="info-value">{{ $customer ? $customer->name : 'N/A (Calculator Mode)' }}</div>
+            </td>
+            <td>
+                <div class="info-label">Customer Email</div>
+                <div class="info-value">{{ $customer ? $customer->email : 'N/A' }}</div>
+            </td>
+            <td>
+                <div class="info-label">Customer Phone</div>
+                <div class="info-value">{{ $customer ? ($customer->customerDetail->phone_number ?? $customer->phone ?? 'N/A') : 'N/A' }}</div>
+            </td>
+            <td>
+                <div class="info-label">Product Name</div>
+                <div class="info-value">{{ $product->name }}</div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div class="info-label">Product SKU</div>
+                <div class="info-value">{{ $product->sku }}</div>
+            </td>
+            <td>
+                <div class="info-label">Gold Weight</div>
+                <div class="info-value">{{ number_format($product->weight_in_grams, 2) }}g [{{ $product->gold_type }}]</div>
+            </td>
+            <td>
+                <div class="info-label">Gold Purity</div>
+                <div class="info-value">{{ number_format($product->purity, 2) }}% Purity</div>
+            </td>
+            <td>
+                <div class="info-label">Live Gold Price</div>
+                <div class="info-value">₹{{ number_format($pricePerGram, 2) }} / g</div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Plan & Financial Summary -->
+    <div class="section-header">Plan & Financial Summary</div>
+    <table class="info-table">
+        <tr>
+            <td>
+                <div class="info-label">Selected EMI Plan</div>
+                <div class="info-value">{{ $plan->plan_name }}</div>
+            </td>
+            <td>
+                <div class="info-label">Duration</div>
+                <div class="info-value">{{ $plan->duration_months }} Months</div>
+            </td>
+            <td>
+                <div class="info-label">Monthly EMI</div>
+                <div class="info-value text-primary" style="font-weight: bold;">₹{{ number_format($calculations['installment'], 2) }}</div>
+            </td>
+            <td>
+                <div class="info-label">Estimated Completion</div>
+                <div class="info-value">{{ $calculations['completion_date'] }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="summary-table">
+        <tr>
+            <td style="width: 50%;">Base Gold/Product Value</td>
+            <td class="text-right" style="width: 50%;">₹{{ number_format($calculations['gold_value'], 2) }}</td>
+        </tr>
+        @if($calculations['use_financial_engine'])
+            @if($calculations['gst_on_gold_enabled'])
+            <tr>
+                <td>GST on Gold ({{ number_format($plan->gst_on_gold_percent, 2) }}%)</td>
+                <td class="text-right">₹{{ number_format($calculations['gst_on_gold'], 2) }}</td>
+            </tr>
+            @endif
+            @if($calculations['finance_charge_enabled'])
+            <tr>
+                <td>Finance Charge</td>
+                <td class="text-right">₹{{ number_format($calculations['finance_charge'], 2) }}</td>
+            </tr>
+            @endif
+            @if($calculations['storage_charge_enabled'])
+            <tr>
+                <td>Storage / Insurance / Price Lock Charge</td>
+                <td class="text-right">₹{{ number_format($calculations['storage_charge'], 2) }}</td>
+            </tr>
+            @endif
+            @if($calculations['gst_on_charges_enabled'])
+            <tr>
+                <td>GST on Charges ({{ number_format($plan->gst_on_charges_percent, 2) }}%)</td>
+                <td class="text-right">₹{{ number_format($calculations['gst_on_charges'], 2) }}</td>
+            </tr>
+            @endif
+        @else
+            <tr>
+                <td>Calculated Processing Fee</td>
+                <td class="text-right">₹{{ number_format($calculations['processing_fee'], 2) }}</td>
+            </tr>
+            <tr>
+                <td>Total Plan Interest ({{ number_format($plan->interest_rate, 2) }}% {{ strtoupper($plan->interest_type) }})</td>
+                <td class="text-right">₹{{ number_format($calculations['interest'], 2) }}</td>
+            </tr>
+        @endif
+        <tr class="highlight">
+            <td>Grand Total Payable</td>
+            <td class="text-right text-success">₹{{ number_format($calculations['total_payable'], 2) }}</td>
+        </tr>
+    </table>
+
+    <!-- Repayment Schedule -->
+    <div class="section-header">EMI Repayment Schedule</div>
+    <table class="schedule-table">
+        <thead>
+            <tr>
+                <th style="width: 8%;">Month</th>
+                <th style="width: 14%;">Due Date</th>
+                <th style="width: 15%;">Opening Principal</th>
+                <th style="width: 14%;">Principal</th>
+                <th style="width: 12%;">Interest/Tax</th>
+                <th style="width: 12%;">EMI</th>
+                <th style="width: 15%;">Closing Balance</th>
+                <th style="width: 10%;">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($schedule as $row)
+            <tr>
+                <td>{{ $row['month_no'] }}</td>
+                <td>{{ \Carbon\Carbon::parse($row['due_date'])->format('d M Y') }}</td>
+                <td class="text-right">₹{{ number_format($row['opening_principal'], 2) }}</td>
+                <td class="text-right">₹{{ number_format($row['principal_amount'], 2) }}</td>
+                <td class="text-right">₹{{ number_format($row['interest_amount'], 2) }}</td>
+                <td class="text-right" style="font-weight: bold; color: #3f50f6;">₹{{ number_format($row['monthly_emi'], 2) }}</td>
+                <td class="text-right">₹{{ number_format($row['closing_principal'], 2) }}</td>
+                <td><span class="badge">{{ $row['status'] }}</span></td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-left">
+            Generated Date: {{ $generatedAt }} | Generated By: {{ $generatedBy }}
+        </div>
+        <div class="footer-right">
+            ZAA Gold Bullion Transactions & EMI Services
+        </div>
+    </div>
+
+</body>
+</html>

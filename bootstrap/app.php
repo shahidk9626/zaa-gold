@@ -30,7 +30,9 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware('web')
                 ->group(base_path('routes/emiPlanRoute.php'));
             Route::middleware('web')
-                ->group(base_path('routes/productPurchaseRoute.php'));
+                ->group(base_path('routes/purchasePreviewRoute.php'));
+            Route::middleware('web')
+                ->group(base_path('routes/emiCalculatorRoute.php'));
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {

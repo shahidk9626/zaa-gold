@@ -338,4 +338,114 @@ class EmiCalculationService
             'gst_on_charges_enabled' => (bool)$plan->gst_on_charges_enabled,
         ];
     }
+
+    /**
+     * Generate outstanding payment/repayment schedule
+     */
+    public function generateOutstandingSchedule(EmiPlan $plan, $amount)
+    {
+        $duration = (int)$plan->duration_months;
+        $calc = $this->calculate($plan, $amount);
+        $monthlyEmi = $calc['installment'];
+        $grandTotal = $calc['total_payable'];
+        $useFinancialEngine = $calc['use_financial_engine'];
+        
+        $schedule = [];
+        $openingPrincipal = $useFinancialEngine ? (float)$calc['gold_value'] : (float)$amount;
+        $runningBalance = $grandTotal;
+        
+        for ($i = 1; $i <= $duration; $i++) {
+            $interestAmount = $this->calculateInterestBreakup($plan, $amount, $i, $openingPrincipal, $monthlyEmi, $useFinancialEngine, $calc);
+            $principalAmount = $this->calculatePrincipalBreakup($plan, $amount, $i, $openingPrincipal, $monthlyEmi, $useFinancialEngine, $calc);
+            
+            // Adjust for last month rounding
+            if ($i === $duration) {
+                $principalAmount = $openingPrincipal;
+                $interestAmount = round($monthlyEmi - $principalAmount, 2);
+                $closingPrincipal = 0.00;
+                $runningBalance = 0.00;
+            } else {
+                $closingPrincipal = $this->calculateClosingBalance($openingPrincipal, $principalAmount);
+                $runningBalance = round($runningBalance - $monthlyEmi, 2);
+            }
+            
+            $dueDate = Carbon::now()->addMonths($i)->format('Y-m-d');
+            
+            $schedule[] = [
+                'month_no' => $i,
+                'due_date' => $dueDate,
+                'opening_principal' => $openingPrincipal,
+                'principal_amount' => $principalAmount,
+                'interest_amount' => $interestAmount,
+                'monthly_emi' => $monthlyEmi,
+                'closing_principal' => $closingPrincipal,
+                'running_balance' => $runningBalance,
+                'status' => 'Preview'
+            ];
+            
+            $openingPrincipal = $closingPrincipal;
+        }
+        
+        return $schedule;
+    }
+
+    /**
+     * Calculate principal portion of the EMI
+     */
+    public function calculatePrincipalBreakup(EmiPlan $plan, $amount, $monthNo, $openingPrincipal, $monthlyEmi, $useFinancialEngine, $calc)
+    {
+        $duration = (int)$plan->duration_months;
+        if ($monthNo === $duration) {
+            return $openingPrincipal;
+        }
+        if ($useFinancialEngine) {
+            return round($calc['gold_value'] / $duration, 2);
+        }
+        if ($plan->interest_type === 'flat') {
+            return round($amount / $duration, 2);
+        }
+        
+        // Reducing balance: EMI - Interest Portion
+        $interest = $this->calculateInterestBreakup($plan, $amount, $monthNo, $openingPrincipal, $monthlyEmi, $useFinancialEngine, $calc);
+        return round($monthlyEmi - $interest, 2);
+    }
+
+    /**
+     * Calculate interest/charges portion of the EMI
+     */
+    public function calculateInterestBreakup(EmiPlan $plan, $amount, $monthNo, $openingPrincipal, $monthlyEmi, $useFinancialEngine, $calc)
+    {
+        $duration = (int)$plan->duration_months;
+        if ($useFinancialEngine) {
+            $totalInterestOrCharges = $calc['grand_total'] - $calc['gold_value'];
+            if ($monthNo === $duration) {
+                return round($monthlyEmi - $openingPrincipal, 2);
+            }
+            return round($totalInterestOrCharges / $duration, 2);
+        }
+        if ($plan->interest_type === 'flat') {
+            $rate = (float)$plan->interest_rate;
+            $totalInterest = $amount * ($rate / 100) * ($duration / 12);
+            if ($monthNo === $duration) {
+                return round($monthlyEmi - $openingPrincipal, 2);
+            }
+            return round($totalInterest / $duration, 2);
+        }
+        
+        // Reducing balance: Opening Principal * Monthly Rate
+        $rate = (float)$plan->interest_rate;
+        $monthlyRate = $rate / 12 / 100;
+        if ($monthNo === $duration) {
+            return round($monthlyEmi - $openingPrincipal, 2);
+        }
+        return round($openingPrincipal * $monthlyRate, 2);
+    }
+
+    /**
+     * Calculate closing principal balance
+     */
+    public function calculateClosingBalance($openingPrincipal, $principalAmount)
+    {
+        return round($openingPrincipal - $principalAmount, 2);
+    }
 }
