@@ -88,6 +88,78 @@
                 <p class="text-dark">{{ $plan->description }}</p>
             @endif
         </div>
+
+        <!-- Financial Charges Configuration Card -->
+        <div class="card bg-white border shadow-sm p-4 mt-4 text-dark">
+            <div class="border-bottom pb-2 mb-4">
+                <h5 class="text-primary font-weight-bold mb-0">Financial Charges Configuration</h5>
+                <span class="text-muted small">Tax and fee rules applied dynamically to transactions</span>
+            </div>
+            
+            <div class="row">
+                <!-- GST ON GOLD -->
+                <div class="col-md-6 mb-3">
+                    <label class="small text-muted d-block mb-1">GST ON GOLD</label>
+                    @if($plan->gst_on_gold_enabled)
+                        <span class="badge badge-success mb-1">Enabled</span>
+                        <span class="font-weight-bold text-dark d-block" style="font-size: 1.1rem;">{{ number_format($plan->gst_on_gold_percent, 2) }}%</span>
+                    @else
+                        <span class="badge badge-secondary mb-1">Disabled</span>
+                        <span class="text-muted d-block">N/A</span>
+                    @endif
+                </div>
+
+                <!-- GST ON CHARGES -->
+                <div class="col-md-6 mb-3">
+                    <label class="small text-muted d-block mb-1">GST ON CHARGES</label>
+                    @if($plan->gst_on_charges_enabled)
+                        <span class="badge badge-success mb-1">Enabled</span>
+                        <span class="font-weight-bold text-dark d-block" style="font-size: 1.1rem;">{{ number_format($plan->gst_on_charges_percent, 2) }}%</span>
+                    @else
+                        <span class="badge badge-secondary mb-1">Disabled</span>
+                        <span class="text-muted d-block">N/A</span>
+                    @endif
+                </div>
+
+                <!-- FINANCE CHARGE -->
+                <div class="col-md-6 mb-3">
+                    <label class="small text-muted d-block mb-1">FINANCE CHARGE</label>
+                    @if($plan->finance_charge_enabled)
+                        <span class="badge badge-success mb-1">Enabled</span>
+                        <span class="font-weight-bold text-dark d-block" style="font-size: 1.1rem;">
+                            {{ number_format($plan->finance_charge_value, 2) }}{{ strtolower($plan->finance_charge_type) === 'fixed' ? ' ₹' : '%' }}
+                            <small class="text-muted">({{ ucfirst($plan->finance_charge_type) }})</small>
+                        </span>
+                    @else
+                        <span class="badge badge-secondary mb-1">Disabled</span>
+                        <span class="text-muted d-block">N/A</span>
+                    @endif
+                </div>
+
+                <!-- STORAGE CHARGE -->
+                <div class="col-md-6 mb-3">
+                    <label class="small text-muted d-block mb-1">STORAGE / INSURANCE / PRICE LOCK</label>
+                    @if($plan->storage_charge_enabled)
+                        <span class="badge badge-success mb-1">Enabled</span>
+                        <span class="font-weight-bold text-dark d-block" style="font-size: 1.1rem;">
+                            {{ number_format($plan->storage_charge_value, 2) }}{{ strtolower($plan->storage_charge_type) === 'fixed' ? ' ₹' : '%' }}
+                            <small class="text-muted">({{ ucfirst($plan->storage_charge_type) }})</small>
+                        </span>
+                    @else
+                        <span class="badge badge-secondary mb-1">Disabled</span>
+                        <span class="text-muted d-block">N/A</span>
+                    @endif
+                </div>
+
+                <!-- ROUNDING RULE -->
+                <div class="col-md-12">
+                    <label class="small text-muted d-block mb-1">ROUNDING RULE</label>
+                    <span class="font-weight-bold text-dark" style="font-size: 1.1rem;">
+                        {{ ucwords(str_replace('_', ' ', $plan->rounding_type ?? 'None')) }}
+                    </span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Simulator calculations card -->
@@ -116,6 +188,26 @@
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-muted small">Monthly Installment (EMI)</span>
                     <span class="font-weight-bold text-dark" id="resInstallment">₹0.00</span>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2" id="resGstGoldRow" style="display: none !important;">
+                    <span class="text-muted small">GST on Gold</span>
+                    <span class="font-weight-bold text-dark" id="resGstGold">₹0.00</span>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2" id="resFinanceRow" style="display: none !important;">
+                    <span class="text-muted small">Finance Charge</span>
+                    <span class="font-weight-bold text-dark" id="resFinance">₹0.00</span>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2" id="resStorageRow" style="display: none !important;">
+                    <span class="text-muted small">Storage / Insurance / Price Lock</span>
+                    <span class="font-weight-bold text-dark" id="resStorage">₹0.00</span>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2" id="resGstChargesRow" style="display: none !important;">
+                    <span class="text-muted small">GST on Charges</span>
+                    <span class="font-weight-bold text-dark" id="resGstCharges">₹0.00</span>
                 </div>
 
                 <div class="d-flex justify-content-between mb-2">
@@ -173,6 +265,38 @@
                     $('#resTotal').text(`₹${parseFloat(response.total_payable).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
                     $('#resCompletion').text(response.completion_date);
 
+                    if (response.use_financial_engine) {
+                        if (response.gst_on_gold_enabled) {
+                            $('#resGstGoldRow').attr('style', 'display: flex !important;');
+                            $('#resGstGold').text(`₹${parseFloat(response.gst_on_gold).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
+                        } else {
+                            $('#resGstGoldRow').attr('style', 'display: none !important;');
+                        }
+
+                        if (response.finance_charge_enabled) {
+                            $('#resFinanceRow').attr('style', 'display: flex !important;');
+                            $('#resFinance').text(`₹${parseFloat(response.finance_charge).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
+                        } else {
+                            $('#resFinanceRow').attr('style', 'display: none !important;');
+                        }
+
+                        if (response.storage_charge_enabled) {
+                            $('#resStorageRow').attr('style', 'display: flex !important;');
+                            $('#resStorage').text(`₹${parseFloat(response.storage_charge).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
+                        } else {
+                            $('#resStorageRow').attr('style', 'display: none !important;');
+                        }
+
+                        if (response.gst_on_charges_enabled) {
+                            $('#resGstChargesRow').attr('style', 'display: flex !important;');
+                            $('#resGstCharges').text(`₹${parseFloat(response.gst_on_charges).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
+                        } else {
+                            $('#resGstChargesRow').attr('style', 'display: none !important;');
+                        }
+                    } else {
+                        $('#resGstGoldRow, #resFinanceRow, #resStorageRow, #resGstChargesRow').attr('style', 'display: none !important;');
+                    }
+
                     $('#resultsCard').slideDown();
                     simBtn.prop('disabled', false).html('<i class="mdi mdi-calculator mr-1"></i> Run Estimation Model');
                 },
@@ -189,4 +313,5 @@
         });
     });
 </script>
+
 @endpush

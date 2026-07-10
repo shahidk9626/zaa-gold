@@ -110,20 +110,21 @@
       </a>
       <div class="collapse" id="masters-menu">
         <ul class="nav flex-column sub-menu">
-          @if(hasPermission('product.view'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('products.index') }}">Products</a>
-          </li>
-          @endif
           @if(hasPermission('gold-price.view'))
           <li class="nav-item">
             <a class="nav-link" href="{{ route('gold-prices.index') }}">Gold Prices</a>
           </li>
           @endif
-          @if(hasPermission('inventory.view'))
+          @if(hasPermission('product.view'))
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('inventory.index') }}">Inventory</a>
+            <a class="nav-link" href="{{ route('products.index') }}">Products</a>
           </li>
+          @endif
+          
+          @if(hasPermission('inventory.view'))
+          <!-- <li class="nav-item">
+            <a class="nav-link" href="{{ route('inventory.index') }}">Inventory</a>
+          </li> -->
           @endif
           @if(hasPermission('kyc.view'))
           <li class="nav-item">
@@ -149,7 +150,7 @@
       <div class="collapse" id="transactions-menu">
         <ul class="nav flex-column sub-menu">
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('purchase-preview.index') }}">Purchase Preview</a>
+            <a class="nav-link" href="{{ route('purchase-preview.index') }}">Emi Calculator</a>
           </li>
         </ul>
       </div>

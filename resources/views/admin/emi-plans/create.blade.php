@@ -87,60 +87,136 @@
                         </div>
                     </div>
 
-                    <h5 class="text-primary font-weight-bold mb-3 border-bottom pb-2">3. Pricing Policies & Parameters</h5>
-                    <div class="row">
-                        <div class="col-md-3 form-group">
-                            <label class="text-dark">Interest Calculation Type <span class="text-danger">*</span></label>
-                            <select name="interest_type" required class="form-control bg-white text-dark">
-                                <option value="flat">Flat Interest Rate</option>
-                                <option value="reducing">Reducing Balance Rate</option>
+                    <h5 class="text-primary font-weight-bold mb-3 border-bottom pb-2">3. Financial Charges</h5>
+                    <div class="row mb-4">
+                        <!-- GST ON GOLD -->
+                        <div class="col-md-6 mb-4">
+                            <div class="p-3 border rounded bg-light">
+                                <div class="form-check mb-2">
+                                    <label class="form-check-label text-dark font-weight-bold">
+                                        <input type="checkbox" name="gst_on_gold_enabled" value="1" id="gst_on_gold_enabled" class="form-check-input">
+                                        GST on Gold Enabled
+                                        <i class="input-helper"></i>
+                                    </label>
+                                </div>
+                                <div class="form-group mb-0 mt-3">
+                                    <label class="text-dark">GST on Gold (%) <span class="text-danger">*</span></label>
+                                    <input type="number" name="gst_on_gold_percent" id="gst_on_gold_percent" min="0" max="100" step="0.01" value="3.00" class="form-control bg-white text-dark">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GST ON CHARGES -->
+                        <div class="col-md-6 mb-4">
+                            <div class="p-3 border rounded bg-light">
+                                <div class="form-check mb-2">
+                                    <label class="form-check-label text-dark font-weight-bold">
+                                        <input type="checkbox" name="gst_on_charges_enabled" value="1" id="gst_on_charges_enabled" class="form-check-input">
+                                        GST on Charges Enabled
+                                        <i class="input-helper"></i>
+                                    </label>
+                                </div>
+                                <div class="form-group mb-0 mt-3">
+                                    <label class="text-dark">GST on Charges (%) <span class="text-danger">*</span></label>
+                                    <input type="number" name="gst_on_charges_percent" id="gst_on_charges_percent" min="0" max="100" step="0.01" value="18.00" class="form-control bg-white text-dark">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FINANCE CHARGE -->
+                        <div class="col-md-6 mb-4">
+                            <div class="p-3 border rounded bg-light">
+                                <div class="form-check mb-2">
+                                    <label class="form-check-label text-dark font-weight-bold">
+                                        <input type="checkbox" name="finance_charge_enabled" value="1" id="finance_charge_enabled" class="form-check-input">
+                                        Finance Charge Enabled
+                                        <i class="input-helper"></i>
+                                    </label>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-6 form-group mb-0">
+                                        <label class="text-dark">Charge Type <span class="text-danger">*</span></label>
+                                        <select name="finance_charge_type" id="finance_charge_type" class="form-control bg-white text-dark">
+                                            <option value="percentage">Percentage (%)</option>
+                                            <option value="fixed">Fixed Amount (₹)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6 form-group mb-0">
+                                        <label class="text-dark">Charge Value <span class="text-danger">*</span></label>
+                                        <input type="number" name="finance_charge_value" id="finance_charge_value" min="0" step="0.01" class="form-control bg-white text-dark" placeholder="e.g. 12.00">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- STORAGE CHARGE -->
+                        <div class="col-md-6 mb-4">
+                            <div class="p-3 border rounded bg-light">
+                                <div class="form-check mb-2">
+                                    <label class="form-check-label text-dark font-weight-bold">
+                                        <input type="checkbox" name="storage_charge_enabled" value="1" id="storage_charge_enabled" class="form-check-input">
+                                        Storage / Insurance / Price Lock Enabled
+                                        <i class="input-helper"></i>
+                                    </label>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-6 form-group mb-0">
+                                        <label class="text-dark">Charge Type <span class="text-danger">*</span></label>
+                                        <select name="storage_charge_type" id="storage_charge_type" class="form-control bg-white text-dark">
+                                            <option value="percentage">Percentage (%)</option>
+                                            <option value="fixed">Fixed Amount (₹)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6 form-group mb-0">
+                                        <label class="text-dark">Charge Value <span class="text-danger">*</span></label>
+                                        <input type="number" name="storage_charge_value" id="storage_charge_value" min="0" step="0.01" class="form-control bg-white text-dark" placeholder="e.g. 6.00">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ROUNDING RULE -->
+                        <div class="col-md-4 form-group mb-4">
+                            <label class="text-dark font-weight-bold">Rounding Rule <span class="text-danger">*</span></label>
+                            <select name="rounding_type" required class="form-control bg-white text-dark">
+                                <option value="none">None</option>
+                                <option value="nearest_rupee">Nearest Rupee</option>
+                                <option value="nearest_10">Nearest 10</option>
+                                <option value="nearest_100">Nearest 100</option>
                             </select>
                         </div>
 
-                        <div class="col-md-3 form-group">
-                            <label class="text-dark">Annual Interest Rate (%) <span class="text-danger">*</span></label>
-                            <input type="number" name="interest_rate" required min="0" step="0.01" class="form-control bg-white text-dark" placeholder="e.g. 6.00">
-                        </div>
-
-                        <div class="col-md-3 form-group">
-                            <label class="text-dark">Processing Fee Type <span class="text-danger">*</span></label>
-                            <select name="processing_fee_type" required class="form-control bg-white text-dark">
-                                <option value="fixed">Fixed Amount (₹)</option>
-                                <option value="percent">Percentage (%)</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-3 form-group">
-                            <label class="text-dark">Processing Fee Value <span class="text-danger">*</span></label>
-                            <input type="number" name="processing_fee" required min="0" step="0.01" class="form-control bg-white text-dark" placeholder="e.g. 500">
-                        </div>
-
-                        <div class="col-md-3 form-group">
-                            <label class="text-dark">Late Fee Penalty Type <span class="text-danger">*</span></label>
+                        <!-- LATE FEE PENALTY TYPE -->
+                        <div class="col-md-4 form-group mb-4">
+                            <label class="text-dark font-weight-bold">Late Fee Penalty Type <span class="text-danger">*</span></label>
                             <select name="late_fee_type" required class="form-control bg-white text-dark">
                                 <option value="fixed">Fixed Amount (₹)</option>
                                 <option value="percent">Percentage (%)</option>
                             </select>
                         </div>
 
-                        <div class="col-md-3 form-group">
-                            <label class="text-dark">Late Fee Penalty Value <span class="text-danger">*</span></label>
-                            <input type="number" name="late_fee" required min="0" step="0.01" class="form-control bg-white text-dark" placeholder="e.g. 100">
+                        <!-- LATE FEE PENALTY VALUE -->
+                        <div class="col-md-4 form-group mb-4">
+                            <label class="text-dark font-weight-bold">Late Fee Penalty Value <span class="text-danger">*</span></label>
+                            <input type="number" name="late_fee" required min="0" step="0.01" value="100.00" class="form-control bg-white text-dark" placeholder="e.g. 100">
                         </div>
 
-                        <div class="col-md-3 form-group">
-                            <label class="text-dark">Grace Days Allowed <span class="text-danger">*</span></label>
-                            <input type="number" name="grace_days" required min="0" class="form-control bg-white text-dark" placeholder="e.g. 5">
+                        <!-- GRACE DAYS ALLOWED -->
+                        <div class="col-md-4 form-group mb-4">
+                            <label class="text-dark font-weight-bold">Grace Days Allowed <span class="text-danger">*</span></label>
+                            <input type="number" name="grace_days" required min="0" value="5" class="form-control bg-white text-dark" placeholder="e.g. 5">
                         </div>
 
-                        <div class="col-md-3 form-group">
-                            <label class="text-dark">Missed EMIs Termination Limit <span class="text-danger">*</span></label>
-                            <input type="number" name="auto_terminate_after_missed_emi" required min="0" class="form-control bg-white text-dark" placeholder="e.g. 3">
+                        <!-- MISSED EMIS TERMINATION LIMIT -->
+                        <div class="col-md-4 form-group mb-4">
+                            <label class="text-dark font-weight-bold">Missed EMIs Termination Limit <span class="text-danger">*</span></label>
+                            <input type="number" name="auto_terminate_after_missed_emi" required min="0" value="3" class="form-control bg-white text-dark" placeholder="e.g. 3">
                         </div>
 
-                        <div class="col-md-3 form-group">
-                            <label class="text-dark">Maintenance Deduction Fee (%) <span class="text-danger">*</span></label>
-                            <input type="number" name="maintenance_deduction_percent" required min="0" max="100" step="0.01" class="form-control bg-white text-dark" placeholder="e.g. 10.00">
+                        <!-- MAINTENANCE DEDUCTION FEE -->
+                        <div class="col-md-4 form-group mb-4">
+                            <label class="text-dark font-weight-bold">Maintenance Deduction Fee (%) <span class="text-danger">*</span></label>
+                            <input type="number" name="maintenance_deduction_percent" required min="0" max="100" step="0.01" value="10.00" class="form-control bg-white text-dark" placeholder="e.g. 10.00">
                         </div>
                     </div>
 
@@ -159,6 +235,27 @@
 @push('scripts')
 <script>
     $(document).ready(function () {
+        function toggleFinancialFields() {
+            // GST on Gold
+            let gstGoldEnabled = $('#gst_on_gold_enabled').is(':checked');
+            $('#gst_on_gold_percent').prop('disabled', !gstGoldEnabled).prop('required', gstGoldEnabled);
+
+            // GST on Charges
+            let gstChargesEnabled = $('#gst_on_charges_enabled').is(':checked');
+            $('#gst_on_charges_percent').prop('disabled', !gstChargesEnabled).prop('required', gstChargesEnabled);
+
+            // Finance Charge
+            let financeEnabled = $('#finance_charge_enabled').is(':checked');
+            $('#finance_charge_type, #finance_charge_value').prop('disabled', !financeEnabled).prop('required', financeEnabled);
+
+            // Storage Charge
+            let storageEnabled = $('#storage_charge_enabled').is(':checked');
+            $('#storage_charge_type, #storage_charge_value').prop('disabled', !storageEnabled).prop('required', storageEnabled);
+        }
+
+        $('#gst_on_gold_enabled, #gst_on_charges_enabled, #finance_charge_enabled, #storage_charge_enabled').on('change', toggleFinancialFields);
+        toggleFinancialFields();
+
         $('#planForm').on('submit', function (e) {
             e.preventDefault();
             let submitBtn = $('#submitBtn');

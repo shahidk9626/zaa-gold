@@ -79,7 +79,7 @@ class ProductPurchasePreviewController extends Controller
 
             $calculations = $this->emiService->calculate($plan, $productPrice);
 
-            return response()->json([
+            return response()->json(array_merge([
                 'product_name' => $product->name,
                 'weight_in_grams' => $product->weight_in_grams,
                 'purity' => $product->purity,
@@ -94,7 +94,7 @@ class ProductPurchasePreviewController extends Controller
                 'total_payable' => $calculations['total_payable'],
                 'late_fee' => $calculations['late_fee'],
                 'completion_date' => $calculations['completion_date'],
-            ]);
+            ], $calculations));
         }
 
         // Otherwise, calculate parameters for ALL active plans to display on the choice list
@@ -109,17 +109,15 @@ class ProductPurchasePreviewController extends Controller
                 $product->weight_in_grams <= $plan->maximum_gold_weight) {
                 
                 $calc = $this->emiService->calculate($plan, $productPrice);
-                $eligiblePlans[] = [
-                    'id' => $plan->id,
-                    'plan_name' => $plan->plan_name,
-                    'duration_months' => $plan->duration_months,
-                    'interest_rate' => $plan->interest_rate,
-                    'interest_type' => $plan->interest_type,
-                    'processing_fee' => $calc['processing_fee'],
-                    'installment' => $calc['installment'],
-                    'total_payable' => $calc['total_payable'],
-                    'is_default' => $plan->is_default,
-                ];
+                $eligiblePlans[] = array_merge(
+                    $plan->toArray(),
+                    [
+                        'processing_fee' => $calc['processing_fee'],
+                        'installment' => $calc['installment'],
+                        'total_payable' => $calc['total_payable'],
+                    ],
+                    $calc
+                );
             }
         }
 

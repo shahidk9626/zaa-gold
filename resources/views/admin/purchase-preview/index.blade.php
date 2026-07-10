@@ -135,13 +135,30 @@
                     <label class="small text-muted d-block mb-1">Base Product Price</label>
                     <span class="font-weight-bold text-dark" id="sumProductPrice">-</span>
                 </div>
-                <div class="col-md-3 col-sm-6 mb-3">
+                <div class="col-md-3 col-sm-6 mb-3" id="sumProcessingFeeBlock">
                     <label class="small text-muted d-block mb-1">Calculated Processing Fee</label>
                     <span class="font-weight-bold text-dark" id="sumProcessingFee">-</span>
                 </div>
-                <div class="col-md-3 col-sm-6 mb-3">
+                <div class="col-md-3 col-sm-6 mb-3" id="sumInterestBlock">
                     <label class="small text-muted d-block mb-1">Total Plan Interest</label>
                     <span class="font-weight-bold text-dark" id="sumInterest">-</span>
+                </div>
+
+                <div class="col-md-3 col-sm-6 mb-3" id="sumGstGoldBlock" style="display:none !important;">
+                    <label class="small text-muted d-block mb-1">GST on Gold</label>
+                    <span class="font-weight-bold text-dark" id="sumGstGold">-</span>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3" id="sumFinanceBlock" style="display:none !important;">
+                    <label class="small text-muted d-block mb-1">Finance Charge</label>
+                    <span class="font-weight-bold text-dark" id="sumFinance">-</span>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3" id="sumStorageBlock" style="display:none !important;">
+                    <label class="small text-muted d-block mb-1">Storage / Insurance / Price Lock</label>
+                    <span class="font-weight-bold text-dark" id="sumStorage">-</span>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3" id="sumGstChargesBlock" style="display:none !important;">
+                    <label class="small text-muted d-block mb-1">GST on Charges</label>
+                    <span class="font-weight-bold text-dark" id="sumGstCharges">-</span>
                 </div>
 
                 <div class="col-md-3 col-sm-6 mb-3">
@@ -257,6 +274,28 @@
                     $('#noPlansMsg').hide();
                     response.eligible_plans.forEach(plan => {
                         let defaultBadge = plan.is_default ? '<span class="badge badge-primary float-right">Default</span>' : '';
+                        
+                        let chargesInfo = '';
+                        if (plan.use_financial_engine) {
+                            if (plan.gst_on_gold_enabled) {
+                                chargesInfo += `<div class="small text-muted mb-1">GST on Gold: <strong class="text-dark">${parseFloat(plan.gst_on_gold_percent)}%</strong></div>`;
+                            }
+                            if (plan.finance_charge_enabled) {
+                                chargesInfo += `<div class="small text-muted mb-1">Finance Charge: <strong class="text-dark">${parseFloat(plan.finance_charge_value)}${plan.finance_charge_type === 'fixed' ? ' ₹' : '%'}</strong></div>`;
+                            }
+                            if (plan.storage_charge_enabled) {
+                                chargesInfo += `<div class="small text-muted mb-1">Storage Charge: <strong class="text-dark">${parseFloat(plan.storage_charge_value)}${plan.storage_charge_type === 'fixed' ? ' ₹' : '%'}</strong></div>`;
+                            }
+                            if (plan.gst_on_charges_enabled) {
+                                chargesInfo += `<div class="small text-muted mb-1">GST on Charges: <strong class="text-dark">${parseFloat(plan.gst_on_charges_percent)}%</strong></div>`;
+                            }
+                        } else {
+                            chargesInfo += `
+                                <div class="small text-muted mb-1">Interest: <strong class="text-dark">${parseFloat(plan.interest_rate)}% (${plan.interest_type.toUpperCase()})</strong></div>
+                                <div class="small text-muted mb-1">Processing: <strong class="text-dark">₹${parseFloat(plan.processing_fee).toLocaleString()}</strong></div>
+                            `;
+                        }
+
                         plansHtml += `
                             <div class="col-md-6 mb-3">
                                 <div class="card border p-3 rounded h-100 emi-plan-card text-dark" style="cursor: pointer; transition: 0.2s;" onclick="selectEmiPlan(${plan.id})" id="plan-card-${plan.id}">
@@ -265,8 +304,7 @@
                                         ${defaultBadge}
                                     </div>
                                     <div class="small text-muted mb-2">Duration: <strong class="text-dark">${plan.duration_months} Months</strong></div>
-                                    <div class="small text-muted mb-1">Interest: <strong class="text-dark">${parseFloat(plan.interest_rate)}% (${plan.interest_type.toUpperCase()})</strong></div>
-                                    <div class="small text-muted mb-1">Processing: <strong class="text-dark">₹${parseFloat(plan.processing_fee).toLocaleString()}</strong></div>
+                                    ${chargesInfo}
                                     <div class="border-top pt-2 mt-2">
                                         <div class="small text-muted">Monthly EMI</div>
                                         <div class="h5 font-weight-bold text-primary mb-1">₹${parseFloat(plan.installment).toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
@@ -334,8 +372,45 @@
                 
                 $('#sumGoldRate').text(`₹${parseFloat(response.gold_price_per_gram).toLocaleString()}/g`);
                 $('#sumProductPrice').text(`₹${parseFloat(response.product_price).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
-                $('#sumProcessingFee').text(`₹${parseFloat(response.processing_fee).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
-                $('#sumInterest').text(`₹${parseFloat(response.interest).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+                
+                if (response.use_financial_engine) {
+                    $('#sumProcessingFeeBlock, #sumInterestBlock').attr('style', 'display: none !important;');
+                    
+                    if (response.gst_on_gold_enabled) {
+                        $('#sumGstGoldBlock').attr('style', 'display: block !important;');
+                        $('#sumGstGold').text(`₹${parseFloat(response.gst_on_gold).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+                    } else {
+                        $('#sumGstGoldBlock').attr('style', 'display: none !important;');
+                    }
+
+                    if (response.finance_charge_enabled) {
+                        $('#sumFinanceBlock').attr('style', 'display: block !important;');
+                        $('#sumFinance').text(`₹${parseFloat(response.finance_charge).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+                    } else {
+                        $('#sumFinanceBlock').attr('style', 'display: none !important;');
+                    }
+
+                    if (response.storage_charge_enabled) {
+                        $('#sumStorageBlock').attr('style', 'display: block !important;');
+                        $('#sumStorage').text(`₹${parseFloat(response.storage_charge).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+                    } else {
+                        $('#sumStorageBlock').attr('style', 'display: none !important;');
+                    }
+
+                    if (response.gst_on_charges_enabled) {
+                        $('#sumGstChargesBlock').attr('style', 'display: block !important;');
+                        $('#sumGstCharges').text(`₹${parseFloat(response.gst_on_charges).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+                    } else {
+                        $('#sumGstChargesBlock').attr('style', 'display: none !important;');
+                    }
+                } else {
+                    $('#sumProcessingFeeBlock, #sumInterestBlock').attr('style', 'display: block !important;');
+                    $('#sumProcessingFee').text(`₹${parseFloat(response.processing_fee).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+                    $('#sumInterest').text(`₹${parseFloat(response.interest).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+                    
+                    $('#sumGstGoldBlock, #sumFinanceBlock, #sumStorageBlock, #sumGstChargesBlock').attr('style', 'display: none !important;');
+                }
+
                 $('#sumEmiAmount').text(`₹${parseFloat(response.installment).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
                 $('#sumTotalPayable').text(`₹${parseFloat(response.total_payable).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
                 $('#sumCompletionDate').text(response.completion_date);

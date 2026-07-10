@@ -33,6 +33,17 @@ class EmiPlan extends Model
         'display_order',
         'status',
         'is_default',
+        'gst_on_gold_enabled',
+        'gst_on_gold_percent',
+        'finance_charge_enabled',
+        'finance_charge_type',
+        'finance_charge_value',
+        'storage_charge_enabled',
+        'storage_charge_type',
+        'storage_charge_value',
+        'gst_on_charges_enabled',
+        'gst_on_charges_percent',
+        'rounding_type',
     ];
 
     protected $casts = [
@@ -45,6 +56,14 @@ class EmiPlan extends Model
         'interest_rate' => 'decimal:2',
         'late_fee' => 'decimal:2',
         'maintenance_deduction_percent' => 'decimal:2',
+        'gst_on_gold_enabled' => 'boolean',
+        'gst_on_gold_percent' => 'decimal:2',
+        'finance_charge_enabled' => 'boolean',
+        'finance_charge_value' => 'decimal:2',
+        'storage_charge_enabled' => 'boolean',
+        'storage_charge_value' => 'decimal:2',
+        'gst_on_charges_enabled' => 'boolean',
+        'gst_on_charges_percent' => 'decimal:2',
     ];
 
     protected static function boot()
