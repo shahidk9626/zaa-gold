@@ -140,7 +140,7 @@
       </div>
     </li>
     @endif
-    @if(hasPermission('purchase-preview.view') || hasPermission('emi-calculator.view') || hasPermission('booking.view'))
+    @if(hasPermission('purchase-preview.view') || hasPermission('emi-calculator.view') || hasPermission('booking.view') || hasPermission('emi-schedule.view') || hasPermission('payment.view') || hasPermission('receipt.view') || hasPermission('invoice.view') || hasPermission('delivery.view'))
     <li class="nav-item">
       <a class="nav-link" data-toggle="collapse" href="#transactions-menu" aria-expanded="false" aria-controls="transactions-menu">
         <i class="mdi mdi-currency-usd menu-icon"></i>
@@ -161,7 +161,32 @@
           @endif
           @if(hasPermission('booking.view'))
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('bookings.index') }}">Bookings List</a>
+            <a class="nav-link" href="{{ route('bookings.index') }}">Bookings</a>
+          </li>
+          @endif
+          @if(hasPermission('emi-schedule.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('emi-schedules.index') }}">EMI Schedule</a>
+          </li>
+          @endif
+          @if(hasPermission('payment.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('payments.index') }}">EMI Payments</a>
+          </li>
+          @endif
+          @if(hasPermission('receipt.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('receipts.index') }}">Receipts</a>
+          </li>
+          @endif
+          @if(hasPermission('invoice.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('invoices.index') }}">GST Invoices</a>
+          </li>
+          @endif
+          @if(hasPermission('delivery.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('deliveries.index') }}">Delivery</a>
           </li>
           @endif
         </ul>

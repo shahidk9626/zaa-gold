@@ -106,8 +106,28 @@ class GoldBookingController extends Controller
     {
         $booking = GoldBooking::with(['customer', 'product', 'emiPlan', 'certificate', 'statusHistory.changedBy'])->findOrFail($id);
         
-        // Amortization Repayment schedule based on locked gold values
-        $schedule = $this->emiService->generateOutstandingSchedule($booking->emiPlan, $booking->locked_gold_value);
+        // Fetch actual EMI Schedule from database
+        $schedule = \App\Models\BookingEmiSchedule::where('booking_id', $booking->id)
+            ->orderBy('installment_number')
+            ->get();
+
+        // Fetch related payments and receipts
+        $payments = \App\Models\BookingPayment::where('booking_id', $booking->id)
+            ->with('emiSchedule')
+            ->latest('payment_date')
+            ->get();
+
+        $receipts = $payments->where('status', 'Paid');
+
+        // Calculate financial summaries for Outstanding tab
+        $totalBooked = (float)$booking->grand_total;
+        $totalPaid = (float)$receipts->sum('amount_paid');
+        $outstandingBalance = round($totalBooked - $totalPaid, 2);
+        
+        $principalPaid = (float)$receipts->sum('principal_paid');
+        $interestPaid = (float)$receipts->sum('interest_paid');
+        $lateFeePaid = (float)$receipts->sum('late_fee_paid');
+        $gstPaid = (float)$receipts->sum('gst_paid');
 
         // Fetch related activity logs
         $activityLogs = ActivityLog::where('module_name', 'gold_booking')
@@ -116,7 +136,26 @@ class GoldBookingController extends Controller
             ->latest()
             ->get();
 
-        return view('admin.bookings.show', compact('booking', 'schedule', 'activityLogs'));
+        // Fetch related delivery request
+        $delivery = \App\Models\BookingDelivery::where('booking_id', $booking->id)
+            ->latest()
+            ->first();
+
+        return view('admin.bookings.show', compact(
+            'booking', 
+            'schedule', 
+            'payments', 
+            'receipts', 
+            'activityLogs',
+            'totalBooked',
+            'totalPaid',
+            'outstandingBalance',
+            'principalPaid',
+            'interestPaid',
+            'lateFeePaid',
+            'gstPaid',
+            'delivery'
+        ));
     }
 
     /**
@@ -143,7 +182,7 @@ class GoldBookingController extends Controller
     public function changeStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|string|in:Draft,Pending First EMI,Active,Completed,Cancelled,Refund Initiated,Refunded',
+            'status' => 'required|string|in:Draft,Booked,Active,Completed,Cancelled,Refund Initiated,Refunded',
             'remarks' => 'nullable|string',
         ]);
 

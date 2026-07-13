@@ -105,7 +105,7 @@ class GoldBookingTest extends TestCase
             'customer_id' => $this->customer->id,
             'product_id' => $this->product->id,
             'emi_plan_id' => $this->plan->id,
-            'status' => 'Pending First EMI',
+            'status' => 'Active',
         ]);
 
         // Verify sequential booking number format
@@ -115,10 +115,17 @@ class GoldBookingTest extends TestCase
         $this->assertEquals(6000.00, $booking->locked_price_per_gram);
         $this->assertEquals(60000.00, $booking->locked_gold_value);
 
-        // Check if status history is automatically logged
+        // Check if status histories are automatically logged
         $this->assertDatabaseHas('booking_status_histories', [
             'booking_id' => $booking->id,
-            'new_status' => 'Pending First EMI',
+            'new_status' => 'Booked',
+            'old_status' => null,
+        ]);
+
+        $this->assertDatabaseHas('booking_status_histories', [
+            'booking_id' => $booking->id,
+            'new_status' => 'Active',
+            'old_status' => 'Booked',
         ]);
 
         // Check if certificate is generated
@@ -141,18 +148,19 @@ class GoldBookingTest extends TestCase
             $this->plan->id
         );
 
+        // At creation, we have 2 status histories: null -> Booked, Booked -> Active
         $historyCountBefore = BookingStatusHistory::where('booking_id', $booking->id)->count();
-        $this->assertEquals(1, $historyCountBefore); // Initial creation history
+        $this->assertEquals(2, $historyCountBefore);
 
-        // Change status using the service
-        $this->bookingService->changeStatus($booking, 'Active', 'First payment received.');
+        // Change status using the service to Completed
+        $this->bookingService->changeStatus($booking, 'Completed', 'Plan completed.');
 
-        $this->assertEquals('Active', $booking->status);
+        $this->assertEquals('Completed', $booking->status);
         $this->assertDatabaseHas('booking_status_histories', [
             'booking_id' => $booking->id,
-            'old_status' => 'Pending First EMI',
-            'new_status' => 'Active',
-            'remarks' => 'First payment received.',
+            'old_status' => 'Active',
+            'new_status' => 'Completed',
+            'remarks' => 'Plan completed.',
         ]);
 
         $latestHistory = BookingStatusHistory::where('booking_id', $booking->id)->latest('id')->first();

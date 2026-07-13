@@ -259,23 +259,30 @@ class EmiCalculationService
     /**
      * Calculate interest amount portion
      */
-    public function calculateInterest(EmiPlan $plan, $amount)
+    public function calculateInterest(EmiPlan $plan, $amount, $monthNo = null, $openingPrincipal = null, $monthlyEmi = null, $useFinancialEngine = false, $calc = null)
     {
-        $principal = (float)$amount;
-        $rate = (float)$plan->interest_rate;
-        $months = (int)$plan->duration_months;
+        if ($monthNo === null) {
+            $principal = (float)$amount;
+            $rate = (float)$plan->interest_rate;
+            $months = (int)$plan->duration_months;
 
-        if ($months <= 0 || $rate <= 0) {
-            return 0.00;
+            if ($months <= 0 || $rate <= 0) {
+                return 0.00;
+            }
+
+            if ($plan->interest_type === 'flat') {
+                return round($principal * ($rate / 100) * ($months / 12), 2);
+            } else {
+                $emi = $this->calculateMonthlyInstallment($plan, $principal);
+                $totalPayable = $emi * $months;
+                return round($totalPayable - $principal, 2);
+            }
         }
 
-        if ($plan->interest_type === 'flat') {
-            return round($principal * ($rate / 100) * ($months / 12), 2);
-        } else {
-            $emi = $this->calculateMonthlyInstallment($plan, $principal);
-            $totalPayable = $emi * $months;
-            return round($totalPayable - $principal, 2);
+        if ($calc === null) {
+            $calc = $this->calculate($plan, $amount);
         }
+        return $this->calculateInterestBreakup($plan, $amount, $monthNo, $openingPrincipal, $monthlyEmi, $useFinancialEngine, $calc);
     }
 
     /**
@@ -447,5 +454,77 @@ class EmiCalculationService
     public function calculateClosingBalance($openingPrincipal, $principalAmount)
     {
         return round($openingPrincipal - $principalAmount, 2);
+    }
+
+    /**
+     * Generate actual EMI Schedule for a booking starting on booking date
+     */
+    public function generateSchedule(EmiPlan $plan, $amount, $bookingDate = null)
+    {
+        $duration = (int)$plan->duration_months;
+        $calc = $this->calculate($plan, $amount);
+        $monthlyEmi = $calc['installment'];
+        $grandTotal = $calc['total_payable'];
+        $useFinancialEngine = $calc['use_financial_engine'];
+        
+        $schedule = [];
+        $openingPrincipal = $useFinancialEngine ? (float)$calc['gold_value'] : (float)$amount;
+        $runningBalance = $grandTotal;
+        
+        $startDate = $bookingDate ? Carbon::parse($bookingDate) : Carbon::now();
+        
+        for ($i = 1; $i <= $duration; $i++) {
+            $interestAmount = $this->calculateInterest($plan, $amount, $i, $openingPrincipal, $monthlyEmi, $useFinancialEngine, $calc);
+            $principalAmount = $this->calculatePrincipal($plan, $amount, $i, $openingPrincipal, $monthlyEmi, $useFinancialEngine, $calc);
+            
+            // Adjust for last month rounding
+            if ($i === $duration) {
+                $principalAmount = $openingPrincipal;
+                $interestAmount = round($monthlyEmi - $principalAmount, 2);
+                $closingPrincipal = 0.00;
+                $runningBalance = 0.00;
+            } else {
+                $closingPrincipal = $this->calculateClosingBalance($openingPrincipal, $principalAmount);
+                $runningBalance = round($runningBalance - $monthlyEmi, 2);
+            }
+            
+            // First EMI is due today (month_no = 1, monthsToAdd = 0)
+            $dueDate = $this->calculateNextDueDate($startDate, $i - 1)->format('Y-m-d');
+            
+            $schedule[] = [
+                'installment_number' => $i,
+                'due_date' => $dueDate,
+                'opening_principal' => $openingPrincipal,
+                'principal_amount' => $principalAmount,
+                'interest_amount' => $interestAmount,
+                'emi_amount' => $monthlyEmi,
+                'closing_principal' => $closingPrincipal,
+                'outstanding_balance' => $runningBalance,
+                'status' => 'Pending'
+            ];
+            
+            $openingPrincipal = $closingPrincipal;
+        }
+        
+        return $schedule;
+    }
+
+    /**
+     * Calculate principal portion of the EMI (delegates to calculatePrincipalBreakup)
+     */
+    public function calculatePrincipal(EmiPlan $plan, $amount, $monthNo, $openingPrincipal, $monthlyEmi, $useFinancialEngine = false, $calc = null)
+    {
+        if ($calc === null) {
+            $calc = $this->calculate($plan, $amount);
+        }
+        return $this->calculatePrincipalBreakup($plan, $amount, $monthNo, $openingPrincipal, $monthlyEmi, $useFinancialEngine, $calc);
+    }
+
+    /**
+     * Calculate next due date
+     */
+    public function calculateNextDueDate(Carbon $startDate, $monthsToAdd = 1)
+    {
+        return $startDate->copy()->addMonths((int)$monthsToAdd);
     }
 }

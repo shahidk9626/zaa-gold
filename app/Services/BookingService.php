@@ -18,11 +18,13 @@ class BookingService
 {
     protected $pricingService;
     protected $emiService;
+    protected $paymentService;
 
-    public function __construct(ProductPricingService $pricingService, EmiCalculationService $emiService)
+    public function __construct(ProductPricingService $pricingService, EmiCalculationService $emiService, PaymentService $paymentService)
     {
         $this->pricingService = $pricingService;
         $this->emiService = $emiService;
+        $this->paymentService = $paymentService;
     }
 
     /**
@@ -74,7 +76,7 @@ class BookingService
             $booking->duration_months = $plan->duration_months;
             $booking->booking_date = now();
             $booking->estimated_completion_date = $calculations['completion_date'];
-            $booking->status = 'Pending First EMI'; // Initial active status
+            $booking->status = 'Booked'; // Initial status
             $booking->remarks = $remarks;
             $booking->created_by_id = auth()->id();
             $booking->updated_by_id = auth()->id();
@@ -86,6 +88,15 @@ class BookingService
 
             // 3. Generate Price Lock Certificate
             $this->generateCertificate($booking);
+
+            // 4. Generate EMI Schedule
+            $this->paymentService->generateScheduleForBooking($booking);
+
+            // 5. Automatically pay the first EMI
+            $this->paymentService->processFirstEmiPayment($booking);
+
+            // Refresh booking to reload status and relationships
+            $booking->refresh();
 
             return $booking;
         });
