@@ -12,6 +12,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
         then: function () {
             Route::middleware('web')
+                ->group(base_path('routes/adminCustomerRoute.php'));
+            Route::middleware('web')
                 ->group(base_path('routes/customerRoute.php'));
             Route::middleware('web')
                 ->group(base_path('routes/staffRoute.php'));
@@ -50,6 +52,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'permission' => \App\Http\Middleware\CheckPermission::class,
+            'customer' => \App\Http\Middleware\EnsureCustomer::class,
+        ]);
+
+        $middleware->web(append: [
+            \App\Http\Middleware\RedirectCustomersFromAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

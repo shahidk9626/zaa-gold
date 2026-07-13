@@ -1,0 +1,163 @@
+/* Customer Portal — Mobile-only enhancements (max-width: 768px) */
+@media (max-width: 767.98px) {
+    .customer-portal .content-wrapper {
+        padding-bottom: 80px !important;
+    }
+
+    .customer-portal .customer-mobile-header {
+        position: sticky;
+        top: 0;
+        z-index: 1030;
+        background: #fff;
+        border-bottom: 1px solid #e9ecef;
+        padding: 12px 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .customer-portal .customer-bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1040;
+        background: #fff;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-around;
+        padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+        box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .customer-portal .customer-bottom-nav a {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: #8392ab;
+        font-size: 0.7rem;
+        padding: 4px 8px;
+        min-width: 56px;
+        transition: color 0.2s;
+    }
+
+    .customer-portal .customer-bottom-nav a.active,
+    .customer-portal .customer-bottom-nav a:hover {
+        color: #3f50f6;
+    }
+
+    .customer-portal .customer-bottom-nav a i {
+        font-size: 1.4rem;
+        margin-bottom: 2px;
+    }
+
+    .customer-portal .plans-slider {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        gap: 12px;
+        padding: 4px 0 12px;
+        scrollbar-width: none;
+    }
+
+    .customer-portal .plans-slider::-webkit-scrollbar {
+        display: none;
+    }
+
+    .customer-portal .plans-slider .plan-slide {
+        flex: 0 0 85%;
+        scroll-snap-align: start;
+        max-width: 320px;
+    }
+
+    .customer-portal .mobile-card {
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .customer-portal .service-tile {
+        border-radius: 12px;
+        padding: 16px 12px;
+        text-align: center;
+        background: #fff;
+        border: 1px solid #e9ecef;
+        transition: transform 0.15s, box-shadow 0.15s;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        height: 100%;
+    }
+
+    .customer-portal .service-tile:active {
+        transform: scale(0.98);
+    }
+
+    .customer-portal .service-tile i {
+        font-size: 1.75rem;
+        color: #3f50f6;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .customer-portal .service-tile span {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .customer-portal .gold-price-mobile-card {
+        border-radius: 12px;
+        padding: 16px;
+        background: linear-gradient(135deg, #3f50f6 0%, #5b6bf9 100%);
+        color: #fff;
+    }
+
+    .customer-portal .gold-price-mobile-card.gold-24k {
+        background: linear-gradient(135deg, #ff9800 0%, #ffb74d 100%);
+    }
+
+    .customer-portal .btn-mobile-lg {
+        padding: 12px 20px;
+        font-size: 1rem;
+        border-radius: 8px;
+    }
+
+    .customer-portal .timeline-mobile .timeline-item {
+        padding-left: 28px;
+        border-left: 2px solid #e9ecef;
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    .customer-portal .timeline-mobile .timeline-dot {
+        position: absolute;
+        left: -7px;
+        top: 4px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #3f50f6;
+        border: 2px solid #fff;
+    }
+
+    .customer-portal .timeline-mobile .timeline-dot.completed {
+        background: #24b47e;
+    }
+
+    .customer-portal .timeline-mobile .timeline-dot.pending {
+        background: #ffc107;
+    }
+
+    .customer-portal .page-body-wrapper {
+        padding-top: 0;
+    }
+
+    .customer-portal .navbar.default-layout-navbar {
+        display: none;
+    }
+
+    .customer-portal .sidebar-offcanvas {
+        z-index: 1050;
+    }
+}

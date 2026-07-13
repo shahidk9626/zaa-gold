@@ -5,12 +5,18 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     if (auth()->check()) {
+        if (auth()->user()->isCustomer()) {
+            return redirect()->route('customer.dashboard');
+        }
         return redirect()->route('dashboard');
     }
     return redirect()->route('login');
 });
 
 Route::get('/dashboard', function () {
+    if (auth()->user()->isCustomer()) {
+        return redirect()->route('customer.dashboard');
+    }
     return view('dashboard.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 

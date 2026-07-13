@@ -88,4 +88,19 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Permission::class, 'user_permissions')->withPivot('allowed');
     }
+
+    public function bookings()
+    {
+        return $this->hasMany(GoldBooking::class, 'customer_id');
+    }
+
+    public function isCustomer(): bool
+    {
+        return $this->role?->slug === 'customer';
+    }
+
+    public function isStaffOrAdmin(): bool
+    {
+        return in_array($this->role?->slug, ['super-admin', 'admin', 'staff'], true);
+    }
 }

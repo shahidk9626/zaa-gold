@@ -1,38 +1,45 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\Customer\DashboardController;
+use App\Http\Controllers\Customer\PlanController;
+use App\Http\Controllers\Customer\EmiController;
+use App\Http\Controllers\Customer\PaymentController;
+use App\Http\Controllers\Customer\CertificateController;
+use App\Http\Controllers\Customer\DeliveryController;
+use App\Http\Controllers\Customer\ProfileController;
+use App\Http\Controllers\Customer\NotificationController;
+use App\Http\Controllers\Customer\SupportController;
+use App\Http\Controllers\Customer\OutstandingController;
 
-Route::middleware(['auth'])->group(function () {
-    Route::middleware('permission:customer.view')->group(function () {
-        Route::get('/admin/customers', [CustomerController::class, 'index'])->name('customers.index');
-        Route::get('/admin/customers/{id}/view', [CustomerController::class, 'show'])->name('customers.show');
-    });
+Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::middleware('permission:customer.create')->group(function () {
-        Route::get('/admin/customers/create', [CustomerController::class, 'create'])->name('customers.create');
-        Route::post('/admin/customers/store', [CustomerController::class, 'store'])->name('customers.store');
-    });
+    Route::get('/plans', [PlanController::class, 'index'])->name('plans.index');
+    Route::get('/plans/{id}', [PlanController::class, 'show'])->name('plans.show');
 
-    Route::middleware('permission:customer.edit')->group(function () {
-        Route::get('/admin/customers/{id}/edit', [CustomerController::class, 'edit'])->name('customers.edit');
-        Route::post('/admin/customers/update/{id}', [CustomerController::class, 'update'])->name('customers.update');
-    });
+    Route::get('/emi/history', [EmiController::class, 'history'])->name('emi.history');
+    Route::get('/emi/repay', [EmiController::class, 'repay'])->name('emi.repay');
+    Route::get('/emi/{scheduleId}/pay', [EmiController::class, 'payForm'])->name('emi.pay_form');
+    Route::post('/emi/{scheduleId}/pay', [EmiController::class, 'processPay'])->name('emi.process_pay');
 
-    Route::middleware('permission:customer.delete')->group(function () {
-        Route::delete('/admin/customers/delete/{id}', [CustomerController::class, 'destroy'])->name('customers.destroy');
-        Route::post('/admin/customers/bulk-delete', [CustomerController::class, 'bulkDestroy'])->name('customers.bulk-destroy');
-        Route::delete('/admin/customers/delete-document/{id}', [CustomerController::class, 'deleteDocument'])->name('customers.delete-document');
-    });
+    Route::get('/outstanding', [OutstandingController::class, 'index'])->name('outstanding.index');
 
-    Route::middleware('permission:customer.status')->group(function () {
-        Route::post('/admin/customers/status/{id}', [CustomerController::class, 'toggleStatus'])->name('customers.status');
-        Route::post('/admin/customers/{id}/verify', [CustomerController::class, 'verify'])->name('customers.verify');
-    });
+    Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+    Route::get('/payments/{id}/receipt', [PaymentController::class, 'downloadReceipt'])->name('payments.receipt');
 
-    Route::middleware('permission:customer.export')->get('/admin/customers/export', [CustomerController::class, 'export'])->name('customers.export');
-    Route::middleware('permission:customer.import')->group(function () {
-        Route::post('/admin/customers/import', [CustomerController::class, 'import'])->name('customers.import');
-        Route::get('/admin/customers/import-template', [CustomerController::class, 'downloadTemplate'])->name('customers.import-template');
-    });
+    Route::get('/certificates', [CertificateController::class, 'index'])->name('certificates.index');
+    Route::get('/certificates/{bookingId}/price-lock', [CertificateController::class, 'downloadPriceLock'])->name('certificates.price_lock');
+    Route::get('/certificates/invoice/{id}', [CertificateController::class, 'downloadInvoice'])->name('certificates.invoice');
+
+    Route::get('/deliveries', [DeliveryController::class, 'index'])->name('deliveries.index');
+    Route::get('/deliveries/{id}', [DeliveryController::class, 'show'])->name('deliveries.show');
+    Route::post('/deliveries/{bookingId}/request', [DeliveryController::class, 'storeRequest'])->name('deliveries.store_request');
+
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+
+    Route::get('/support', [SupportController::class, 'index'])->name('support.index');
 });
