@@ -18,17 +18,14 @@
         @include('customer.layouts.partials.sidebar')
 
         <div class="container-fluid page-body-wrapper">
-            {{-- Desktop Header --}}
-            <div class="d-none d-md-block">
-                @include('customer.layouts.partials.header')
-            </div>
-
-            {{-- Mobile Header --}}
-            <div class="d-block d-md-none">
-                @include('customer.layouts.partials.mobile-header')
-            </div>
+            @include('customer.layouts.partials.header')
 
             <div class="main-panel">
+                {{-- Mobile Header --}}
+                <div class="d-block d-md-none">
+                    @include('customer.layouts.partials.mobile-header')
+                </div>
+
                 <div class="content-wrapper pb-0">
                     @if(session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">

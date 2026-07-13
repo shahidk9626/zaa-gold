@@ -41,8 +41,12 @@
     }
 
     .customer-portal .customer-bottom-nav a.active,
-    .customer-portal .customer-bottom-nav a:hover {
-        color: #3f50f6;
+    .customer-portal .customer-bottom-nav a.active i,
+    .customer-portal .customer-bottom-nav a.active span,
+    .customer-portal .customer-bottom-nav a:hover,
+    .customer-portal .customer-bottom-nav a:hover i,
+    .customer-portal .customer-bottom-nav a:hover span {
+        color: #3f50f6 !important;
     }
 
     .customer-portal .customer-bottom-nav a i {
