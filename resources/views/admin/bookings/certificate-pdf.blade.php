@@ -8,80 +8,81 @@
             margin: 0;
         }
         body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: 'DejaVu Sans', sans-serif;
             color: #2d3748;
             margin: 0;
-            padding: 40px;
+            padding: 20px;
             background-color: #fff;
+            font-size: 10px;
         }
         .border-container {
-            border: 15px solid #d4af37; /* Metallic Gold border */
-            padding: 30px;
-            min-height: 90%;
+            border: 10px solid #d4af37; /* Metallic Gold border */
+            padding: 20px;
+            min-height: 93%;
             position: relative;
         }
         .header {
             text-align: center;
             border-bottom: 2px double #d4af37;
-            padding-bottom: 20px;
-            margin-bottom: 25px;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
         }
         .company-name {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: bold;
             color: #1a202c;
             letter-spacing: 2px;
         }
         .company-subtitle {
-            font-size: 10px;
+            font-size: 9px;
             color: #718096;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-top: 5px;
+            margin-top: 3px;
         }
         .certificate-title {
-            font-size: 22px;
+            font-size: 18px;
             font-weight: bold;
             color: #b7791f; /* Gold text */
             text-align: center;
             text-transform: uppercase;
             letter-spacing: 3px;
-            margin: 15px 0;
+            margin: 10px 0;
         }
         .certificate-subtitle {
             text-align: center;
-            font-size: 11px;
+            font-size: 10px;
             color: #4a5568;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
             font-style: italic;
         }
         .section-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
         .section-table td {
-            padding: 6px 10px;
+            padding: 4px 10px;
             vertical-align: top;
             width: 50%;
         }
         .label {
-            font-size: 9px;
+            font-size: 8px;
             color: #718096;
             text-transform: uppercase;
             font-weight: bold;
-            margin-bottom: 2px;
+            margin-bottom: 1px;
         }
         .value {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 500;
             color: #1a202c;
         }
         .gold-box {
             background-color: #fefcbf; /* Light yellow box */
             border: 1px solid #ecc94b;
-            padding: 15px;
-            margin-bottom: 25px;
+            padding: 10px;
+            margin-bottom: 15px;
             border-radius: 4px;
         }
         .gold-box-table {
@@ -89,97 +90,98 @@
             border-collapse: collapse;
         }
         .gold-box-table td {
-            padding: 4px 10px;
+            padding: 2px 5px;
             width: 25%;
             text-align: center;
         }
         .gold-box-label {
-            font-size: 9px;
+            font-size: 8px;
             color: #b7791f;
             text-transform: uppercase;
             font-weight: bold;
         }
         .gold-box-value {
-            font-size: 13px;
+            font-size: 11px;
             font-weight: bold;
             color: #744210;
-            margin-top: 3px;
+            margin-top: 2px;
         }
         .details-header {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
             color: #2d3748;
             border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 5px;
-            margin-bottom: 12px;
+            padding-bottom: 3px;
+            margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
         .summary-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 25px;
+            margin-bottom: 15px;
         }
         .summary-table td {
-            padding: 6px 10px;
+            padding: 4px 10px;
             border-bottom: 1px solid #edf2f7;
-            font-size: 10px;
+            font-size: 9px;
         }
         .summary-table tr.total-row td {
             background-color: #f7fafc;
             border-top: 1px solid #cbd5e0;
             border-bottom: 2px solid #cbd5e0;
             font-weight: bold;
-            font-size: 11px;
+            font-size: 10px;
         }
         .terms {
-            font-size: 8px;
+            font-size: 7.5px;
             color: #718096;
-            line-height: 1.4;
+            line-height: 1.35;
             border-top: 1px solid #e2e8f0;
-            padding-top: 15px;
-            margin-top: 30px;
+            padding-top: 10px;
+            margin-top: 15px;
+            width: 75%;
         }
         .qr-section {
             position: absolute;
-            bottom: 40px;
-            right: 40px;
+            bottom: 20px;
+            right: 20px;
             text-align: center;
-            width: 120px;
+            width: 100px;
         }
         .qr-image {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             border: 1px solid #cbd5e0;
-            padding: 3px;
+            padding: 2px;
             background-color: #fff;
         }
         .qr-label {
             font-size: 7px;
             color: #718096;
             text-transform: uppercase;
-            margin-top: 4px;
+            margin-top: 3px;
             letter-spacing: 0.5px;
             line-height: 1.2;
         }
         .footer {
-            font-size: 8px;
+            font-size: 7.5px;
             color: #a0aec0;
             text-align: center;
-            margin-top: 20px;
+            margin-top: 10px;
         }
         .signature-table {
             width: 100%;
-            margin-top: 40px;
-            margin-bottom: 10px;
+            margin-top: 20px;
+            margin-bottom: 5px;
         }
         .signature-line {
             border-top: 1px solid #cbd5e0;
             text-align: center;
-            padding-top: 5px;
-            font-size: 9px;
+            padding-top: 3px;
+            font-size: 8px;
             color: #718096;
-            width: 200px;
+            width: 180px;
         }
     </style>
 </head>
@@ -231,7 +233,7 @@
                     </td>
                     <td>
                         <div class="gold-box-label">Locked Price / Gram</div>
-                        <div class="gold-box-value">₹{{ number_format($certificate->locked_price, 2) }}</div>
+                        <div class="gold-box-value">&#8377;{{ number_format($certificate->locked_price, 2) }}</div>
                     </td>
                     <td>
                         <div class="gold-box-label">Gold Weight</div>
@@ -239,7 +241,7 @@
                     </td>
                     <td>
                         <div class="gold-box-label">Monthly EMI</div>
-                        <div class="gold-box-value">₹{{ number_format($booking->monthly_emi, 2) }}</div>
+                        <div class="gold-box-value">&#8377;{{ number_format($booking->monthly_emi, 2) }}</div>
                     </td>
                 </tr>
             </table>
@@ -277,46 +279,46 @@
         <table class="summary-table">
             <tr>
                 <td>Base Gold/Product Value</td>
-                <td style="text-align: right;">₹{{ number_format($calculations['gold_value'], 2) }}</td>
+                <td style="text-align: right;">&#8377;{{ number_format($calculations['gold_value'], 2) }}</td>
             </tr>
             @if($calculations['use_financial_engine'])
                 @if($booking->gst_on_gold_amount > 0)
                 <tr>
                     <td>GST on Gold ({{ number_format($booking->gst_on_gold_percent, 2) }}%)</td>
-                    <td style="text-align: right;">₹{{ number_format($booking->gst_on_gold_amount, 2) }}</td>
+                    <td style="text-align: right;">&#8377;{{ number_format($booking->gst_on_gold_amount, 2) }}</td>
                 </tr>
                 @endif
                 @if($booking->finance_charge_amount > 0)
                 <tr>
                     <td>Finance Charge ({{ number_format($booking->finance_charge_percent, 2) }}%)</td>
-                    <td style="text-align: right;">₹{{ number_format($booking->finance_charge_amount, 2) }}</td>
+                    <td style="text-align: right;">&#8377;{{ number_format($booking->finance_charge_amount, 2) }}</td>
                 </tr>
                 @endif
                 @if($booking->storage_charge_amount > 0)
                 <tr>
                     <td>Storage / Insurance / Price Lock Charge ({{ number_format($booking->storage_charge_percent, 2) }}%)</td>
-                    <td style="text-align: right;">₹{{ number_format($booking->storage_charge_amount, 2) }}</td>
+                    <td style="text-align: right;">&#8377;{{ number_format($booking->storage_charge_amount, 2) }}</td>
                 </tr>
                 @endif
                 @if($booking->gst_on_charges_amount > 0)
                 <tr>
                     <td>GST on Charges ({{ number_format($booking->gst_on_charges_percent, 2) }}%)</td>
-                    <td style="text-align: right;">₹{{ number_format($booking->gst_on_charges_amount, 2) }}</td>
+                    <td style="text-align: right;">&#8377;{{ number_format($booking->gst_on_charges_amount, 2) }}</td>
                 </tr>
                 @endif
             @else
                 <tr>
                     <td>Calculated Processing Fee</td>
-                    <td style="text-align: right;">₹{{ number_format($booking->processing_fee, 2) }}</td>
+                    <td style="text-align: right;">&#8377;{{ number_format($booking->processing_fee, 2) }}</td>
                 </tr>
                 <tr>
                     <td>Total Plan Interest ({{ number_format($plan->interest_rate, 2) }}% {{ strtoupper($plan->interest_type) }})</td>
-                    <td style="text-align: right;">₹{{ number_format($booking->grand_total - $booking->locked_gold_value, 2) }}</td>
+                    <td style="text-align: right;">&#8377;{{ number_format($booking->grand_total - $booking->locked_gold_value, 2) }}</td>
                 </tr>
             @endif
             <tr class="total-row">
                 <td>Grand Total (Price Locked)</td>
-                <td style="text-align: right; color: #b7791f;">₹{{ number_format($certificate->grand_total, 2) }}</td>
+                <td style="text-align: right; color: #b7791f;">&#8377;{{ number_format($certificate->grand_total, 2) }}</td>
             </tr>
         </table>
 
@@ -337,9 +339,9 @@
         <!-- Terms and Conditions -->
         <div class="terms">
             <strong>Terms & Conditions:</strong><br>
-            1. This certificate guarantees that the gold price of ₹{{ number_format($certificate->locked_price, 2) }} per gram is locked permanently for this transaction.<br>
+            1. This certificate guarantees that the gold price of &#8377;{{ number_format($certificate->locked_price, 2) }} per gram is locked permanently for this transaction.<br>
             2. The locked gold price is valid for the entire plan duration of {{ $booking->duration_months }} months and cannot change regardless of subsequent market movements.<br>
-            3. The customer agrees to pay the monthly EMI installment of ₹{{ number_format($booking->monthly_emi, 2) }} before the scheduled due dates.<br>
+            3. The customer agrees to pay the monthly EMI installment of &#8377;{{ number_format($booking->monthly_emi, 2) }} before the scheduled due dates.<br>
             4. This certificate is valid only when verified through the authorized ZAA Gold system using the embedded QR verification token.
         </div>
 
