@@ -27,7 +27,7 @@ class AccessControlSeeder extends Seeder
             'Customer' => ['view', 'create', 'edit', 'delete', 'status', 'export', 'import', 'view_details'],
             'Plans' => ['view', 'create', 'edit', 'delete', 'status', 'preview'],
             'Staff Commission' => ['view', 'status', 'export'],
-            'Reports' => ['view'],
+            'Report' => ['view', 'export'],
             'Settings' => ['view'],
             'Product' => ['view', 'create', 'edit', 'delete', 'status'],
             'Gold Price' => ['view', 'create', 'edit', 'delete', 'status', 'history'],
@@ -43,6 +43,9 @@ class AccessControlSeeder extends Seeder
             'Receipt' => ['view', 'download'],
             'Invoice' => ['view', 'generate', 'download', 'print', 'export', 'cancel'],
             'Delivery' => ['view', 'request', 'approve', 'dispatch', 'complete', 'cancel', 'download', 'export'],
+            'Referral' => ['view', 'edit', 'export'],
+            'Sell Old Gold' => ['view', 'edit', 'export'],
+            'Franchise' => ['view', 'edit', 'export'],
         ];
 
         foreach ($modules as $moduleName => $actions) {

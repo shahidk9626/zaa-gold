@@ -7,6 +7,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('permission:emi-plan.view')->group(function () {
         Route::get('/admin/emi-plans', [EmiPlanController::class, 'index'])->name('emi-plans.index');
         Route::get('/admin/emi-plans/{id}/view', [EmiPlanController::class, 'show'])->name('emi-plans.show');
+        Route::post('/admin/emi-plans/{id}/view', [EmiPlanController::class, 'simulate'])->name('emi-plans.simulate');
     });
 
     Route::middleware('permission:emi-plan.create')->group(function () {

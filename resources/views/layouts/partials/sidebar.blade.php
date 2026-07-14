@@ -101,6 +101,35 @@
     </li>
     @endif
 
+    @if(hasPermission('referral.view') || hasPermission('sell-old-gold.view') || hasPermission('franchise.view'))
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="collapse" href="#crm-menu" aria-expanded="false" aria-controls="crm-menu">
+        <i class="mdi mdi-briefcase-outline menu-icon"></i>
+        <span class="menu-title">CRM</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="crm-menu">
+        <ul class="nav flex-column sub-menu">
+          @if(hasPermission('referral.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('referrals.index') }}">Referrals</a>
+          </li>
+          @endif
+          @if(hasPermission('sell-old-gold.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('sell-old-gold.index') }}">Sell Old Gold</a>
+          </li>
+          @endif
+          @if(hasPermission('franchise.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('franchise.index') }}">Franchise</a>
+          </li>
+          @endif
+        </ul>
+      </div>
+    </li>
+    @endif
+
     @if(hasPermission('product.view') || hasPermission('gold-price.view') || hasPermission('inventory.view') || hasPermission('kyc.view') || hasPermission('emi-plan.view'))
     <li class="nav-item">
       <a class="nav-link" data-toggle="collapse" href="#masters-menu" aria-expanded="false" aria-controls="masters-menu">
@@ -191,6 +220,15 @@
           @endif
         </ul>
       </div>
+    </li>
+    @endif
+
+    @if(hasPermission('report.view'))
+    <li class="nav-item">
+      <a class="nav-link" href="{{ route('reports.dashboard') }}">
+        <i class="mdi mdi-chart-bar menu-icon"></i>
+        <span class="menu-title">Reports</span>
+      </a>
     </li>
     @endif
     <!-- <li class="nav-item">

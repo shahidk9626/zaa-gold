@@ -47,6 +47,14 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->group(base_path('routes/invoiceRoute.php'));
             Route::middleware('web')
                 ->group(base_path('routes/deliveryRoute.php'));
+            Route::middleware('web')
+                ->group(base_path('routes/referralRoute.php'));
+            Route::middleware('web')
+                ->group(base_path('routes/sellOldGoldRoute.php'));
+            Route::middleware('web')
+                ->group(base_path('routes/franchiseRoute.php'));
+            Route::middleware('web')
+                ->group(base_path('routes/reportRoute.php'));
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {

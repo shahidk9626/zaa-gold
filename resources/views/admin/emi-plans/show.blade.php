@@ -4,7 +4,7 @@
 <div class="row text-dark">
     <!-- Specifications details -->
     <div class="col-lg-7 mb-4">
-        <div class="card bg-white border shadow-sm p-4 h-100">
+        <div class="card bg-white border shadow-sm p-4">
             <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
                 <div>
                     <h5 class="text-primary font-weight-bold mb-0">Plan Specifications Summary</h5>
