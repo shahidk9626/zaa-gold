@@ -132,18 +132,18 @@ class EmiScheduleTest extends TestCase
         // Finance Charge = 500
         // Storage Charge = 200
         // Total Charges = 700
-        // GST on Charges = 126
-        // Grand Total = 10000 + 300 + 700 + 126 = 11126
-        // EMI = 11126 / 5 = 2225.20
+        // GST on Charges = 36
+        // Grand Total = 10000 + 300 + 700 + 36 = 11036
+        // EMI = 11036 / 5 = 2207.20
         // Monthly Principal = 10000 / 5 = 2000
-        // Monthly Interest/Charges = 2225.20 - 2000 = 225.20
+        // Monthly Interest/Charges = 2207.20 - 2000 = 207.20
 
         $schedule = $this->emiService->generateOutstandingSchedule($plan, $amount);
 
         $this->assertCount(5, $schedule);
-        $this->assertEquals(2225.20, $schedule[0]['monthly_emi']);
+        $this->assertEquals(2207.20, $schedule[0]['monthly_emi']);
         $this->assertEquals(2000.00, $schedule[0]['principal_amount']);
-        $this->assertEquals(225.20, $schedule[0]['interest_amount']);
+        $this->assertEquals(207.20, $schedule[0]['interest_amount']);
         $this->assertEquals(8000.00, $schedule[0]['closing_principal']);
         
         $lastMonth = end($schedule);

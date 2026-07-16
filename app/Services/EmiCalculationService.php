@@ -133,13 +133,13 @@ class EmiCalculationService
         return round($total, 2);
     }
 
-    public function calculateGSTOnCharges(EmiPlan $plan, $totalCharges)
+    public function calculateGSTOnCharges(EmiPlan $plan, $taxableCharges)
     {
         if (!$plan->gst_on_charges_enabled) {
             return 0.00;
         }
         $percent = (float)($plan->gst_on_charges_percent ?? 18.00);
-        return round((float)$totalCharges * ($percent / 100), 2);
+        return round((float)$taxableCharges * ($percent / 100), 2);
     }
 
     public function calculateGrandTotal(EmiPlan $plan, $goldValue, $gstOnGold, $totalCharges, $gstOnCharges)
@@ -172,7 +172,7 @@ class EmiCalculationService
 
         // Sum them up
         $totalCharges = $this->calculateTotalCharges($plan, $financeCharge, $storageCharge);
-        $gstOnCharges = $this->calculateGSTOnCharges($plan, $totalCharges);
+        $gstOnCharges = $this->calculateGSTOnCharges($plan, $storageCharge);
         $grandTotal = $this->calculateGrandTotal($plan, $goldValue, $gstOnGold, $totalCharges, $gstOnCharges);
         $monthlyEMI = $this->calculateMonthlyEMI($plan, $grandTotal);
 
@@ -298,7 +298,7 @@ class EmiCalculationService
             $financeCharge = $this->calculateFinanceCharge($plan, $goldValue);
             $storageCharge = $this->calculateStorageCharge($plan, $goldValue);
             $totalCharges = $this->calculateTotalCharges($plan, $financeCharge, $storageCharge);
-            $gstOnCharges = $this->calculateGSTOnCharges($plan, $totalCharges);
+            $gstOnCharges = $this->calculateGSTOnCharges($plan, $storageCharge);
             $grandTotal = $this->calculateGrandTotal($plan, $goldValue, $gstOnGold, $totalCharges, $gstOnCharges);
             $monthlyEMI = $this->calculateMonthlyEMI($plan, $grandTotal);
 

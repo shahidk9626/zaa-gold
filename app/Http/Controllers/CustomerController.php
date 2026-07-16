@@ -135,6 +135,18 @@ class CustomerController extends Controller
             }
 
             DB::commit();
+
+            // Send Welcome Email (Post-Commit to ensure data integrity)
+            if ($user->email) {
+                try {
+                    $user->load('customerDetail');
+                    \Illuminate\Support\Facades\Mail::to($user->email)
+                        ->send(new \App\Mail\WelcomeCustomerMail($user));
+                } catch (\Exception $mailEx) {
+                    \Illuminate\Support\Facades\Log::error("Customer Welcome Email Failed: " . $mailEx->getMessage());
+                }
+            }
+
             return response()->json(['success' => 'Customer created successfully', 'user' => $user]);
         } catch (\Exception $e) {
             DB::rollBack();

@@ -19,6 +19,7 @@ class CustomerDetail extends Model
         'gender',
         'marital_status',
         'alternate_number',
+        'emergency_contact',
         'address',
         'city',
         'state',

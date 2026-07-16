@@ -42,7 +42,7 @@
                                 <th>Product Name</th>
                                 <th>SKU</th>
                                 <th>Weight</th>
-                                <th>Live Price</th>
+                                <th>Currents Price</th>
                                 <th>Purity</th>
                                 <th>Category</th>
                                 <th class="text-center">Status</th>

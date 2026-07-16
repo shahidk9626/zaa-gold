@@ -4,8 +4,12 @@
         <span>Dashboard</span>
     </a>
     <a href="{{ route('customer.plans.index') }}" class="{{ request()->routeIs('customer.plans.*') ? 'active' : '' }}">
+        <i class="mdi mdi-cart-plus"></i>
+        <span>Buy Plans</span>
+    </a>
+    <a href="{{ route('customer.my-plans.index') }}" class="{{ request()->routeIs('customer.my-plans.*') ? 'active' : '' }}">
         <i class="mdi mdi-gold"></i>
-        <span>Plans</span>
+        <span>My Plans</span>
     </a>
     <a href="{{ route('customer.payments.index') }}" class="{{ request()->routeIs('customer.payments.*', 'customer.emi.*', 'customer.certificates.*') ? 'active' : '' }}">
         <i class="mdi mdi-cash-multiple"></i>

@@ -116,7 +116,7 @@ class EmiPlanController extends Controller
         $financeCharge = $this->calculationService->calculateFinanceCharge($plan, $goldValue);
         $storageCharge = $this->calculationService->calculateStorageCharge($plan, $goldValue);
         $totalCharges = $this->calculationService->calculateTotalCharges($plan, $financeCharge, $storageCharge);
-        $gstOnCharges = $this->calculationService->calculateGSTOnCharges($plan, $totalCharges);
+        $gstOnCharges = $this->calculationService->calculateGSTOnCharges($plan, $storageCharge);
         $grandTotal = $this->calculationService->calculateGrandTotal($plan, $goldValue, $gstOnGold, $totalCharges, $gstOnCharges);
         $monthlyEMI = $this->calculationService->calculateMonthlyEMI($plan, $grandTotal);
 

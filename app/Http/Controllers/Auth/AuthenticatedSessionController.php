@@ -26,9 +26,20 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
-        $request->session()->regenerate();
-
         $user = $request->user();
+
+        if ($user && $user->isCustomer() && !$user->email_verified_at) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            session(['verify_email' => $user->email]);
+
+            return redirect()->route('customer.verify-email-view')
+                ->with('error', 'Please verify your email before logging in.');
+        }
+
+        $request->session()->regenerate();
 
         if ($user && $user->isCustomer()) {
             return redirect()->intended(route('customer.dashboard', absolute: false));

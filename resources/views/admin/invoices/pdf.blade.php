@@ -242,8 +242,12 @@
                 <td class="summary-value">₹{{ number_format($invoice->gold_value, 2) }}</td>
             </tr>
             <tr>
-                <td class="summary-label">Finance & Storage Charges:</td>
-                <td class="summary-value">₹{{ number_format($invoice->finance_charge + $invoice->storage_charge, 2) }}</td>
+                <td class="summary-label">Finance Charge (Non-Taxable):</td>
+                <td class="summary-value">₹{{ number_format($invoice->finance_charge, 2) }}</td>
+            </tr>
+            <tr>
+                <td class="summary-label">Storage Charge (Taxable):</td>
+                <td class="summary-value">₹{{ number_format($invoice->storage_charge, 2) }}</td>
             </tr>
             <tr>
                 <td class="summary-label">Taxable Subtotal (Before GST):</td>

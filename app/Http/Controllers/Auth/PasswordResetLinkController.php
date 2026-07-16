@@ -30,6 +30,23 @@ class PasswordResetLinkController extends Controller
             'email' => ['required', 'email'],
         ]);
 
+        $user = \App\Models\User::where('email', $request->email)->first();
+        if ($user && $user->isCustomer()) {
+            $otpService = app(\App\Services\OtpService::class);
+            $otpService->logOtpActivity('password_reset_request', $user, "Customer password reset requested");
+            $result = $otpService->generateAndSendOtp($user, 'forgot_password');
+
+            session(['reset_password_email' => $user->email]);
+
+            if (!$result['mail_sent']) {
+                return redirect()->route('customer.verify-forgot-password-view')
+                    ->with('warning', 'We generated a password reset OTP, but could not send the email due to a mail server issue. Please request a resend.');
+            }
+
+            return redirect()->route('customer.verify-forgot-password-view')
+                ->with('status', 'A password reset OTP has been sent to your email.');
+        }
+
         // We will send the password reset link to this user. Once we have attempted
         // to send the link, we will examine the response then see the message we
         // need to show to the user. Finally, we'll send out a proper response.

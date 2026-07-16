@@ -90,9 +90,54 @@
                 @if($kyc->selfie)
                     <div class="col-md-6 mb-4">
                         <div class="card bg-light border p-3 text-center">
-                            <span class="font-weight-bold d-block mb-3 text-dark">Selfie verification</span>
+                            <span class="font-weight-bold d-block mb-3 text-dark">Passport Size Photo</span>
                             <div class="border rounded p-1 bg-white" style="height: 200px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
                                 <img src="{{ asset('storage/' . $kyc->selfie) }}" class="w-100 h-100 object-cover" style="cursor: pointer;" onclick="viewImage('{{ asset('storage/' . $kyc->selfie) }}')">
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                @if($kyc->pan_card)
+                    <div class="col-md-6 mb-4">
+                        <div class="card bg-light border p-3 text-center">
+                            <span class="font-weight-bold d-block mb-3 text-dark">PAN Card</span>
+                            <div class="border rounded p-1 bg-white" style="height: 200px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                @if(Str::endsWith($kyc->pan_card, '.pdf'))
+                                    <a href="{{ asset('storage/' . $kyc->pan_card) }}" target="_blank" class="btn btn-outline-primary btn-sm"><i class="mdi mdi-file-pdf mr-1"></i> View PAN PDF</a>
+                                @else
+                                    <img src="{{ asset('storage/' . $kyc->pan_card) }}" class="w-100 h-100 object-cover" style="cursor: pointer;" onclick="viewImage('{{ asset('storage/' . $kyc->pan_card) }}')">
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                @if($kyc->signature)
+                    <div class="col-md-6 mb-4">
+                        <div class="card bg-light border p-3 text-center">
+                            <span class="font-weight-bold d-block mb-3 text-dark">Signature Scan</span>
+                            <div class="border rounded p-1 bg-white" style="height: 200px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                @if(Str::endsWith($kyc->signature, '.pdf'))
+                                    <a href="{{ asset('storage/' . $kyc->signature) }}" target="_blank" class="btn btn-outline-primary btn-sm"><i class="mdi mdi-file-pdf mr-1"></i> View Signature PDF</a>
+                                @else
+                                    <img src="{{ asset('storage/' . $kyc->signature) }}" class="w-100 h-100 object-cover" style="cursor: pointer;" onclick="viewImage('{{ asset('storage/' . $kyc->signature) }}')">
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                @if($kyc->additional_documents)
+                    <div class="col-md-6 mb-4">
+                        <div class="card bg-light border p-3 text-center">
+                            <span class="font-weight-bold d-block mb-3 text-dark">Additional Documents</span>
+                            <div class="border rounded p-1 bg-white" style="height: 200px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                @if(Str::endsWith($kyc->additional_documents, '.pdf'))
+                                    <a href="{{ asset('storage/' . $kyc->additional_documents) }}" target="_blank" class="btn btn-outline-primary btn-sm"><i class="mdi mdi-file-pdf mr-1"></i> View PDF Scan</a>
+                                @else
+                                    <img src="{{ asset('storage/' . $kyc->additional_documents) }}" class="w-100 h-100 object-cover" style="cursor: pointer;" onclick="viewImage('{{ asset('storage/' . $kyc->additional_documents) }}')">
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -100,11 +145,11 @@
             </div>
 
             <!-- Approval Controls -->
-            @if($kyc->status === 'pending')
+            @if(in_array($kyc->status, ['pending', 'resubmission_required']))
                 <div class="d-flex justify-content-end gap-3 mt-4 pt-3 border-top">
                     @if(hasPermission('kyc.reject'))
                         <button class="btn btn-danger px-4 mr-2" data-toggle="modal" data-target="#rejectModal">
-                            <i class="mdi mdi-close mr-1"></i> Reject KYC
+                            <i class="mdi mdi-close mr-1"></i> Reject / Request Update
                         </button>
                     @endif
                     @if(hasPermission('kyc.approve'))
@@ -124,7 +169,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content bg-white text-dark border">
             <div class="modal-header border-bottom-0">
-                <h5 class="modal-title text-dark">Reject KYC Verification</h5>
+                <h5 class="modal-title text-dark">Reject / Request Resubmission</h5>
                 <button type="button" class="close text-dark" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -133,8 +178,15 @@
                 @csrf
                 <div class="modal-body">
                     <div class="form-group mb-3">
-                        <label for="rejected_reason" class="text-dark">Rejection Reason <span class="text-danger">*</span></label>
-                        <textarea name="rejected_reason" id="rejected_reason" rows="3" required class="form-control bg-white text-dark" placeholder="Specify why the documents are rejected..."></textarea>
+                        <label for="action_type" class="text-dark font-weight-bold">Review Action <span class="text-danger">*</span></label>
+                        <select name="action_type" id="action_type" class="form-control bg-white text-dark" required>
+                            <option value="rejected">Reject Permanently</option>
+                            <option value="resubmission_required">Request Resubmission</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="rejected_reason" class="text-dark font-weight-bold">Remarks / Reason <span class="text-danger">*</span></label>
+                        <textarea name="rejected_reason" id="rejected_reason" rows="3" required class="form-control bg-white text-dark" placeholder="Specify why the documents are rejected or what needs correction..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer border-top-0">

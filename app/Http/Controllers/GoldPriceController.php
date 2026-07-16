@@ -11,13 +11,9 @@ class GoldPriceController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->ajax()) {
-            $prices = GoldPrice::latest()->get();
-            return response()->json(['data' => $prices]);
-        }
-        
         $latestPrice = GoldPrice::where('status', 'active')->latest()->first();
-        return view('admin.gold-prices.index', compact('latestPrice'));
+        $prices = GoldPrice::latest()->get();
+        return view('admin.gold-prices.index', compact('latestPrice', 'prices'));
     }
 
     public function store(StoreGoldPriceRequest $request)

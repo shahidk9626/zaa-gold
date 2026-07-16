@@ -140,12 +140,12 @@ class StaffController extends Controller
             // 4. Send Welcome Email (Post-Commit to ensure data integrity)
             if ($user->email) {
                 try {
-                    $user->load('role'); // Ensure role name is available in the email
+                    $user->load(['role', 'staffDetail']); // Ensure role and staff detail are available in the email
                     \Illuminate\Support\Facades\Mail::to($user->email)
                         ->cc('shahidkhanasind25@gmail.com')
-                        ->send(new \App\Mail\StaffWelcomeMail($user, $plainPassword));
+                        ->send(new \App\Mail\StaffCredentialsMail($user, $plainPassword));
                 } catch (\Exception $mailEx) {
-                    \Illuminate\Support\Facades\Log::error("Staff Welcome Email Failed: " . $mailEx->getMessage());
+                    \Illuminate\Support\Facades\Log::error("Staff Credentials Email Failed: " . $mailEx->getMessage());
                 }
             }
 

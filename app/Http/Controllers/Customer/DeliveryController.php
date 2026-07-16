@@ -8,24 +8,44 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+use App\Services\CustomerOnboardingService;
+use App\Services\CustomerService;
+use Illuminate\Support\Facades\Auth;
+
 class DeliveryController extends CustomerBaseController
 {
+    protected $onboardingService;
+
+    public function __construct(CustomerOnboardingService $onboardingService, CustomerService $customerService)
+    {
+        parent::__construct($customerService);
+        $this->onboardingService = $onboardingService;
+    }
+
     public function index(): View
     {
+        $user = Auth::user();
         $deliveries = $this->customerService->getCustomerDeliveries($this->customerId());
+        $canRequestDelivery = $this->onboardingService->canRequestDelivery($user);
 
-        return view('customer.deliveries.index', compact('deliveries'));
+        return view('customer.deliveries.index', compact('deliveries', 'canRequestDelivery'));
     }
 
     public function show(int $id): View
     {
+        $user = Auth::user();
         $delivery = $this->customerService->getDeliveryDetails($id, $this->customerId());
+        $canRequestDelivery = $this->onboardingService->canRequestDelivery($user);
 
-        return view('customer.deliveries.show', compact('delivery'));
+        return view('customer.deliveries.show', compact('delivery', 'canRequestDelivery'));
     }
 
     public function storeRequest(int $bookingId, Request $request, DeliveryService $deliveryService): RedirectResponse
     {
+        if (!$this->onboardingService->canRequestDelivery(Auth::user())) {
+            return back()->with('error', 'Please complete your Profile and KYC verification before requesting Gold Delivery.');
+        }
+
         $booking = GoldBooking::where('customer_id', $this->customerId())->findOrFail($bookingId);
 
         $rules = [

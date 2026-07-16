@@ -73,7 +73,7 @@ class InvoiceService
             $gstOnChargesPercent = (float)$booking->gst_on_charges_percent;
 
             $gstOnGoldAmount = round($goldValue * ($gstOnGoldPercent / 100), 2);
-            $gstOnChargesAmount = round(($financeCharge + $storageCharge) * ($gstOnChargesPercent / 100), 2);
+            $gstOnChargesAmount = round($storageCharge * ($gstOnChargesPercent / 100), 2);
 
             // Calculate subtotal (before tax) and grand total (with tax)
             $subtotal = $goldValue + $financeCharge + $storageCharge + (float)$payment->late_fee_paid;

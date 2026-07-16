@@ -4,8 +4,7 @@ namespace App\Http\Controllers\Customer;
 
 use App\Models\BookingPayment;
 use App\Http\Controllers\ReceiptController;
-use Illuminate\Http\RedirectResponse;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Illuminate\View\View;
 
 class PaymentController extends CustomerBaseController
@@ -17,7 +16,7 @@ class PaymentController extends CustomerBaseController
         return view('customer.payments.index', compact('payments'));
     }
 
-    public function downloadReceipt(int $id): BinaryFileResponse|RedirectResponse
+    public function downloadReceipt(int $id): Response
     {
         $payment = BookingPayment::where('customer_id', $this->customerId())
             ->where('status', 'Paid')

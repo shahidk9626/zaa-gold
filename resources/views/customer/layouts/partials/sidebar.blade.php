@@ -25,14 +25,21 @@
     </li>
 
     <li class="nav-item">
-      <a class="nav-link" data-toggle="collapse" href="#customer-plans-menu" aria-expanded="{{ request()->routeIs('customer.plans.*', 'customer.emi.*', 'customer.outstanding.*') ? 'true' : 'false' }}">
+      <a class="nav-link {{ request()->routeIs('customer.plans.*') ? 'active' : '' }}" href="{{ route('customer.plans.index') }}">
+        <i class="mdi mdi-cart-plus menu-icon"></i>
+        <span class="menu-title">Buy Gold Plans</span>
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="collapse" href="#customer-plans-menu" aria-expanded="{{ request()->routeIs('customer.my-plans.*', 'customer.emi.*', 'customer.outstanding.*') ? 'true' : 'false' }}">
         <i class="mdi mdi-gold menu-icon"></i>
         <span class="menu-title">My Plans</span>
         <i class="menu-arrow"></i>
       </a>
-      <div class="collapse {{ request()->routeIs('customer.plans.*', 'customer.emi.*', 'customer.outstanding.*') ? 'show' : '' }}" id="customer-plans-menu">
+      <div class="collapse {{ request()->routeIs('customer.my-plans.*', 'customer.emi.*', 'customer.outstanding.*') ? 'show' : '' }}" id="customer-plans-menu">
         <ul class="nav flex-column sub-menu">
-          <li class="nav-item"><a class="nav-link" href="{{ route('customer.plans.index') }}">All Plans</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ route('customer.my-plans.index') }}">All Plans</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ route('customer.emi.history') }}">EMI History</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ route('customer.emi.repay') }}">Repay EMI</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ route('customer.outstanding.index') }}">Outstanding</a></li>

@@ -118,7 +118,14 @@ class KycController extends Controller
         if ($user) {
             $user->verification_status = 'verified';
             $user->save();
+
+            // Log activity using CustomerOnboardingService
+            $onboardingService = app(\App\Services\CustomerOnboardingService::class);
+            $onboardingService->logOnboardingActivity($user, 'kyc_approved', 'KYC Approved.');
         }
+
+        // Trigger KycApprovedEvent
+        event(new \App\Events\KycApprovedEvent($kyc));
 
         return response()->json(['success' => 'KYC application has been approved successfully.']);
     }
@@ -127,10 +134,13 @@ class KycController extends Controller
     {
         $request->validate([
             'rejected_reason' => 'required|string|max:255',
+            'action_type' => 'nullable|string|in:rejected,resubmission_required',
         ]);
 
+        $actionType = $request->input('action_type', 'rejected');
+
         $kyc = Kyc::findOrFail($id);
-        $kyc->status = 'rejected';
+        $kyc->status = $actionType;
         $kyc->approved_by = auth()->id();
         $kyc->approved_at = now();
         $kyc->rejected_reason = $request->rejected_reason;
@@ -138,11 +148,24 @@ class KycController extends Controller
 
         $user = $kyc->user;
         if ($user) {
-            $user->verification_status = 'rejected';
+            $user->verification_status = $actionType;
             $user->save();
+
+            // Log activity using CustomerOnboardingService
+            $onboardingService = app(\App\Services\CustomerOnboardingService::class);
+            if ($actionType === 'resubmission_required') {
+                $onboardingService->logOnboardingActivity($user, 'resubmission_requested', 'Resubmission Requested. Reason: ' . $request->rejected_reason);
+                // Trigger event
+                event(new \App\Events\ResubmissionRequestedEvent($kyc));
+            } else {
+                $onboardingService->logOnboardingActivity($user, 'kyc_rejected', 'KYC Rejected. Reason: ' . $request->rejected_reason);
+                // Trigger event
+                event(new \App\Events\KycRejectedEvent($kyc));
+            }
         }
 
-        return response()->json(['success' => 'KYC application has been rejected successfully.']);
+        $msg = $actionType === 'resubmission_required' ? 'KYC resubmission requested successfully.' : 'KYC application has been rejected successfully.';
+        return response()->json(['success' => $msg]);
     }
 
     public function destroy($id)
@@ -171,6 +194,15 @@ class KycController extends Controller
         }
         if ($kyc->selfie) {
             $files['selfie_' . basename($kyc->selfie)] = storage_path('app/public/' . $kyc->selfie);
+        }
+        if ($kyc->pan_card) {
+            $files['pan_' . basename($kyc->pan_card)] = storage_path('app/public/' . $kyc->pan_card);
+        }
+        if ($kyc->signature) {
+            $files['signature_' . basename($kyc->signature)] = storage_path('app/public/' . $kyc->signature);
+        }
+        if ($kyc->additional_documents) {
+            $files['additional_' . basename($kyc->additional_documents)] = storage_path('app/public/' . $kyc->additional_documents);
         }
 
         if (class_exists(\ZipArchive::class) && count($files) > 0) {

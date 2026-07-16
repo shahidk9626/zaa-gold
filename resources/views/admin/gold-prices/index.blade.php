@@ -105,7 +105,23 @@
                                 <th class="text-center">Status</th>
                             </tr>
                         </thead>
-                        <tbody></tbody>
+                        <tbody>
+                            @foreach ($prices as $price)
+                                <tr>
+                                    <td class="align-middle font-weight-bold">
+                                        {{ $price->effective_date->format('Y-m-d H:i') }}
+                                    </td>
+                                    <td class="align-middle">₹{{ number_format($price->price_24k, 2) }}</td>
+                                    <td class="align-middle">₹{{ number_format($price->price_22k, 2) }}</td>
+                                    <td class="align-middle">₹{{ number_format($price->price_bullion, 2) }}</td>
+                                    <td class="text-center align-middle">
+                                        <span class="badge {{ $price->status === 'active' ? 'badge-success' : 'badge-secondary' }}">
+                                            {{ $price->status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -115,42 +131,8 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 <script>
-    let table;
     $(document).ready(function () {
-        table = $('#priceTable').DataTable({
-            ajax: {
-                url: "{{ route('gold-prices.index') }}",
-                type: 'GET'
-            },
-            columns: [
-                {
-                    data: 'effective_date',
-                    className: 'align-middle font-weight-bold',
-                    render: function (data) {
-                        return moment(data).format('YYYY-MM-DD HH:mm');
-                    }
-                },
-                { data: 'price_24k', className: 'align-middle', render: $.fn.dataTable.render.number(',', '.', 2, '₹') },
-                { data: 'price_22k', className: 'align-middle', render: $.fn.dataTable.render.number(',', '.', 2, '₹') },
-                { data: 'price_bullion', className: 'align-middle', render: $.fn.dataTable.render.number(',', '.', 2, '₹') },
-                {
-                    data: 'status',
-                    className: 'text-center align-middle',
-                    render: function (data) {
-                        let badgeClass = data === 'active' ? 'badge-success' : 'badge-secondary';
-                        return `<span class="badge ${badgeClass}">${data}</span>`;
-                    }
-                }
-            ],
-            "paging": true,
-            "searching": false,
-            "ordering": true,
-            "info": true,
-            "responsive": true
-        });
-
         $('#priceForm').on('submit', function (e) {
             e.preventDefault();
             let submitBtn = $('#submitBtn');
@@ -183,15 +165,4 @@
         });
     });
 </script>
-
-<style>
-    .dataTables_wrapper .dataTables_length,
-    .dataTables_wrapper .dataTables_info,
-    .dataTables_wrapper .dataTables_paginate {
-        color: #212529 !important;
-        font-size: 0.875rem;
-        margin-top: 1rem;
-        margin-bottom: 1rem;
-    }
-</style>
 @endpush

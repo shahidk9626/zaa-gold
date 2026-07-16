@@ -36,16 +36,41 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        $customerRole = \App\Models\Role::where('slug', 'customer')->first();
+        $customerRoleId = $customerRole ? $customerRole->id : null;
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role_id' => $customerRoleId,
+            'status' => 'inactive',
+            'profile_completed' => 0,
         ]);
+
+        if ($customerRoleId) {
+            $slug = \Illuminate\Support\Str::slug($user->name . '-' . \Illuminate\Support\Str::random(5));
+            \App\Models\CustomerDetail::create([
+                'user_id' => $user->id,
+                'slug' => $slug,
+            ]);
+        }
 
         event(new Registered($user));
 
-        Auth::login($user);
+        // Generate and send OTP via OtpService
+        $otpService = app(\App\Services\OtpService::class);
+        $otpService->logOtpActivity('register', $user, "Customer registered: {$user->name}");
+        $result = $otpService->generateAndSendOtp($user, 'registration');
 
-        return redirect(route('dashboard', absolute: false));
+        session(['verify_email' => $user->email]);
+
+        if (!$result['mail_sent']) {
+            return redirect()->route('customer.verify-email-view')
+                ->with('warning', 'Your account was created, but we could not send the verification email due to a mail server issue. Please request a resend.');
+        }
+
+        return redirect()->route('customer.verify-email-view')
+            ->with('status', 'A verification OTP has been sent to your email.');
     }
 }

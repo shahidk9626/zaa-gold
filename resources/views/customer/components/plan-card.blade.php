@@ -44,7 +44,7 @@
             <div class="progress-bar bg-success" style="width: {{ $plan['progress'] }}%"></div>
         </div>
 
-        <a href="{{ route('customer.plans.show', $booking->id) }}" class="btn btn-sm btn-primary btn-block {{ $compact ? 'btn-mobile-lg' : '' }}">
+        <a href="{{ route('customer.my-plans.show', $booking->id) }}" class="btn btn-sm btn-primary btn-block {{ $compact ? 'btn-mobile-lg' : '' }}">
             View Details
         </a>
     </div>
