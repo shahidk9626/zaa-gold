@@ -13,6 +13,16 @@
         <h5 class="font-weight-bold mt-2">{{ $product->name }}</h5>
     </div>
 
+    @if(session('purchase_limit_error'))
+        <div class="alert alert-danger border-0 p-4 mb-4" role="alert" style="border-radius: 12px; background-color: #fee2e2; border-left: 5px solid #ef4444 !important; color: #7f1d1d;">
+            <h5 class="alert-heading font-weight-bold mb-2"><i class="mdi mdi-alert-circle mr-1"></i> Purchase Limit Exceeded</h5>
+            <p class="mb-2">You have already purchased <strong>{{ number_format(session('purchase_limit_error.purchased'), 2) }} grams</strong> during the current financial year.</p>
+            <p class="mb-3">Maximum allowed purchase is <strong>{{ number_format(session('purchase_limit_error.limit'), 2) }} grams</strong>.</p>
+            <hr class="my-2" style="border-color: rgba(239, 68, 68, 0.2);">
+            <p class="mb-0 small font-weight-medium">Please contact customer support for further assistance.</p>
+        </div>
+    @endif
+
     @if(empty($eligiblePlans))
         <div class="alert alert-warning">
             <h5>No Eligible EMI Plans</h5>

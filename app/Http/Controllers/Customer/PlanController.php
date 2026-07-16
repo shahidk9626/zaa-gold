@@ -122,7 +122,14 @@ class PlanController extends CustomerBaseController
             });
         }
 
-        return view('customer.plans.index', compact('products', 'goldPrice'));
+        $customerId = $this->customerId();
+        $purchaseLimit = [
+            'limit' => \App\Models\SystemSetting::get('customer_max_purchase_grams', 100.00),
+            'purchased' => $this->bookingService->getPurchasedWeightForFinancialYear($customerId),
+            'remaining' => $this->bookingService->getRemainingPurchaseLimit($customerId),
+        ];
+
+        return view('customer.plans.index', compact('products', 'goldPrice', 'purchaseLimit'));
     }
 
     /**
@@ -233,9 +240,34 @@ class PlanController extends CustomerBaseController
             'terms' => 'accepted'
         ]);
 
+        $customerId = $this->customerId();
+        $product = Product::findOrFail($request->product_id);
+        $weight = (float)$product->weight_in_grams;
+
+        if (!$this->bookingService->canPurchaseGold($customerId, $weight)) {
+            $purchased = $this->bookingService->getPurchasedWeightForFinancialYear($customerId);
+            $limit = \App\Models\SystemSetting::get('customer_max_purchase_grams', 100.00);
+
+            // Log: Purchase Blocked Due To Limit
+            \App\Models\ActivityLog::create([
+                'module_name' => 'gold_booking',
+                'record_id' => $customerId,
+                'action_type' => 'purchase_blocked_limit',
+                'description' => "Purchase blocked for customer #{$customerId}. Attempted weight: {$weight}g. Already purchased: {$purchased}g. Limit: {$limit}g.",
+                'created_by_id' => $customerId,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->header('User-Agent'),
+            ]);
+
+            return back()->with('purchase_limit_error', [
+                'purchased' => $purchased,
+                'limit' => $limit,
+            ])->withInput();
+        }
+
         try {
             $booking = $this->bookingService->createBooking(
-                $this->customerId(),
+                $customerId,
                 $request->product_id,
                 $request->emi_plan_id,
                 $request->remarks

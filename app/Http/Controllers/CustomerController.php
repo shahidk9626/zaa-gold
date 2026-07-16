@@ -61,11 +61,25 @@ class CustomerController extends Controller
             ->where('role_id', $customerRoleId)
             ->findOrFail($id);
 
+        // Calculate purchase limit stats
+        $bookingService = app(\App\Services\BookingService::class);
+        $limit = (float) \App\Models\SystemSetting::get('customer_max_purchase_grams', 100.00);
+        $purchased = $bookingService->getPurchasedWeightForFinancialYear($customer->id);
+        $remaining = $bookingService->getRemainingPurchaseLimit($customer->id);
+        $percentage = $limit > 0 ? ($purchased / $limit) * 100 : 0;
+
+        $purchaseLimit = [
+            'limit' => $limit,
+            'purchased' => $purchased,
+            'remaining' => $remaining,
+            'percentage' => $percentage,
+        ];
+
         // Next/Previous Navigation
         $prev = User::where('role_id', $customerRoleId)->where('id', '<', $id)->orderBy('id', 'desc')->first();
         $next = User::where('role_id', $customerRoleId)->where('id', '>', $id)->orderBy('id', 'asc')->first();
 
-        return view('admin.customers.show', compact('customer', 'prev', 'next'));
+        return view('admin.customers.show', compact('customer', 'prev', 'next', 'purchaseLimit'));
     }
 
     /**

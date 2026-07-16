@@ -60,11 +60,25 @@
                         @endif
                     </div>
                 </div>
-                <div class="col">
+                <div class="col-md-5">
                     <h4 class="mb-1 text-dark font-weight-bold">{{ $customer->name }}</h4>
                     <p class="mb-0 text-muted">
                         Role: <strong>Customer</strong> | Referred By: <strong>{{ $customer->referredBy ? ($customer->referredBy->name . ' (' . ($customer->referredBy->staffDetail->emp_code ?? 'N/A') . ')') : 'None' }}</strong>
                     </p>
+                </div>
+                <div class="col-md-4 border-left pl-md-4 mt-3 mt-md-0">
+                    <h6 class="font-weight-bold text-dark mb-2"><i class="mdi mdi-scale-balance text-warning mr-1"></i> FY Gold Purchase Limit</h6>
+                    <div class="d-flex justify-content-between mb-1 small">
+                        <span class="text-muted">Purchased:</span>
+                        <span class="font-weight-bold text-dark">{{ number_format($purchaseLimit['purchased'], 2) }} / {{ number_format($purchaseLimit['limit'], 2) }} g</span>
+                    </div>
+                    <div class="progress mb-2" style="height: 6px; border-radius: 3px;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ min(100, $purchaseLimit['percentage']) }}%;" aria-valuenow="{{ $purchaseLimit['percentage'] }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div class="d-flex justify-content-between small">
+                        <span class="text-muted">Remaining Limit:</span>
+                        <span class="font-weight-bold text-success">{{ number_format($purchaseLimit['remaining'], 2) }} g ({{ number_format($purchaseLimit['percentage'], 1) }}%)</span>
+                    </div>
                 </div>
                 <div class="col-md-auto text-right mt-3 mt-md-0">
                     <div class="btn-group" role="group">

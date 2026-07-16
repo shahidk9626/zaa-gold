@@ -195,7 +195,8 @@
                             'outstanding' => 'Outstanding Report',
                             'referral' => 'Referral Report',
                             'sell_old_gold' => 'Sell Old Gold Report',
-                            'franchise' => 'Franchise Report'
+                            'franchise' => 'Franchise Report',
+                            'purchase_limit' => 'Purchase Limit Report'
                         ] as $key => $label)
                             <a href="{{ route('reports.dashboard', ['report' => $key]) }}" class="nav-link text-dark font-weight-bold mb-1 {{ $reportType === $key ? 'active bg-primary text-white' : '' }}">
                                 <i class="mdi mdi-file-document-outline mr-2"></i> {{ $label }}
@@ -225,7 +226,7 @@
                             </div>
 
                             <!-- Customer Filter (if applicable) -->
-                            @if(in_array($reportType, ['booking', 'payment', 'delivery', 'emi', 'outstanding', 'referral']))
+                            @if(in_array($reportType, ['booking', 'payment', 'delivery', 'emi', 'outstanding', 'referral', 'purchase_limit']))
                             <div class="col-md-4 form-group mb-2">
                                 <label class="text-dark font-weight-bold">Customer</label>
                                 <select name="customer_id" class="form-control bg-white text-dark">
@@ -276,8 +277,23 @@
                             </div>
                             @endif
 
+                            <!-- Financial Year Filter (if applicable) -->
+                            @if($reportType === 'purchase_limit')
+                            <div class="col-md-4 form-group mb-2">
+                                <label class="text-dark font-weight-bold">Financial Year</label>
+                                <select name="financial_year" class="form-control bg-white text-dark">
+                                    @php
+                                        $currentYear = (int) date('Y');
+                                    @endphp
+                                    @for($y = $currentYear; $y >= 2024; $y--)
+                                        <option value="{{ $y }}" {{ request('financial_year', $currentYear) == $y ? 'selected' : '' }}>{{ $y }} - {{ $y + 1 }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                            @endif
+
                             <!-- Status Filter -->
-                            @if($reportType !== 'customer' && $reportType !== 'outstanding')
+                            @if($reportType !== 'customer' && $reportType !== 'outstanding' && $reportType !== 'purchase_limit')
                             <div class="col-md-4 form-group mb-2">
                                 <label class="text-dark font-weight-bold">Status</label>
                                 <select name="status" class="form-control bg-white text-dark">
@@ -620,6 +636,46 @@
                                     </tr>
                                     @empty
                                     <tr><td colspan="6" class="text-center text-muted">No records found.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+
+                            @elseif($reportType === 'purchase_limit')
+                            <table class="table table-bordered table-striped text-dark">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Customer Name</th>
+                                        <th>Allowed Limit</th>
+                                        <th>Purchased Weight</th>
+                                        <th>Remaining Limit</th>
+                                        <th>Exceeded Limit?</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $maxLimit = (float) \App\Models\SystemSetting::get('customer_max_purchase_grams', 100.00);
+                                    @endphp
+                                    @forelse($reportData as $row)
+                                    @php
+                                        $purchased = (float) $row->purchased_weight;
+                                        $remaining = max(0, $maxLimit - $purchased);
+                                        $exceeded = $purchased > $maxLimit;
+                                    @endphp
+                                    <tr>
+                                        <td class="font-weight-bold">{{ $row->name }}</td>
+                                        <td>{{ number_format($maxLimit, 2) }} g</td>
+                                        <td class="text-info">{{ number_format($purchased, 2) }} g</td>
+                                        <td class="text-success">{{ number_format($remaining, 2) }} g</td>
+                                        <td>
+                                            @if($exceeded)
+                                                <span class="badge badge-danger font-weight-bold">Yes ({{ number_format($purchased - $maxLimit, 2) }}g)</span>
+                                            @else
+                                                <span class="badge badge-success font-weight-bold">No</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr><td colspan="5" class="text-center text-muted">No records found.</td></tr>
                                     @endforelse
                                 </tbody>
                             </table>

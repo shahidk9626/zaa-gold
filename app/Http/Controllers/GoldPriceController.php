@@ -13,7 +13,51 @@ class GoldPriceController extends Controller
     {
         $latestPrice = GoldPrice::where('status', 'active')->latest()->first();
         $prices = GoldPrice::latest()->get();
-        return view('admin.gold-prices.index', compact('latestPrice', 'prices'));
+        
+        $settings = [
+            'customer_max_purchase_grams' => \App\Models\SystemSetting::get('customer_max_purchase_grams', 100.00),
+        ];
+
+        return view('admin.gold-prices.index', compact('latestPrice', 'prices', 'settings'));
+    }
+
+    public function updateSettings(Request $request)
+    {
+        $settings = $request->input('settings', []);
+        
+        foreach ($settings as $key => $value) {
+            $oldSetting = \App\Models\SystemSetting::where('key', $key)->first();
+            $oldValue = $oldSetting ? $oldSetting->value : null;
+            
+            \App\Models\SystemSetting::updateOrCreate(
+                ['key' => $key],
+                ['value' => $value]
+            );
+
+            if ($key === 'customer_max_purchase_grams' && $oldValue != $value) {
+                \App\Models\ActivityLog::create([
+                    'module_name' => 'system_settings',
+                    'record_id' => 0,
+                    'action_type' => 'purchase_limit_changed',
+                    'description' => "Purchase limit changed from {$oldValue}g to {$value}g.",
+                    'created_by_id' => auth()->id() ?? 1,
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->header('User-Agent'),
+                ]);
+            }
+        }
+
+        \App\Models\ActivityLog::create([
+            'module_name' => 'system_settings',
+            'record_id' => 0,
+            'action_type' => 'business_configuration_updated',
+            'description' => 'Business configurations updated successfully.',
+            'created_by_id' => auth()->id() ?? 1,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->header('User-Agent'),
+        ]);
+
+        return response()->json(['success' => 'Configurations updated successfully.']);
     }
 
     public function store(StoreGoldPriceRequest $request)

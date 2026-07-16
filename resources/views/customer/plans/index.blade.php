@@ -75,6 +75,34 @@
         </div>
     </div>
 
+    {{-- Annual Purchase Limit Information Card --}}
+    <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 12px; color: #fff;">
+        <div class="card-body p-4">
+            <div class="row align-items-center">
+                <div class="col-md-7 mb-3 mb-md-0">
+                    <h5 class="font-weight-bold mb-1 text-warning"><i class="mdi mdi-scale-balance mr-1"></i> Annual Purchase Limit</h5>
+                    <p class="mb-0 small text-white-50">Your gold purchases are monitored per financial year in compliance with regulatory transaction limits.</p>
+                </div>
+                <div class="col-md-5">
+                    <div class="row text-center">
+                        <div class="col-4 border-right border-secondary">
+                            <span class="text-white-50 small d-block uppercase font-weight-bold" style="font-size: 0.65rem;">Limit</span>
+                            <span class="h5 font-weight-bold mb-0 text-white">{{ number_format($purchaseLimit['limit'], 2) }} <span class="small">gm</span></span>
+                        </div>
+                        <div class="col-4 border-right border-secondary">
+                            <span class="text-white-50 small d-block uppercase font-weight-bold" style="font-size: 0.65rem;">Purchased</span>
+                            <span class="h5 font-weight-bold mb-0 text-info">{{ number_format($purchaseLimit['purchased'], 2) }} <span class="small">gm</span></span>
+                        </div>
+                        <div class="col-4">
+                            <span class="text-white-50 small d-block uppercase font-weight-bold" style="font-size: 0.65rem;">Remaining</span>
+                            <span class="h5 font-weight-bold mb-0 text-success">{{ number_format($purchaseLimit['remaining'], 2) }} <span class="small">gm</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Filter Section --}}
     <div class="card mb-4 shadow-sm border-0" style="border-radius: 12px;">
         <div class="card-body p-3 p-md-4">

@@ -11,6 +11,13 @@ class StoreGoldPriceRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'price_bullion' => $this->price_bullion ?? $this->price_24k ?? 0.00,
+        ]);
+    }
+
     public function rules(): array
     {
         return [

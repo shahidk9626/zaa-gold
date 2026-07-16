@@ -282,6 +282,28 @@ class ReportController extends Controller
                 };
                 break;
 
+            case 'purchase_limit':
+                $columns = ['Customer Name', 'Allowed Limit (g)', 'Purchased (g)', 'Remaining (g)', 'Exceeded'];
+                $callback = function() use($data, $columns) {
+                    $file = fopen('php://output', 'w');
+                    fputcsv($file, $columns);
+                    $maxLimit = (float) \App\Models\SystemSetting::get('customer_max_purchase_grams', 100.00);
+                    foreach ($data as $row) {
+                        $purchased = (float) $row->purchased_weight;
+                        $remaining = max(0.00, $maxLimit - $purchased);
+                        $exceeded = $purchased > $maxLimit ? 'Yes (' . ($purchased - $maxLimit) . 'g)' : 'No';
+                        fputcsv($file, [
+                            $row->name,
+                            $maxLimit,
+                            $purchased,
+                            $remaining,
+                            $exceeded
+                        ]);
+                    }
+                    fclose($file);
+                };
+                break;
+
             default:
                 return back()->with('error', 'Invalid report type for export.');
         }

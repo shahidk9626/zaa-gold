@@ -288,6 +288,33 @@ class ReportService
                 }
                 return $query;
 
+            case 'purchase_limit':
+                $customerRole = Role::where('slug', 'customer')->first();
+                $customerRoleId = $customerRole ? $customerRole->id : 0;
+                
+                $bookingService = app(\App\Services\BookingService::class);
+                $selectedYear = isset($filters['financial_year']) ? (int) $filters['financial_year'] : null;
+                $date = null;
+                if ($selectedYear) {
+                    $date = \Carbon\Carbon::create($selectedYear, 4, 1);
+                }
+                list($start, $end) = $bookingService->getFinancialYearDates($date);
+
+                $query = User::where('role_id', $customerRoleId)
+                    ->select('users.*')
+                    ->selectSub(function ($q) use ($start, $end) {
+                        $q->from('gold_bookings')
+                            ->whereColumn('gold_bookings.customer_id', 'users.id')
+                            ->whereIn('gold_bookings.status', ['Booked', 'Active', 'Completed'])
+                            ->whereBetween('gold_bookings.booking_date', [$start, $end])
+                            ->selectRaw('COALESCE(SUM(gold_bookings.gold_weight), 0)');
+                    }, 'purchased_weight');
+
+                if (!empty($filters['customer_id'])) {
+                    $query->where('users.id', $filters['customer_id']);
+                }
+                return $query;
+
             default:
                 throw new \Exception("Invalid report type");
         }

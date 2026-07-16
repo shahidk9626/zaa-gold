@@ -14,6 +14,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware('permission:gold-price.edit')->group(function () {
         Route::post('/admin/gold-prices/update/{id}', [GoldPriceController::class, 'update'])->name('gold-prices.update');
+        Route::post('/admin/settings/update', [GoldPriceController::class, 'updateSettings'])->name('settings.update');
     });
 
     Route::middleware('permission:gold-price.delete')->group(function () {

@@ -305,4 +305,59 @@ class BookingService
             'user_agent' => $userAgent,
         ]);
     }
+
+    /**
+     * Get start and end date of the financial year for a given date.
+     */
+    public function getFinancialYearDates(\DateTimeInterface $date = null): array
+    {
+        $carbonDate = $date ? \Carbon\Carbon::instance($date) : \Carbon\Carbon::now();
+        $year = $carbonDate->year;
+        
+        $startMonth = (int) \App\Models\SystemSetting::get('financial_year_start_month', 4);
+        $startDay = (int) \App\Models\SystemSetting::get('financial_year_start_day', 1);
+
+        if ($carbonDate->month < $startMonth || ($carbonDate->month == $startMonth && $carbonDate->day < $startDay)) {
+            $start = \Carbon\Carbon::create($year - 1, $startMonth, $startDay, 0, 0, 0);
+            $end = $start->copy()->addYear()->subSecond();
+        } else {
+            $start = \Carbon\Carbon::create($year, $startMonth, $startDay, 0, 0, 0);
+            $end = $start->copy()->addYear()->subSecond();
+        }
+
+        return [$start, $end];
+    }
+
+    /**
+     * Calculate the total purchased gold weight in grams for a customer in the current financial year.
+     */
+    public function getPurchasedWeightForFinancialYear(int $customerId, \DateTimeInterface $date = null): float
+    {
+        list($start, $end) = $this->getFinancialYearDates($date);
+
+        return (float) GoldBooking::where('customer_id', $customerId)
+            ->whereIn('status', ['Booked', 'Active', 'Completed'])
+            ->whereBetween('booking_date', [$start, $end])
+            ->sum('gold_weight');
+    }
+
+    /**
+     * Get the remaining gold purchase limit in grams for a customer in the current financial year.
+     */
+    public function getRemainingPurchaseLimit(int $customerId, \DateTimeInterface $date = null): float
+    {
+        $maxLimit = (float) \App\Models\SystemSetting::get('customer_max_purchase_grams', 100.00);
+        $purchased = $this->getPurchasedWeightForFinancialYear($customerId, $date);
+
+        return max(0.00, $maxLimit - $purchased);
+    }
+
+    /**
+     * Check if a customer can purchase the specified weight of gold in the current financial year.
+     */
+    public function canPurchaseGold(int $customerId, float $newPurchaseWeight, \DateTimeInterface $date = null): bool
+    {
+        $remaining = $this->getRemainingPurchaseLimit($customerId, $date);
+        return $newPurchaseWeight <= $remaining;
+    }
 }
