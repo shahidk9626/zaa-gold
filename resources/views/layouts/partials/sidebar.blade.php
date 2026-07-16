@@ -231,6 +231,22 @@
       </a>
     </li>
     @endif
+    @if(hasPermission('audit.view'))
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="collapse" href="#system-menu" aria-expanded="false" aria-controls="system-menu">
+        <i class="mdi mdi-shield-search menu-icon"></i>
+        <span class="menu-title">System</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="system-menu">
+        <ul class="nav flex-column sub-menu">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('audit-trail.index') }}">Audit Trail</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+    @endif
     <!-- <li class="nav-item">
       <a class="nav-link" data-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
         <i class="mdi mdi-crosshairs-gps menu-icon"></i>

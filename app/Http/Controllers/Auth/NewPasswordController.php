@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\AuditTrailService;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,10 @@ use Illuminate\View\View;
 
 class NewPasswordController extends Controller
 {
+    public function __construct(protected AuditTrailService $auditTrailService)
+    {
+    }
+
     /**
      * Display the password reset view.
      */
@@ -49,6 +54,18 @@ class NewPasswordController extends Controller
                 ])->save();
 
                 event(new PasswordReset($user));
+
+                $this->auditTrailService->captureEvent(
+                    'authentication',
+                    $user->id,
+                    'password_reset',
+                    null,
+                    ['email' => $user->email],
+                    'User password reset completed',
+                    $request,
+                    $user->id,
+                    'user'
+                );
             }
         );
 

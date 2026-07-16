@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Permission extends Model
 {
+    use \App\Traits\LogsActivity;
+
     protected $fillable = ['module_id', 'name', 'slug'];
 
     public function module()

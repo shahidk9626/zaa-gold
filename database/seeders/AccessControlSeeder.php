@@ -46,6 +46,7 @@ class AccessControlSeeder extends Seeder
             'Referral' => ['view', 'edit', 'export'],
             'Sell Old Gold' => ['view', 'edit', 'export'],
             'Franchise' => ['view', 'edit', 'export'],
+            'Audit' => ['view', 'export', 'details'],
         ];
 
         foreach ($modules as $moduleName => $actions) {
