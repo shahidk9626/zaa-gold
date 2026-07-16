@@ -13,7 +13,7 @@ class SellOldGoldService
     /**
      * Get paginated old gold enquiries with filters
      */
-    public function getFilteredEnquiries(array $filters, int $perPage = 10)
+    public function getFilteredEnquiries(array $filters, int $perPage = 20)
     {
         $query = SellOldGoldEnquiry::with(['assignedStaff'])->latest();
 

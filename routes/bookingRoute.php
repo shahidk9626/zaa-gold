@@ -12,6 +12,8 @@ Route::middleware(['auth'])->group(function () {
     // Create booking endpoint
     Route::middleware('permission:booking.create')->group(function () {
         Route::post('/admin/bookings/store', [GoldBookingController::class, 'store'])->name('bookings.store');
+        Route::get('/admin/booking-payments/{transaction}/checkout', [GoldBookingController::class, 'checkout'])->name('admin.booking-payments.checkout');
+        Route::get('/admin/booking-payments/{transaction}/callback', [GoldBookingController::class, 'callback'])->name('admin.booking-payments.callback');
     });
 
     // Booking details panel

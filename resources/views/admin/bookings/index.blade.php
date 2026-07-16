@@ -30,7 +30,7 @@
     <div class="col-12 mb-4">
         <div class="card bg-white border shadow-sm p-4">
             <h5 class="text-dark font-weight-bold mb-3 border-bottom pb-2">Filter Bookings</h5>
-            <form action="{{ route('bookings.index') }}" method="GET" class="row">
+            <form id="searchFilterForm" class="row">
                 <!-- Search Input -->
                 <div class="col-md-3 form-group">
                     <label class="text-dark font-weight-bold">Search Query</label>
@@ -84,7 +84,7 @@
     <div class="col-12">
         <div class="card bg-white border shadow-sm p-4">
             <div class="table-responsive">
-                <table class="table table-bordered table-striped text-dark">
+                <table id="bookingsTable" class="table table-bordered table-striped text-dark">
                     <thead class="bg-light text-dark">
                         <tr>
                             <th>Booking Number</th>
@@ -100,61 +100,127 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($bookings as $booking)
-                            <tr>
-                                <td class="font-weight-bold text-primary">{{ $booking->booking_number }}</td>
-                                <td>
-                                    <div class="font-weight-bold text-dark">{{ $booking->customer->name ?? 'N/A' }}</div>
-                                    <small class="text-muted">{{ $booking->customer->email ?? 'N/A' }}</small>
-                                </td>
-                                <td>
-                                    <div class="font-weight-bold text-dark">{{ $booking->product->name ?? 'N/A' }}</div>
-                                    <small class="badge badge-secondary">{{ $booking->product->gold_type ?? 'N/A' }}</small>
-                                </td>
-                                <td>{{ number_format($booking->gold_weight, 2) }}g</td>
-                                <td>₹{{ number_format($booking->locked_price_per_gram, 2) }}/g</td>
-                                <td class="font-weight-bold text-primary">₹{{ number_format($booking->monthly_emi, 2) }}</td>
-                                <td class="font-weight-bold text-success">₹{{ number_format($booking->grand_total, 2) }}</td>
-                                <td>{{ $booking->booking_date->format('d M Y') }}</td>
-                                <td>
-                                    @php
-                                        $badgeClass = 'badge-secondary';
-                                        switch($booking->status) {
-                                            case 'Draft': $badgeClass = 'badge-secondary'; break;
-                                            case 'Pending First EMI': $badgeClass = 'badge-warning'; break;
-                                            case 'Active': $badgeClass = 'badge-primary'; break;
-                                            case 'Completed': $badgeClass = 'badge-success'; break;
-                                            case 'Cancelled': $badgeClass = 'badge-danger'; break;
-                                            case 'Refund Initiated': $badgeClass = 'badge-info'; break;
-                                            case 'Refunded': $badgeClass = 'badge-dark'; break;
-                                        }
-                                    @endphp
-                                    <span class="badge {{ $badgeClass }} text-dark font-weight-bold px-3 py-2">{{ $booking->status }}</span>
-                                </td>
-                                <td>
-                                    @if(hasPermission('booking.view_details'))
-                                    <a href="{{ route('bookings.show', $booking->id) }}" class="btn btn-sm btn-info px-3">
-                                        <i class="mdi mdi-eye"></i> View Details
-                                    </a>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="10" class="text-center py-4 text-muted">
-                                    <i class="mdi mdi-alert mr-1"></i> No gold bookings found matching your search.
-                                </td>
-                            </tr>
-                        @endforelse
                     </tbody>
                 </table>
-            </div>
-
-            <!-- Pagination block -->
-            <div class="mt-4 d-flex justify-content-end">
-                {{ $bookings->links() }}
             </div>
         </div>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    let table;
+    $(document).ready(function () {
+        table = $('#bookingsTable').DataTable({
+            processing: true,
+            ajax: {
+                url: "{{ route('bookings.index') }}",
+                type: 'GET',
+                data: function (d) {
+                    d.search_query = $('input[name=search]').val();
+                    d.status = $('select[name=status]').val();
+                    d.product_id = $('select[name=product_id]').val();
+                    d.start_date = $('input[name=start_date]').val();
+                    d.end_date = $('input[name=end_date]').val();
+                }
+            },
+            columns: [
+                { data: 'booking_number', className: 'font-weight-bold text-primary align-middle' },
+                { 
+                    data: null, 
+                    className: 'align-middle',
+                    render: function (data) {
+                        return `<div class="font-weight-bold text-dark">${data.customer_name}</div>
+                                <small class="text-muted">${data.customer_email}</small>`;
+                    }
+                },
+                { 
+                    data: null, 
+                    className: 'align-middle',
+                    render: function (data) {
+                        return `<div class="font-weight-bold text-dark">${data.product_name}</div>
+                                <small class="badge badge-secondary">${data.product_gold_type}</small>`;
+                    }
+                },
+                { data: 'gold_weight', className: 'align-middle' },
+                { data: 'locked_price_per_gram', className: 'align-middle' },
+                { data: 'monthly_emi', className: 'font-weight-bold text-primary align-middle' },
+                { data: 'grand_total', className: 'font-weight-bold text-success align-middle' },
+                { data: 'booking_date', className: 'align-middle' },
+                { 
+                    data: 'status', 
+                    className: 'align-middle text-center',
+                    render: function (data) {
+                        let badgeStyle = 'background-color: #6c757d; color: #ffffff;';
+                        switch(data) {
+                            case 'Draft': badgeStyle = 'background-color: #6c757d; color: #ffffff;'; break;
+                            case 'Pending First EMI': badgeStyle = 'background-color: #ffc107; color: #000000;'; break;
+                            case 'Active': badgeStyle = 'background-color: #28a745; color: #ffffff;'; break;
+                            case 'Completed': badgeStyle = 'background-color: #28a745; color: #ffffff;'; break;
+                            case 'Cancelled': badgeStyle = 'background-color: #dc3545; color: #ffffff;'; break;
+                            case 'Refund Initiated': badgeStyle = 'background-color: #17a2b8; color: #ffffff;'; break;
+                            case 'Refunded': badgeStyle = 'background-color: #343a40; color: #ffffff;'; break;
+                        }
+                        return `<span class="badge font-weight-bold px-3 py-2" style="${badgeStyle}">${data}</span>`;
+                    }
+                },
+                {
+                    data: null,
+                    className: 'align-middle text-center',
+                    orderable: false,
+                    searchable: false,
+                    render: function (data) {
+                        return `
+                            @if(hasPermission('booking.view_details'))
+                            <a href="${data.view_url}" class="btn btn-sm btn-info px-3">
+                                <i class="mdi mdi-eye"></i> View Details
+                            </a>
+                            @endif
+                        `;
+                    }
+                }
+            ],
+            "paging": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "responsive": true,
+            "language": {
+                "search": "",
+                "searchPlaceholder": "Quick Search..."
+            }
+        });
+
+        $('#searchFilterForm').on('submit', function (e) {
+            e.preventDefault();
+            table.ajax.reload();
+        });
+    });
+</script>
+<style>
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+        color: #212529 !important;
+        font-size: 0.875rem;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1px solid #ced4da;
+        background-color: #ffffff;
+        color: #212529;
+        border-radius: 0.25rem;
+        padding: 0.375rem 0.75rem;
+        outline: none;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+        background: #3f50f6 !important;
+        color: white !important;
+        border: 1px solid #3f50f6 !important;
+    }
+</style>
+@endpush

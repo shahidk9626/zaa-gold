@@ -59,7 +59,7 @@ class PaymentController extends Controller
             $query->whereBetween('payment_date', [$request->start_date . ' 00:00:00', $request->end_date . ' 23:59:59']);
         }
 
-        $payments = $query->paginate(15)->withQueryString();
+        $payments = $query->paginate(20)->withQueryString();
 
         return view('admin.payments.index', compact('payments'));
     }

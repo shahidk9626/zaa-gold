@@ -68,6 +68,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\RedirectCustomersFromAdmin::class,
         ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'payment/cashfree/webhook',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

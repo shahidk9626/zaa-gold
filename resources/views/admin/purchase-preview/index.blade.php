@@ -148,19 +148,35 @@
             }
 
             Swal.fire({
-                title: 'Confirm Gold Booking',
-                text: "You are about to lock today's gold price and create your booking. After confirmation, the locked price cannot change even if market gold prices change.",
-                icon: 'question',
+                title: 'Select Payment Method',
+                text: "Select how the customer will pay the first installment / downpayment:",
+                input: 'select',
+                inputOptions: {
+                    'pay_now': 'Pay Now (Redirect to Secure Checkout)',
+                    'generate_link': 'Generate Payment Link (For Customer to Pay)'
+                },
+                inputPlaceholder: 'Select payment method',
                 showCancelButton: true,
                 confirmButtonColor: '#3f50f6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Confirm Booking',
-                cancelButtonText: 'Cancel'
+                confirmButtonText: 'Proceed',
+                cancelButtonText: 'Cancel',
+                inputValidator: (value) => {
+                    return new Promise((resolve) => {
+                        if (value) {
+                            resolve();
+                        } else {
+                            resolve('You must select a payment method');
+                        }
+                    });
+                }
             }).then((result) => {
                 if (result.isConfirmed) {
+                    const paymentMethod = result.value;
+
                     Swal.fire({
                         title: 'Processing Booking...',
-                        text: 'Creating booking record and generating price lock certificate.',
+                        text: 'Creating draft booking and initiating payment transaction.',
                         allowOutsideClick: false,
                         didOpen: () => {
                             Swal.showLoading();
@@ -175,25 +191,48 @@
                             customer_id: selectedCustomerId,
                             product_id: selectedProductId,
                             emi_plan_id: selectedEmiPlanId,
-                            remarks: 'Booking created via Admin purchase preview panel.'
+                            remarks: 'Booking created via Admin purchase preview panel.',
+                            payment_method: paymentMethod
                         },
                         success: function (response) {
                             Swal.close();
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Booking Confirmed!',
-                                text: response.message,
-                                confirmButtonColor: '#3f50f6'
-                            }).then(() => {
-                                window.location.href = response.redirect_url;
-                            });
+                            if (paymentMethod === 'pay_now') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Transaction Initialized',
+                                    text: 'Redirecting to secure Cashfree payment portal...',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    window.location.href = response.checkout_url;
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Payment Link Generated!',
+                                    html: `
+                                        <p class="text-muted text-left mb-2">Share this secure payment link with the customer:</p>
+                                        <div class="input-group mb-3">
+                                            <input type="text" id="sharePaymentLink" class="form-control text-dark font-weight-bold" value="${response.payment_url}" readonly>
+                                            <div class="input-group-append">
+                                                <button class="btn btn-primary" type="button" onclick="copyPaymentLinkToClipboard()">Copy Link</button>
+                                            </div>
+                                        </div>
+                                        <div id="copySuccessMsg" class="alert alert-success py-1 mb-0" style="display:none;">Copied to clipboard!</div>
+                                    `,
+                                    icon: 'success',
+                                    confirmButtonText: 'Go to Bookings',
+                                    confirmButtonColor: '#3f50f6'
+                                }).then(() => {
+                                    window.location.href = "{{ route('bookings.index') }}";
+                                });
+                            }
                         },
                         error: function (xhr) {
                             Swal.close();
                             Swal.fire({
                                 icon: 'error',
-                                title: 'Booking Failed',
-                                text: xhr.responseJSON.error || 'Failed to create booking transaction.',
+                                title: 'Operation Failed',
+                                text: xhr.responseJSON.error || 'Failed to process transaction.',
                                 confirmButtonColor: '#ff3ca6'
                             });
                         }
@@ -202,6 +241,15 @@
             });
         });
     });
+
+    function copyPaymentLinkToClipboard() {
+        var copyText = document.getElementById("sharePaymentLink");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(copyText.value).then(() => {
+            $('#copySuccessMsg').fadeIn().delay(2000).fadeOut();
+        });
+    }
 
     function loadProductAndPlans() {
         $.ajax({

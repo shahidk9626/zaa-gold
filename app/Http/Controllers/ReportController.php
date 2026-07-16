@@ -36,7 +36,7 @@ class ReportController extends Controller
         $bookings = GoldBooking::orderBy('booking_number')->get();
 
         $query = $this->reportService->getReportQuery($reportType, $request->all());
-        $reportData = $query->paginate(10)->withQueryString();
+        $reportData = $query->paginate(20)->withQueryString();
 
         return view('admin.reports.dashboard', compact(
             'stats',

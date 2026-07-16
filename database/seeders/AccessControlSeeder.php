@@ -39,7 +39,7 @@ class AccessControlSeeder extends Seeder
             'EMI Calculator' => ['view'],
             'Booking' => ['view', 'create', 'edit', 'delete', 'view_details', 'export', 'download_certificate', 'change_status'],
             'EMI Schedule' => ['view', 'export'],
-            'Payment' => ['view', 'collect', 'edit', 'delete', 'export'],
+            'Payment' => ['view', 'collect', 'edit', 'delete', 'export', 'dashboard', 'logs', 'links', 'failed', 'reconciliation', 'retry'],
             'Receipt' => ['view', 'download'],
             'Invoice' => ['view', 'generate', 'download', 'print', 'export', 'cancel'],
             'Delivery' => ['view', 'request', 'approve', 'dispatch', 'complete', 'cancel', 'download', 'export'],

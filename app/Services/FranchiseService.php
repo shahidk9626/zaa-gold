@@ -13,7 +13,7 @@ class FranchiseService
     /**
      * Get paginated franchise enquiries with filters
      */
-    public function getFilteredEnquiries(array $filters, int $perPage = 10)
+    public function getFilteredEnquiries(array $filters, int $perPage = 20)
     {
         $query = FranchiseEnquiry::with(['assignedStaff'])->latest();
 

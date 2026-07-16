@@ -122,4 +122,9 @@ class GoldBooking extends Model
     {
         return $this->hasOne(PriceLockCertificate::class, 'booking_id');
     }
+
+    public function paymentTransactions()
+    {
+        return $this->hasMany(PaymentTransaction::class, 'booking_id');
+    }
 }

@@ -51,4 +51,9 @@ class BookingEmiSchedule extends Model
     {
         return $this->belongsTo(BookingPayment::class, 'payment_id');
     }
+
+    public function paymentTransactions()
+    {
+        return $this->hasMany(PaymentTransaction::class, 'emi_schedule_id');
+    }
 }

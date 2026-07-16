@@ -26,19 +26,25 @@
       <li class="nav-item nav-profile dropdown border-0">
         <a class="nav-link dropdown-toggle" id="profileDropdown" href="#" data-toggle="dropdown">
           <img class="nav-profile-img mr-2" alt="" src="{{ asset('assets/images/faces/face1.jpg') }}" />
-          <span class="profile-name">{{ Auth::user()->name }}</span>
+          <span class="profile-name">{{ Auth::check() ? Auth::user()->name : 'Guest' }}</span>
         </a>
         <div class="dropdown-menu navbar-dropdown w-100" aria-labelledby="profileDropdown">
-          <a class="dropdown-item" href="{{ route('customer.profile.index') }}">
-            <i class="mdi mdi-account mr-2 text-primary"></i> My Profile
-          </a>
-          <a class="dropdown-item" href="{{ route('customer.notifications.index') }}">
-            <i class="mdi mdi-bell mr-2 text-warning"></i> Notifications
-          </a>
-          <form id="logout-form-header" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
-          <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();">
-            <i class="mdi mdi-logout mr-2 text-danger"></i> Signout
-          </a>
+          @if(Auth::check())
+            <a class="dropdown-item" href="{{ route('customer.profile.index') }}">
+              <i class="mdi mdi-account mr-2 text-primary"></i> My Profile
+            </a>
+            <a class="dropdown-item" href="{{ route('customer.notifications.index') }}">
+              <i class="mdi mdi-bell mr-2 text-warning"></i> Notifications
+            </a>
+            <form id="logout-form-header" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
+            <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();">
+              <i class="mdi mdi-logout mr-2 text-danger"></i> Signout
+            </a>
+          @else
+            <a class="dropdown-item" href="{{ route('login') }}">
+              <i class="mdi mdi-login mr-2 text-success"></i> Login
+            </a>
+          @endif
         </div>
       </li>
     </ul>

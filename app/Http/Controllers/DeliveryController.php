@@ -51,7 +51,7 @@ class DeliveryController extends Controller
             $query->where('delivery_method', $request->method);
         }
 
-        $deliveries = $query->paginate(15)->withQueryString();
+        $deliveries = $query->paginate(20)->withQueryString();
 
         return view('admin.deliveries.index', compact('deliveries'));
     }

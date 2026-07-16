@@ -103,6 +103,62 @@ class BookingService
     }
 
     /**
+     * Create a draft booking for online gateway checkout.
+     *
+     * The draft captures the customer's selected product, plan, and locked pricing
+     * context, but does not generate certificate, schedule, receipt, or invoice.
+     */
+    public function createDraftBookingForPayment($customerId, $productId, $emiPlanId, $remarks = null): GoldBooking
+    {
+        return DB::transaction(function () use ($customerId, $productId, $emiPlanId, $remarks) {
+            $product = Product::findOrFail($productId);
+            $plan = EmiPlan::findOrFail($emiPlanId);
+            $customer = User::findOrFail($customerId);
+
+            $productPrice = $this->pricingService->calculateCurrentProductPrice($product);
+            $latestPrice = GoldPrice::where('status', 'active')->latest('effective_date')->first()
+                ?? GoldPrice::latest('effective_date')->first();
+
+            $is22k = strtoupper($product->gold_type) === '22K';
+            $pricePerGram = $latestPrice ? ($is22k ? $latestPrice->price_22k : $latestPrice->price_24k) : 0.00;
+            $calculations = $this->emiService->calculate($plan, $productPrice);
+
+            $booking = GoldBooking::create([
+                'booking_number' => $this->generateDraftBookingReference(),
+                'customer_id' => $customerId,
+                'product_id' => $productId,
+                'emi_plan_id' => $emiPlanId,
+                'gold_price_id' => $latestPrice?->id,
+                'gold_weight' => $product->weight_in_grams,
+                'gold_purity' => $product->purity,
+                'locked_price_per_gram' => $pricePerGram,
+                'locked_gold_value' => $productPrice,
+                'gst_on_gold_percent' => $plan->gst_on_gold_enabled ? ($plan->gst_on_gold_percent ?? 3.00) : 0.00,
+                'gst_on_gold_amount' => $calculations['gst_on_gold'] ?? 0.00,
+                'finance_charge_percent' => ($plan->finance_charge_enabled && strtolower($plan->finance_charge_type) === 'percentage') ? $plan->finance_charge_value : 0.00,
+                'finance_charge_amount' => $calculations['finance_charge'] ?? 0.00,
+                'storage_charge_percent' => ($plan->storage_charge_enabled && strtolower($plan->storage_charge_type) === 'percentage') ? $plan->storage_charge_value : 0.00,
+                'storage_charge_amount' => $calculations['storage_charge'] ?? 0.00,
+                'gst_on_charges_percent' => $plan->gst_on_charges_enabled ? ($plan->gst_on_charges_percent ?? 18.00) : 0.00,
+                'gst_on_charges_amount' => $calculations['gst_on_charges'] ?? 0.00,
+                'grand_total' => $calculations['total_payable'],
+                'monthly_emi' => $calculations['installment'],
+                'duration_months' => $plan->duration_months,
+                'booking_date' => now(),
+                'estimated_completion_date' => $calculations['completion_date'],
+                'status' => 'Draft',
+                'remarks' => $remarks,
+                'created_by_id' => auth()->id(),
+                'updated_by_id' => auth()->id(),
+            ]);
+
+            $this->logBookingActivity('booking_payment_draft_created', "Draft booking {$booking->booking_number} created for Customer: {$customer->name}", $booking->id);
+
+            return $booking;
+        });
+    }
+
+    /**
      * Generate consecutive unique booking numbers (e.g. ZG26000001)
      */
     public function generateBookingNumber()
@@ -122,6 +178,15 @@ class BookingService
         $nextNumber = str_pad((int)$lastNumber + 1, 6, '0', STR_PAD_LEFT);
 
         return $prefix . $nextNumber;
+    }
+
+    public function generateDraftBookingReference(): string
+    {
+        do {
+            $reference = 'DRAFT-' . now()->format('ymdHis') . '-' . strtoupper(Str::random(6));
+        } while (GoldBooking::where('booking_number', $reference)->exists());
+
+        return $reference;
     }
 
     /**

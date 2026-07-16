@@ -12,7 +12,7 @@ class ReferralService
     /**
      * Get paginated referrals with filters
      */
-    public function getFilteredReferrals(array $filters, int $perPage = 10)
+    public function getFilteredReferrals(array $filters, int $perPage = 20)
     {
         $query = Referral::with(['referrer', 'referred', 'booking'])->latest();
 

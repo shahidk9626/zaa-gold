@@ -6,6 +6,7 @@ use App\Http\Controllers\Customer\PlanController;
 use App\Http\Controllers\Customer\MyPlanController;
 use App\Http\Controllers\Customer\EmiController;
 use App\Http\Controllers\Customer\PaymentController;
+use App\Http\Controllers\Customer\BookingPaymentController;
 use App\Http\Controllers\Customer\CertificateController;
 use App\Http\Controllers\Customer\DeliveryController;
 use App\Http\Controllers\Customer\ProfileController;
@@ -36,6 +37,8 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
 
     Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::get('/payments/{id}/receipt', [PaymentController::class, 'downloadReceipt'])->name('payments.receipt');
+    Route::get('/booking-payments/{transaction}/checkout', [BookingPaymentController::class, 'checkout'])->name('booking-payments.checkout');
+    Route::get('/booking-payments/{transaction}/callback', [BookingPaymentController::class, 'callback'])->name('booking-payments.callback');
 
     Route::get('/certificates', [CertificateController::class, 'index'])->name('certificates.index');
     Route::get('/certificates/{bookingId}/price-lock', [CertificateController::class, 'downloadPriceLock'])->name('certificates.price_lock');
@@ -55,6 +58,14 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
 
     Route::get('/support', [SupportController::class, 'index'])->name('support.index');
 });
+
+Route::post('/payment/cashfree/webhook', \App\Http\Controllers\CashfreeWebhookController::class)
+    ->name('payments.cashfree.webhook');
+
+Route::get('/pay/{token}', [\App\Http\Controllers\GatewayPaymentController::class, 'pay'])
+    ->name('payments.links.pay');
+Route::get('/payment/gateway/{transaction}/callback', [\App\Http\Controllers\GatewayPaymentController::class, 'callback'])
+    ->name('payments.gateway.callback');
 
 // OTP routes for unauthenticated / guest customers
 use App\Http\Controllers\Customer\OtpController;

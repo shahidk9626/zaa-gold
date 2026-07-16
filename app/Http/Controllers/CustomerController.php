@@ -74,12 +74,13 @@ class CustomerController extends Controller
             'remaining' => $remaining,
             'percentage' => $percentage,
         ];
+        $paymentSummary = app(\App\Services\PaymentReportService::class)->customerSummary($customer);
 
         // Next/Previous Navigation
         $prev = User::where('role_id', $customerRoleId)->where('id', '<', $id)->orderBy('id', 'desc')->first();
         $next = User::where('role_id', $customerRoleId)->where('id', '>', $id)->orderBy('id', 'asc')->first();
 
-        return view('admin.customers.show', compact('customer', 'prev', 'next', 'purchaseLimit'));
+        return view('admin.customers.show', compact('customer', 'prev', 'next', 'purchaseLimit', 'paymentSummary'));
     }
 
     /**

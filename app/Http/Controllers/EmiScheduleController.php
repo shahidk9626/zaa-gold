@@ -52,7 +52,7 @@ class EmiScheduleController extends Controller
             $query->whereBetween('due_date', [$request->start_date, $request->end_date]);
         }
 
-        $schedules = $query->paginate(15)->withQueryString();
+        $schedules = $query->paginate(20)->withQueryString();
         $customers = User::where('role_id', 4)->orderBy('name')->get(); // Role 4 = Customer
         $bookings = GoldBooking::orderBy('booking_number')->get();
 

@@ -100,6 +100,24 @@
             </div>
         </div>
 
+        <div class="row mb-4">
+            @foreach([
+                'Total Paid' => '₹' . number_format($paymentSummary['total_paid'], 2),
+                'Pending' => '₹' . number_format($paymentSummary['pending'], 2),
+                'Outstanding' => '₹' . number_format($paymentSummary['outstanding'], 2),
+                'Failed Payments' => $paymentSummary['failed_payments'],
+                'Last Payment' => $paymentSummary['last_payment'] ? $paymentSummary['last_payment']->format('d M Y H:i') : 'N/A',
+                'Last Gateway' => $paymentSummary['last_gateway'] ? ucfirst($paymentSummary['last_gateway']) : 'N/A',
+            ] as $label => $value)
+                <div class="col-md-2 col-sm-6 mb-3">
+                    <div class="card bg-white border shadow-sm p-3 h-100">
+                        <small class="text-muted font-weight-bold text-uppercase">{{ $label }}</small>
+                        <div class="font-weight-bold text-dark mt-2">{{ $value }}</div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
         <!-- Tabs Navigation -->
         <ul class="nav nav-tabs border-0 bg-light border rounded p-1 mb-4" id="customerDetailTabs" role="tablist">
             <li class="nav-item flex-fill text-center">

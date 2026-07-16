@@ -34,7 +34,7 @@ class ReceiptController extends Controller
             });
         }
 
-        $payments = $query->paginate(15)->withQueryString();
+        $payments = $query->paginate(20)->withQueryString();
 
         return view('admin.receipts.index', compact('payments'));
     }

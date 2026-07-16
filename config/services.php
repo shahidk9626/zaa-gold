@@ -35,4 +35,17 @@ return [
         ],
     ],
 
+    'cashfree' => [
+        'app_id' => env('CASHFREE_APP_ID'),
+        'secret_key' => env('CASHFREE_SECRET_KEY'),
+        'env' => env('CASHFREE_ENV', 'sandbox'),
+        'base_url' => env('CASHFREE_BASE_URL', env('CASHFREE_ENV') === 'production'
+            ? 'https://api.cashfree.com'
+            : 'https://sandbox.cashfree.com'),
+        'api_version' => env('CASHFREE_API_VERSION', '2023-08-01'),
+        'sdk_url' => env('CASHFREE_ENV') === 'production'
+            ? 'https://sdk.cashfree.com/js/v3/cashfree.js'
+            : 'https://sdk.cashfree.com/js/v3/cashfree.js',
+    ],
+
 ];

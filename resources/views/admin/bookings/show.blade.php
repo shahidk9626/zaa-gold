@@ -470,6 +470,12 @@
                                                 <a href="{{ route('payments.collect_form', [$booking->id, $row->id]) }}" class="btn btn-sm btn-primary px-3 py-1">
                                                     Collect Payment
                                                 </a>
+                                                <form action="{{ route('payment-links.generate', [$booking->id, $row->id]) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <button class="btn btn-sm btn-outline-success px-3 py-1 mt-1">
+                                                        Generate Payment Link
+                                                    </button>
+                                                </form>
                                             @elseif($row->status === 'Paid')
                                                 @if($row->payment_id)
                                                 <a href="{{ route('payments.show', $row->payment_id) }}" class="btn btn-sm btn-info px-2 py-1 mr-1" title="View details">
@@ -500,6 +506,62 @@
             <!-- 5. Payments Tab -->
             <div class="tab-pane fade" id="payments" role="tabpanel" aria-labelledby="payments-tab">
                 <div class="card bg-white border shadow-sm p-4">
+                    <h5 class="text-primary font-weight-bold mb-3 border-bottom pb-2">Payment Summary</h5>
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3"><div class="bg-light border rounded p-3 h-100"><small class="text-muted font-weight-bold text-uppercase">Booking Payment</small><div class="font-weight-bold text-dark mt-2">{{ $paymentSummary['booking_payment']->transaction_number ?? 'N/A' }}</div><div class="small text-muted">{{ $paymentSummary['booking_payment']->payment_status ?? '' }}</div></div></div>
+                        <div class="col-md-3 mb-3"><div class="bg-light border rounded p-3 h-100"><small class="text-muted font-weight-bold text-uppercase">EMI Payments</small><div class="font-weight-bold text-dark mt-2">{{ $paymentSummary['emi_payments']->count() }}</div></div></div>
+                        <div class="col-md-3 mb-3"><div class="bg-light border rounded p-3 h-100"><small class="text-muted font-weight-bold text-uppercase">Pending EMI</small><div class="font-weight-bold text-dark mt-2">{{ $paymentSummary['pending_emi'] }}</div></div></div>
+                        <div class="col-md-3 mb-3"><div class="bg-light border rounded p-3 h-100"><small class="text-muted font-weight-bold text-uppercase">Payment Links</small><div class="font-weight-bold text-dark mt-2">{{ $paymentSummary['payment_links']->count() }}</div></div></div>
+                    </div>
+
+                    <h5 class="text-primary font-weight-bold mb-3 border-bottom pb-2">Gateway Payment Transactions</h5>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered table-striped text-dark small">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Gateway</th>
+                                    <th>Transaction Number</th>
+                                    <th>Gateway Order ID</th>
+                                    <th>Gateway Payment ID</th>
+                                    <th>Amount</th>
+                                    <th>Payment Status</th>
+                                    <th>Paid At</th>
+                                    <th>Gateway Response</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($booking->paymentTransactions as $transaction)
+                                    <tr>
+                                        <td>{{ ucfirst($transaction->gateway) }}</td>
+                                        <td class="font-weight-bold text-primary">{{ $transaction->transaction_number }}</td>
+                                        <td class="text-monospace">{{ $transaction->gateway_order_id }}</td>
+                                        <td class="text-monospace">{{ $transaction->gateway_payment_id ?? 'N/A' }}</td>
+                                        <td class="font-weight-bold text-success">₹{{ number_format($transaction->amount, 2) }}</td>
+                                        <td>
+                                            @php
+                                                $gatewayBadge = match($transaction->payment_status) {
+                                                    'Success' => 'badge-success',
+                                                    'Failed', 'Cancelled' => 'badge-danger',
+                                                    'Processing' => 'badge-warning',
+                                                    default => 'badge-secondary',
+                                                };
+                                            @endphp
+                                            <span class="badge {{ $gatewayBadge }} text-dark font-weight-bold px-3 py-1">{{ $transaction->payment_status }}</span>
+                                        </td>
+                                        <td>{{ $transaction->paid_at?->format('d M Y, h:i A') ?? 'N/A' }}</td>
+                                        <td>
+                                            <pre class="mb-0 small" style="max-height: 120px; overflow: auto;">{{ json_encode($transaction->gateway_response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="8" class="text-center py-3 text-muted">No gateway transactions recorded yet.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
                     <h5 class="text-primary font-weight-bold mb-3 border-bottom pb-2">EMI Payments History</h5>
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped text-dark small">

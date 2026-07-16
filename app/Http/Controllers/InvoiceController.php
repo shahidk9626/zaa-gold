@@ -48,7 +48,7 @@ class InvoiceController extends Controller
             $query->whereBetween('invoice_date', [$request->start_date . ' 00:00:00', $request->end_date . ' 23:59:59']);
         }
 
-        $invoices = $query->paginate(15)->withQueryString();
+        $invoices = $query->paginate(20)->withQueryString();
 
         return view('admin.invoices.index', compact('invoices'));
     }

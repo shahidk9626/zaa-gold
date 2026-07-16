@@ -9,6 +9,7 @@ use App\Services\ProductPricingService;
 use App\Services\EmiCalculationService;
 use App\Services\BookingService;
 use App\Services\CustomerService;
+use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
@@ -18,17 +19,20 @@ class PlanController extends CustomerBaseController
     protected ProductPricingService $pricingService;
     protected EmiCalculationService $emiService;
     protected BookingService $bookingService;
+    protected PaymentService $paymentService;
 
     public function __construct(
         CustomerService $customerService,
         ProductPricingService $pricingService,
         EmiCalculationService $emiService,
-        BookingService $bookingService
+        BookingService $bookingService,
+        PaymentService $paymentService
     ) {
         parent::__construct($customerService);
         $this->pricingService = $pricingService;
         $this->emiService = $emiService;
         $this->bookingService = $bookingService;
+        $this->paymentService = $paymentService;
     }
 
     /**
@@ -266,15 +270,17 @@ class PlanController extends CustomerBaseController
         }
 
         try {
-            $booking = $this->bookingService->createBooking(
+            $booking = $this->bookingService->createDraftBookingForPayment(
                 $customerId,
                 $request->product_id,
                 $request->emi_plan_id,
                 $request->remarks
             );
 
-            return redirect()->route('customer.my-plans.show', $booking->id)
-                ->with('success', 'Gold Plan booked successfully! Your Price Lock Certificate has been generated.');
+            $payment = $this->paymentService->initiateBookingGatewayPayment($booking);
+
+            return redirect()->route('customer.booking-payments.checkout', $payment['transaction']->id)
+                ->with('success', 'Payment transaction created. Redirecting to secure Cashfree checkout.');
         } catch (\Exception $e) {
             return back()->with('error', 'Booking failed: ' . $e->getMessage())->withInput();
         }

@@ -203,6 +203,31 @@
             <a class="nav-link" href="{{ route('payments.index') }}">EMI Payments</a>
           </li>
           @endif
+          @if(hasPermission('payment.dashboard') || hasPermission('payment.logs') || hasPermission('payment.links') || hasPermission('payment.failed') || hasPermission('payment.reconciliation'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ hasPermission('payment.dashboard') ? route('payments.dashboard') : '#' }}">Payment Dashboard</a>
+          </li>
+          @if(hasPermission('payment.logs'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('payment-logs.index') }}">Payment Logs</a>
+          </li>
+          @endif
+          @if(hasPermission('payment.links'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('payment-links.index') }}">Payment Links</a>
+          </li>
+          @endif
+          @if(hasPermission('payment.failed'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('payments.failed') }}">Failed Payments</a>
+          </li>
+          @endif
+          @if(hasPermission('payment.reconciliation'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('payments.reconciliation') }}">Reconciliation</a>
+          </li>
+          @endif
+          @endif
           @if(hasPermission('receipt.view'))
           <li class="nav-item">
             <a class="nav-link" href="{{ route('receipts.index') }}">Receipts</a>

@@ -40,19 +40,20 @@ class EmiController extends CustomerBaseController
             ->whereHas('booking', fn ($q) => $q->where('customer_id', $this->customerId()))
             ->findOrFail($scheduleId);
 
-        $request->validate([
-            'payment_mode' => 'required|in:Cash,UPI,Bank Transfer,Cheque,Card',
-            'transaction_reference' => 'nullable|string|max:100',
-        ]);
+        if ($schedule->status === 'Paid') {
+            return redirect()->route('customer.emi.history')->with('error', 'This EMI is already paid.');
+        }
 
         try {
-            $paymentService->collectPayment($schedule->booking, $schedule, [
-                'payment_mode' => $request->payment_mode,
-                'transaction_reference' => $request->transaction_reference,
-                'remarks' => 'Customer portal EMI payment',
-            ]);
+            $transaction = $paymentService->initiateEmiGatewayPayment(
+                $schedule,
+                $request->user(),
+                'customer_self',
+                now()->addHours(24)
+            );
 
-            return redirect()->route('customer.emi.history')->with('success', 'EMI payment recorded successfully.');
+            return redirect($transaction->payment_url)
+                ->with('success', 'Payment transaction created. Redirecting to secure Cashfree checkout.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage())->withInput();
         }

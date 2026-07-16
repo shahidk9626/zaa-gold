@@ -11,8 +11,8 @@
           <span class="login-status online"></span>
         </div>
         <div class="nav-profile-text d-flex flex-column pr-3">
-          <span class="font-weight-medium mb-2">{{ Auth::user()->name }}</span>
-          <span class="font-weight-normal text-muted" style="font-size: 0.75rem;">Customer</span>
+          <span class="font-weight-medium mb-2">{{ Auth::check() ? Auth::user()->name : 'Guest' }}</span>
+          <span class="font-weight-normal text-muted" style="font-size: 0.75rem;">{{ Auth::check() ? 'Customer' : 'Visitor' }}</span>
         </div>
       </a>
     </li>

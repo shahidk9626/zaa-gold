@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\ActivityLog;
 use App\Services\BookingService;
 use App\Services\EmiCalculationService;
+use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -16,11 +17,13 @@ class GoldBookingController extends Controller
 {
     protected $bookingService;
     protected $emiService;
+    protected $paymentService;
 
-    public function __construct(BookingService $bookingService, EmiCalculationService $emiService)
+    public function __construct(BookingService $bookingService, EmiCalculationService $emiService, PaymentService $paymentService)
     {
         $this->bookingService = $bookingService;
         $this->emiService = $emiService;
+        $this->paymentService = $paymentService;
     }
 
     /**
@@ -31,8 +34,8 @@ class GoldBookingController extends Controller
         $query = GoldBooking::with(['customer', 'product', 'emiPlan'])->latest();
 
         // 1. Filter by Search Query
-        if ($request->filled('search')) {
-            $search = $request->search;
+        $search = $request->input('search_query') ?? $request->input('search');
+        if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('booking_number', 'like', '%' . $search . '%')
                   ->orWhereHas('customer', function ($custQ) use ($search) {
@@ -40,8 +43,8 @@ class GoldBookingController extends Controller
                             ->orWhere('email', 'like', '%' . $search . '%');
                   })
                   ->orWhereHas('product', function ($prodQ) use ($search) {
-                      $prodQ->where('name', 'like', '%' . $search . '%')
-                            ->orWhere('sku', 'like', '%' . $search . '%');
+                      $prodQ->where('sku', 'like', '%' . $search . '%')
+                            ->orWhere('name', 'like', '%' . $search . '%');
                   });
             });
         }
@@ -56,12 +59,33 @@ class GoldBookingController extends Controller
             $query->where('product_id', $request->product_id);
         }
 
-        // 4. Filter by Date range
+        // 4. Filter by Date Range
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $query->whereBetween('booking_date', [$request->start_date . ' 00:00:00', $request->end_date . ' 23:59:59']);
         }
 
-        $bookings = $query->paginate(10)->withQueryString();
+        if ($request->ajax()) {
+            $bookings = $query->get()->map(function ($booking) {
+                return [
+                    'id' => $booking->id,
+                    'booking_number' => $booking->booking_number,
+                    'customer_name' => $booking->customer->name ?? 'N/A',
+                    'customer_email' => $booking->customer->email ?? 'N/A',
+                    'product_name' => $booking->product->name ?? 'N/A',
+                    'product_gold_type' => $booking->product->gold_type ?? 'N/A',
+                    'gold_weight' => number_format($booking->gold_weight, 2) . 'g',
+                    'locked_price_per_gram' => '₹' . number_format($booking->locked_price_per_gram, 2) . '/g',
+                    'monthly_emi' => '₹' . number_format($booking->monthly_emi, 2),
+                    'grand_total' => '₹' . number_format($booking->grand_total, 2),
+                    'booking_date' => $booking->booking_date->format('d M Y'),
+                    'status' => $booking->status,
+                    'view_url' => route('bookings.show', $booking->id),
+                ];
+            });
+            return response()->json(['data' => $bookings]);
+        }
+
+        $bookings = $query->paginate(15)->withQueryString();
         $products = Product::where('status', 'active')->orderBy('name')->get();
 
         return view('admin.bookings.index', compact('bookings', 'products'));
@@ -77,21 +101,56 @@ class GoldBookingController extends Controller
             'product_id' => 'required|exists:products,id',
             'emi_plan_id' => 'required|exists:emi_plans,id',
             'remarks' => 'nullable|string',
+            'payment_method' => 'required|in:pay_now,generate_link',
         ]);
 
         try {
-            $booking = $this->bookingService->createBooking(
+            // Validate Purchase Limit
+            $product = Product::findOrFail($request->product_id);
+            $weight = (float)$product->weight_in_grams;
+            if (!$this->bookingService->canPurchaseGold($request->customer_id, $weight)) {
+                $purchased = $this->bookingService->getPurchasedWeightForFinancialYear($request->customer_id);
+                $limit = \App\Models\SystemSetting::get('customer_max_purchase_grams', 100.00);
+
+                \App\Models\ActivityLog::create([
+                    'module_name' => 'gold_booking',
+                    'record_id' => $request->customer_id,
+                    'action_type' => 'purchase_blocked_limit',
+                    'description' => "Purchase blocked for customer #{$request->customer_id}. Attempted weight: {$weight}g. Already purchased: {$purchased}g. Limit: {$limit}g.",
+                    'created_by_id' => auth()->id() ?? 1,
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->header('User-Agent'),
+                ]);
+
+                return response()->json([
+                    'error' => "Purchase limit exceeded. Allowed: {$limit}g. Already purchased: {$purchased}g."
+                ], 422);
+            }
+
+            // Create Draft Booking
+            $booking = $this->bookingService->createDraftBookingForPayment(
                 $request->customer_id,
                 $request->product_id,
                 $request->emi_plan_id,
                 $request->remarks
             );
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Gold Booking created successfully! Price Locked.',
-                'redirect_url' => route('bookings.show', $booking->id),
-            ]);
+            // Initiate payment
+            $payment = $this->paymentService->initiateBookingGatewayPayment($booking, $request->payment_method === 'pay_now');
+
+            if ($request->payment_method === 'pay_now') {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Booking initialized as draft. Redirecting to checkout...',
+                    'checkout_url' => route('admin.booking-payments.checkout', $payment['transaction']->id),
+                ]);
+            } else {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Payment link generated successfully.',
+                    'payment_url' => $payment['transaction']->payment_url,
+                ]);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Booking failed: ' . $e->getMessage()
@@ -100,11 +159,59 @@ class GoldBookingController extends Controller
     }
 
     /**
+     * Admin/Staff Payment Checkout
+     */
+    public function checkout(\App\Models\PaymentTransaction $transaction, \App\Services\CashfreeService $cashfreeService)
+    {
+        abort_unless(auth()->user()->isStaffOrAdmin(), 403);
+        abort_unless($transaction->payment_type === 'booking', 404);
+
+        $session = $transaction->gateway_response ?? [];
+
+        return view('admin.payments.cashfree-checkout', [
+            'transaction' => $transaction,
+            'booking' => $transaction->booking,
+            'paymentSessionId' => $session['payment_session_id'] ?? null,
+            'cashfreeMode' => $cashfreeService->checkoutMode(),
+            'cashfreeSdkUrl' => config('services.cashfree.sdk_url'),
+        ]);
+    }
+
+    /**
+     * Admin/Staff Payment Callback
+     */
+    public function callback(
+        Request $request,
+        \App\Models\PaymentTransaction $transaction,
+        \App\Services\PaymentGatewayService $paymentGatewayService,
+        \App\Services\PaymentProcessingService $paymentProcessingService
+    ) {
+        abort_unless(auth()->user()->isStaffOrAdmin(), 403);
+        abort_unless($transaction->payment_type === 'booking', 404);
+
+        try {
+            $verification = $paymentGatewayService->verifyGatewayResponse($transaction);
+            $transaction = $paymentProcessingService->confirmBookingPayment($transaction, $verification);
+        } catch (\Throwable $e) {
+            return redirect()->route('bookings.index')
+                ->with('error', 'Payment verification failed. Please contact support with transaction ' . $transaction->transaction_number . '.');
+        }
+
+        if ($transaction->isSuccessful()) {
+            return redirect()->route('bookings.show', $transaction->booking_id)
+                ->with('success', 'Payment verified successfully. Booking is confirmed.');
+        }
+
+        return redirect()->route('bookings.index')
+            ->with('error', 'Payment was not successful. The booking has not been confirmed.');
+    }
+
+    /**
      * Show booking details panel
      */
     public function show($id)
     {
-        $booking = GoldBooking::with(['customer', 'product', 'emiPlan', 'certificate', 'statusHistory.changedBy'])->findOrFail($id);
+        $booking = GoldBooking::with(['customer', 'product', 'emiPlan', 'certificate', 'statusHistory.changedBy', 'paymentTransactions'])->findOrFail($id);
         
         // Fetch actual EMI Schedule from database
         $schedule = \App\Models\BookingEmiSchedule::where('booking_id', $booking->id)
@@ -140,6 +247,7 @@ class GoldBookingController extends Controller
         $delivery = \App\Models\BookingDelivery::where('booking_id', $booking->id)
             ->latest()
             ->first();
+        $paymentSummary = app(\App\Services\PaymentReportService::class)->bookingSummary($booking);
 
         return view('admin.bookings.show', compact(
             'booking', 
@@ -154,7 +262,8 @@ class GoldBookingController extends Controller
             'interestPaid',
             'lateFeePaid',
             'gstPaid',
-            'delivery'
+            'delivery',
+            'paymentSummary'
         ));
     }
 

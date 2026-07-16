@@ -12,6 +12,7 @@ class RedirectCustomersFromAdmin
         'customer.',
         'login',
         'logout',
+        'payments.',
         'password.',
         'verification.',
     ];

@@ -12,21 +12,10 @@
 
             <form action="{{ route('customer.emi.process_pay', $schedule->id) }}" method="POST">
                 @csrf
-                <div class="form-group">
-                    <label>Payment Mode</label>
-                    <select name="payment_mode" class="form-control" required>
-                        <option value="UPI">UPI</option>
-                        <option value="Bank Transfer">Bank Transfer</option>
-                        <option value="Card">Card</option>
-                        <option value="Cash">Cash</option>
-                        <option value="Cheque">Cheque</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Transaction Reference</label>
-                    <input type="text" name="transaction_reference" class="form-control" placeholder="UPI ref / txn ID">
-                </div>
-                <button type="submit" class="btn btn-primary btn-block btn-mobile-lg">Confirm Payment</button>
+                <p class="text-muted small mb-3">You will be redirected to Cashfree hosted checkout. Your EMI will be marked paid only after gateway verification.</p>
+                <button type="submit" class="btn btn-primary btn-block btn-mobile-lg">
+                    <i class="mdi mdi-shield-check mr-1"></i> Pay Securely
+                </button>
             </form>
         </div>
     </div>
