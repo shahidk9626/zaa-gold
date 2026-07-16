@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('verification_status')->default('pending')->after('profile_completed');
+        });
+
         Schema::table('customer_details', function (Blueprint $table) {
             $table->string('emergency_contact')->nullable()->after('alternate_number');
         });
@@ -29,6 +33,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('verification_status');
+        });
+
         Schema::table('customer_details', function (Blueprint $table) {
             $table->dropColumn('emergency_contact');
         });

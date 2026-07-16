@@ -9,6 +9,7 @@ use App\Models\EmiPlan;
 use App\Models\Product;
 use App\Models\GoldPrice;
 use App\Models\GoldBooking;
+use App\Models\BookingEmiSchedule;
 use App\Models\Kyc;
 use App\Models\ActivityLog;
 use App\Services\CustomerOnboardingService;
@@ -35,16 +36,12 @@ class CustomerOnboardingTest extends TestCase
         $this->onboardingService = app(CustomerOnboardingService::class);
         Storage::fake('public');
 
-        // Create base customer role
-        $customerRole = Role::create([
-            'name' => 'Customer',
-            'slug' => 'customer',
-        ]);
+        // Seed Roles & Permissions
+        $this->seed(\Database\Seeders\AccessControlSeeder::class);
 
-        $adminRole = Role::create([
-            'name' => 'Super Admin',
-            'slug' => 'super-admin',
-        ]);
+        // Retrieve seeded roles
+        $superAdminRole = Role::where('slug', 'super-admin')->first();
+        $customerRole = Role::where('slug', 'customer')->first();
 
         $this->customer = User::create([
             'name' => 'John Doe Onboarding',
@@ -126,7 +123,7 @@ class CustomerOnboardingTest extends TestCase
         ]);
 
         // 3. Payment of EMI is allowed
-        $firstEmi = $booking->emiSchedules()->where('installment_number', 2)->first();
+        $firstEmi = BookingEmiSchedule::where('booking_id', $booking->id)->where('installment_number', 2)->first();
         $payment = app(\App\Services\PaymentService::class)->collectPayment($booking, $firstEmi, [
             'payment_mode' => 'UPI',
             'transaction_reference' => 'TXN999999',
@@ -333,5 +330,38 @@ class CustomerOnboardingTest extends TestCase
         $kyc->refresh();
         $this->assertEquals('approved', $kyc->status);
         $this->assertEquals('Approved', $this->onboardingService->getKycStatus($this->customer));
+    }
+
+    /**
+     * Test that a customer created/verified directly via Admin Panel is automatically considered KYC-approved.
+     */
+    public function test_admin_created_customer_is_automatically_verified(): void
+    {
+        $adminRole = Role::where('slug', 'super-admin')->first();
+        $admin = User::create([
+            'name' => 'Admin User',
+            'email' => 'admin.verify@example.com',
+            'password' => bcrypt('password'),
+            'role_id' => $adminRole->id,
+        ]);
+
+        $this->actingAs($admin);
+
+        // Simulate creating a customer from the admin panel
+        $customerRole = Role::where('slug', 'customer')->first();
+        $newCustomer = User::create([
+            'name' => 'Admin Created Customer',
+            'email' => 'admin.created@example.com',
+            'password' => bcrypt('password'),
+            'role_id' => $customerRole->id,
+            'status' => 'active',
+            'profile_completed' => 1,
+            'verification_status' => 'verified',
+        ]);
+
+        $this->assertTrue($this->onboardingService->isProfileComplete($newCustomer));
+        $this->assertTrue($this->onboardingService->isKycApproved($newCustomer));
+        $this->assertEquals('Approved', $this->onboardingService->getKycStatus($newCustomer));
+        $this->assertTrue($this->onboardingService->canRequestDelivery($newCustomer));
     }
 }

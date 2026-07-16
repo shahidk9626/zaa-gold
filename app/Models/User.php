@@ -24,6 +24,7 @@ class User extends Authenticatable
         'referred_by_staff_id',
         'profile_completed',
         'profile_image',
+        'verification_status',
     ];
 
     /**
@@ -102,5 +103,10 @@ class User extends Authenticatable
     public function isStaffOrAdmin(): bool
     {
         return in_array($this->role?->slug, ['super-admin', 'admin', 'staff'], true);
+    }
+
+    public function getProfileStatusAttribute(): string
+    {
+        return $this->profile_completed ? 'Complete' : 'Incomplete';
     }
 }

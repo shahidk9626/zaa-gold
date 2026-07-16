@@ -37,6 +37,10 @@ class CustomerOnboardingService
      */
     public function isKycApproved(User $user): bool
     {
+        if ($user->verification_status === 'verified') {
+            return true;
+        }
+
         return Kyc::where('user_id', $user->id)
             ->where('status', 'approved')
             ->exists();
@@ -47,6 +51,10 @@ class CustomerOnboardingService
      */
     public function getKycStatus(User $user): string
     {
+        if ($user->verification_status === 'verified') {
+            return 'Approved';
+        }
+
         $latestKyc = Kyc::where('user_id', $user->id)
             ->latest('id')
             ->first();
