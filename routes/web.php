@@ -23,4 +23,14 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::get('/generate-symlink', function () {
+    if (file_exists(public_path('storage'))) {
+        @unlink(public_path('storage'));
+    }
+    
+    // Call standard artisan command
+    Illuminate\Support\Facades\Artisan::call('storage:link');
+    return 'Storage link created successfully!';
+});
+
 require __DIR__.'/auth.php';
