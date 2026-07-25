@@ -31,8 +31,8 @@
                         <div class="col-md-4 form-group">
                             <label for="gold_type" class="text-dark">Gold Type <span class="text-danger">*</span></label>
                             <select name="gold_type" id="gold_type" required class="form-control bg-white text-dark">
-                                <option value="24K" {{ $product->gold_type === '24K' ? 'selected' : '' }}>24K Gold</option>
-                                <option value="22K" {{ $product->gold_type === '22K' ? 'selected' : '' }}>22K Gold</option>
+                                <option value="24K" {{ $product->gold_type === '24K' ? 'selected' : '' }}>24KT Gold</option>
+                                <option value="22K" {{ $product->gold_type === '22K' ? 'selected' : '' }}>22KT Gold</option>
                             </select>
                         </div>
 
@@ -42,7 +42,7 @@
                         </div>
 
                         <div class="col-md-4 form-group">
-                            <label for="purity" class="text-dark">Purity (%) <span class="text-danger">*</span></label>
+                            <label for="purity" class="text-dark"><span id="purity-label">Purity (%)</span> <span class="text-danger">*</span></label>
                             <input type="number" step="0.01" name="purity" id="purity" required value="{{ $product->purity }}" class="form-control bg-white text-dark">
                         </div>
 
@@ -114,6 +114,32 @@
 @push('scripts')
 <script>
     $(document).ready(function () {
+        function handleGoldTypeChange(isInitial = false) {
+            let goldType = $('#gold_type').val();
+            let purityLabel = $('#purity-label');
+            let purityInput = $('#purity');
+
+            if (goldType === '24K') {
+                purityLabel.text('Fine Gold');
+                if (!isInitial) {
+                    purityInput.val('999.99');
+                }
+            } else if (goldType === '22K') {
+                purityLabel.text('Pure Gold');
+                if (!isInitial) {
+                    purityInput.val('916');
+                }
+            }
+        }
+
+        // Trigger on page load (do not overwrite existing database values)
+        handleGoldTypeChange(true);
+
+        // Listen for changes
+        $('#gold_type').on('change', function() {
+            handleGoldTypeChange(false);
+        });
+
         $('#productForm').on('submit', function (e) {
             e.preventDefault();
             let formData = new FormData(this);

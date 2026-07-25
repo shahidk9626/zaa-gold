@@ -62,7 +62,7 @@ class CustomerOnboardingTest extends TestCase
             'sku' => 'GB24K10G',
             'gold_type' => '24K',
             'weight_in_grams' => 10.00,
-            'purity' => 99.99,
+            'purity' => 999.99,
             'category' => 'bars',
             'status' => 'active',
         ]);

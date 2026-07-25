@@ -44,7 +44,7 @@ class GoldBookingTest extends TestCase
             'sku' => 'GC24K10G_' . uniqid(),
             'gold_type' => '24K',
             'weight_in_grams' => 10.00,
-            'purity' => 99.99,
+            'purity' => 999.99,
             'category' => 'coins',
             'status' => 'active',
         ]);

@@ -66,7 +66,7 @@ class DeliveryFulfillmentEngineTest extends TestCase
             'sku' => 'GB24K100G',
             'gold_type' => '24K',
             'weight_in_grams' => 100.00,
-            'purity' => 99.99,
+            'purity' => 999.99,
             'category' => 'bars',
             'status' => 'active',
         ]);

@@ -18,7 +18,7 @@ class StoreProductRequest extends FormRequest
             'sku' => 'required|string|max:255|unique:products,sku',
             'gold_type' => 'required|string|in:24K,22K',
             'weight_in_grams' => 'required|numeric|min:0',
-            'purity' => 'required|numeric|min:0|max:100',
+            'purity' => 'required|numeric|min:0|max:999.99',
             'category' => 'required|string',
             'description' => 'nullable|string',
             'display_order' => 'nullable|integer',

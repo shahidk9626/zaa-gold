@@ -60,7 +60,7 @@ class AdminPlanPurchaseGatewayTest extends TestCase
             'sku' => 'COIN10G',
             'gold_type' => '24K',
             'weight_in_grams' => 10.00,
-            'purity' => 99.99,
+            'purity' => 999.99,
             'category' => 'coins',
             'status' => 'active',
         ]);

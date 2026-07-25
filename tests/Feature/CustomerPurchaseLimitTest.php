@@ -69,7 +69,7 @@ class CustomerPurchaseLimitTest extends TestCase
             'sku' => 'GB10G',
             'gold_type' => '24K',
             'weight_in_grams' => 10.00,
-            'purity' => 99.99,
+            'purity' => 999.99,
             'category' => 'bars',
             'status' => 'active',
         ]);
@@ -80,7 +80,7 @@ class CustomerPurchaseLimitTest extends TestCase
             'sku' => 'GB50G',
             'gold_type' => '24K',
             'weight_in_grams' => 50.00,
-            'purity' => 99.99,
+            'purity' => 999.99,
             'category' => 'bars',
             'status' => 'active',
         ]);
