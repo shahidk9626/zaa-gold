@@ -24,13 +24,21 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get('/generate-symlink', function () {
-    if (file_exists(public_path('storage'))) {
-        @unlink(public_path('storage'));
+    // Target: storage/app/public/products
+    $target = storage_path('app/public/products');
+    
+    // Shortcut: storage/products (inside the root storage folder)
+    $shortcut = base_path('storage/products');
+    
+    if (file_exists($shortcut)) {
+        @unlink($shortcut);
     }
     
-    // Call standard artisan command
-    Illuminate\Support\Facades\Artisan::call('storage:link');
-    return 'Storage link created successfully!';
+    if (symlink($target, $shortcut)) {
+        return 'Products storage symlink created successfully!';
+    }
+    
+    return 'Failed to create symlink.';
 });
 
 require __DIR__.'/auth.php';
