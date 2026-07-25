@@ -87,7 +87,7 @@
         <h5 class="font-weight-bold mb-3">Services</h5>
         <div class="row">
             @foreach([
-                ['icon' => 'mdi-gold', 'label' => 'My Plans', 'route' => route('customer.my-plans.index')],
+                ['icon' => 'mdi-wallet', 'label' => 'My Plans', 'route' => route('customer.my-plans.index')],
                 ['icon' => 'mdi-history', 'label' => 'EMI History', 'route' => route('customer.emi.history')],
                 ['icon' => 'mdi-cash-refund', 'label' => 'Repay EMI', 'route' => route('customer.emi.repay')],
                 ['icon' => 'mdi-scale-balance', 'label' => 'Outstanding', 'route' => route('customer.outstanding.index')],
@@ -191,7 +191,7 @@
                         <h4 class="card-title">Services</h4>
                         <div class="row">
                             @foreach([
-                                ['icon' => 'mdi-gold', 'label' => 'My Plans', 'route' => route('customer.my-plans.index')],
+                                ['icon' => 'mdi-wallet', 'label' => 'My Plans', 'route' => route('customer.my-plans.index')],
                                 ['icon' => 'mdi-history', 'label' => 'EMI History', 'route' => route('customer.emi.history')],
                                 ['icon' => 'mdi-cash-refund', 'label' => 'Repay EMI', 'route' => route('customer.emi.repay')],
                                 ['icon' => 'mdi-scale-balance', 'label' => 'Outstanding', 'route' => route('customer.outstanding.index')],

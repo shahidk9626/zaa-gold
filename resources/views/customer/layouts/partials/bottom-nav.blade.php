@@ -8,7 +8,7 @@
         <span>Buy Plans</span>
     </a>
     <a href="{{ route('customer.my-plans.index') }}" class="{{ request()->routeIs('customer.my-plans.*') ? 'active' : '' }}">
-        <i class="mdi mdi-gold"></i>
+        <i class="mdi mdi-wallet"></i>
         <span>My Plans</span>
     </a>
     <a href="{{ route('customer.payments.index') }}" class="{{ request()->routeIs('customer.payments.*', 'customer.emi.*', 'customer.certificates.*') ? 'active' : '' }}">

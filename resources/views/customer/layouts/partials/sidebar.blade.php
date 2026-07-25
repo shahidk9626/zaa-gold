@@ -33,7 +33,7 @@
 
     <li class="nav-item">
       <a class="nav-link" data-toggle="collapse" href="#customer-plans-menu" aria-expanded="{{ request()->routeIs('customer.my-plans.*', 'customer.emi.*', 'customer.outstanding.*') ? 'true' : 'false' }}">
-        <i class="mdi mdi-gold menu-icon"></i>
+        <i class="mdi mdi-wallet menu-icon"></i>
         <span class="menu-title">My Plans</span>
         <i class="menu-arrow"></i>
       </a>
