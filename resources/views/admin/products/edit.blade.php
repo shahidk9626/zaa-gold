@@ -113,8 +113,15 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
 <script>
     $(document).ready(function () {
+        // Initialize CKEditor
+        if (document.getElementById('description')) {
+            CKEDITOR.config.versionCheck = false;
+            CKEDITOR.replace('description');
+        }
+
         function handleGoldTypeChange(isInitial = false) {
             let goldType = $('#gold_type').val();
             let purityLabel = $('#purity-label');
@@ -143,6 +150,12 @@
 
         $('#productForm').on('submit', function (e) {
             e.preventDefault();
+
+            // Sync CKEditor data to textarea
+            if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.description) {
+                CKEDITOR.instances.description.updateElement();
+            }
+
             let formData = new FormData(this);
             let submitBtn = $('#submitBtn');
 

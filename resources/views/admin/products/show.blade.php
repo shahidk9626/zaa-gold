@@ -79,7 +79,7 @@
                 </div>
                 <div class="col-12 mb-4">
                     <label class="small text-muted d-block uppercase">Description</label>
-                    <p class="text-dark">{{ $product->description ?: 'No description provided.' }}</p>
+                    <div class="text-dark">{!! $product->description ?: 'No description provided.' !!}</div>
                 </div>
             </div>
 

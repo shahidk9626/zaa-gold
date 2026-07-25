@@ -210,6 +210,8 @@ class PlanController extends CustomerBaseController
             'purity' => $product->purity,
             'gold_type' => $product->gold_type,
             'product_price' => $productPrice,
+            'plan_name' => $plan->plan_name,
+            'duration_months' => $plan->duration_months,
             'completion_date' => $calculations['completion_date'],
         ], $calculations));
     }

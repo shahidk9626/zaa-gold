@@ -35,17 +35,17 @@
                 {{-- Product Info Card --}}
                 <div class="card mb-4 border-0 shadow-sm" style="border-radius: 12px;">
                     <div class="row no-gutters">
-                        <div class="col-md-5">
+                        <div class="col-md-5 d-flex align-items-center justify-content-center bg-white" style="border-top-left-radius: 12px; border-bottom-left-radius: 12px; overflow: hidden; min-height: 220px;">
                             @php 
                                 $thumb = $product->thumbnail ? asset('storage/' . $product->thumbnail) : asset('assets/images/dashboard/img_1.jpg');
                             @endphp
-                            <img src="{{ $thumb }}" class="card-img h-100" alt="{{ $product->name }}" style="object-fit: cover; border-top-left-radius: 12px; border-bottom-left-radius: 12px; min-height: 220px;">
+                            <img src="{{ $thumb }}" class="img-fluid" alt="{{ $product->name }}" style="max-height: 260px; object-fit: contain; width: 100%;">
                         </div>
                         <div class="col-md-7">
                             <div class="card-body p-4">
                                 <span class="badge badge-warning text-dark font-weight-bold mb-2">{{ $product->gold_type }}</span>
                                 <h4 class="font-weight-bold mb-2 text-dark">{{ $product->name }}</h4>
-                                <p class="text-muted mb-3">{{ $product->description ?? 'Premium ZAA Gold certified bullion product.' }}</p>
+                                <div class="text-muted mb-3">{!! $product->description ?? 'Premium ZAA Gold certified bullion product.' !!}</div>
                                 
                                 <div class="row text-center text-md-left border-top pt-3">
                                     <div class="col-4">

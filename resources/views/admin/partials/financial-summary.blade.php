@@ -161,7 +161,7 @@
                 <!-- Repayment Schedule Table -->
                 <h6 class="font-weight-bold text-dark mb-3 text-uppercase">EMI Repayment Schedule</h6>
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped text-dark">
+                    <table class="table table-bordered table-striped text-dark no-datatable">
                         <thead class="bg-primary text-white">
                             <tr>
                                 <th>Month No.</th>
