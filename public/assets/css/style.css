@@ -15479,4 +15479,25 @@ dl {
   -ms-flex-positive: 1;
   flex-grow: 1; }
 
+/* Fix DataTables and Responsive Tables Overflow Scroll issues */
+.table-responsive {
+  display: block !important;
+  width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dataTables_wrapper {
+  width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dataTables_wrapper table.dataTable {
+  width: 100% !important;
+  margin: 0 auto;
+  clear: both;
+  border-collapse: collapse;
+}
+
 /*# sourceMappingURL=style.css.map */

@@ -22,14 +22,14 @@ class CertificateController extends CustomerBaseController
         ]);
     }
 
-    public function downloadPriceLock(int $bookingId): BinaryFileResponse|RedirectResponse
+    public function downloadPriceLock(int $bookingId): \Symfony\Component\HttpFoundation\Response
     {
         GoldBooking::where('customer_id', $this->customerId())->findOrFail($bookingId);
 
         return app(GoldBookingController::class)->downloadCertificate($bookingId);
     }
 
-    public function downloadInvoice(int $id): BinaryFileResponse
+    public function downloadInvoice(int $id): \Symfony\Component\HttpFoundation\Response
     {
         GstInvoice::where('customer_id', $this->customerId())->findOrFail($id);
 
