@@ -24,21 +24,30 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get('/generate-symlink', function () {
-    // Target: storage/app/public/products
-    $target = storage_path('app/public/products');
-    
-    // Shortcut: storage/products (inside the root storage folder)
-    $shortcut = base_path('storage/products');
-    
-    if (file_exists($shortcut)) {
-        @unlink($shortcut);
+    $publicFolders = ['products', 'staff_docs', 'customer_docs', 'kyc', 'certificates', 'invoices', 'qrcodes'];
+    $results = [];
+
+    foreach ($publicFolders as $folder) {
+        $target = storage_path('app/public/' . $folder);
+        $shortcut = base_path('storage/' . $folder);
+
+        // Ensure the source target folder exists before linking
+        if (!file_exists($target)) {
+            @mkdir($target, 0755, true);
+        }
+
+        if (file_exists($shortcut)) {
+            @unlink($shortcut);
+        }
+
+        if (@symlink($target, $shortcut)) {
+            $results[] = "Folder '{$folder}' linked successfully.";
+        } else {
+            $results[] = "Failed to link folder '{$folder}'.";
+        }
     }
-    
-    if (symlink($target, $shortcut)) {
-        return 'Products storage symlink created successfully!';
-    }
-    
-    return 'Failed to create symlink.';
+
+    return implode('<br>', $results);
 });
 
 require __DIR__.'/auth.php';
