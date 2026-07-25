@@ -362,5 +362,39 @@
         top: 0 !important;
         margin: 0 !important;
     }
+
+    /* Enable horizontal scroll with custom scrollbar */
+    .table-responsive {
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        display: block !important;
+        width: 100% !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    #productTable {
+        min-width: 1100px;
+    }
+
+    #productTable th, #productTable td {
+        white-space: nowrap !important;
+    }
+
+    /* Modern sleek scrollbar design */
+    .table-responsive::-webkit-scrollbar {
+        height: 6px;
+    }
+    .table-responsive::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+        transition: background 0.3s ease;
+    }
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
 </style>
 @endpush
