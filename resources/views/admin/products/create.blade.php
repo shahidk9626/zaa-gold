@@ -52,6 +52,7 @@
                                 <option value="">Select Category</option>
                                 <option value="Coin">Coin</option>
                                 <option value="Bar">Bar</option>
+                                <option value="Coin/Bar">Coin/Bar</option>
                                 <option value="Jewelry">Jewelry</option>
                                 <option value="Other">Other</option>
                             </select>

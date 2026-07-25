@@ -51,6 +51,7 @@
                             <select name="category" id="category" required class="form-control bg-white text-dark">
                                 <option value="Coin" {{ $product->category === 'Coin' ? 'selected' : '' }}>Coin</option>
                                 <option value="Bar" {{ $product->category === 'Bar' ? 'selected' : '' }}>Bar</option>
+                                <option value="Coin/Bar" {{ $product->category === 'Coin/Bar' ? 'selected' : '' }}>Coin/Bar</option>
                                 <option value="Jewelry" {{ $product->category === 'Jewelry' ? 'selected' : '' }}>Jewelry</option>
                                 <option value="Other" {{ $product->category === 'Other' ? 'selected' : '' }}>Other</option>
                             </select>
