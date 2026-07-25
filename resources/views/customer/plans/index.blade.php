@@ -181,7 +181,7 @@
             <div class="row">
                 @foreach($products as $product)
                     @php 
-                        $thumb = $product->thumbnail ? asset('storage/' . $product->thumbnail) : asset('assets/images/dashboard/img_1.jpg');
+                        $thumb = $product->getThumbnailUrl();
                     @endphp
                     <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                         <div class="card h-100 shadow-sm hover-shadow border-0" style="border-radius: 12px; transition: transform 0.2s, box-shadow 0.2s;">
@@ -230,7 +230,7 @@
             <div class="plans-slider">
                 @foreach($products as $product)
                     @php 
-                        $thumb = $product->thumbnail ? asset('storage/' . $product->thumbnail) : asset('assets/images/dashboard/img_1.jpg');
+                        $thumb = $product->getThumbnailUrl();
                     @endphp
                     <div class="plan-slide" style="flex: 0 0 78%; max-width: 280px;">
                         <div class="card h-100 shadow-sm border-0" style="border-radius: 12px;">

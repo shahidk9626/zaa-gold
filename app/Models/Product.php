@@ -51,4 +51,18 @@ class Product extends Model
     {
         return $this->hasOne(Inventory::class);
     }
+
+    public function getThumbnailUrl()
+    {
+        if (!$this->thumbnail) {
+            return asset('assets/images/dashboard/img_1.jpg');
+        }
+
+        // Hostinger production environment detection
+        if (strpos(request()->getHost(), 'aurongold.in') !== false) {
+            return asset('storage/app/public/' . $this->thumbnail);
+        }
+
+        return asset('storage/' . $this->thumbnail);
+    }
 }

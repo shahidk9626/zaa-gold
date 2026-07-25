@@ -10,7 +10,7 @@
         'Cancelled' => 'badge-danger',
         default => 'badge-secondary',
     };
-    $thumb = $product?->thumbnail ? asset('storage/' . $product->thumbnail) : asset('assets/images/dashboard/img_1.jpg');
+    $thumb = $product ? $product->getThumbnailUrl() : asset('assets/images/dashboard/img_1.jpg');
 @endphp
 
 <div class="card {{ $compact ? 'mobile-card' : '' }} h-100">

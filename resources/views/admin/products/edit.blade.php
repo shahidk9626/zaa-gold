@@ -79,7 +79,7 @@
                             <label for="thumbnail" class="text-dark">Thumbnail Image</label>
                             @if($product->thumbnail)
                                 <div class="mb-2">
-                                    <img src="{{ asset('storage/' . $product->thumbnail) }}" style="width: 80px; border-radius: 4px; border: 1px solid #ddd;">
+                                    <img src="{{ $product->getThumbnailUrl() }}" style="width: 80px; border-radius: 4px; border: 1px solid #ddd;">
                                 </div>
                             @endif
                             <input type="file" name="thumbnail" id="thumbnail" class="form-control bg-white text-dark" style="height: auto;">

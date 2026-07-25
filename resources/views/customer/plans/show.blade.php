@@ -36,16 +36,21 @@
                 <div class="card mb-4 border-0 shadow-sm" style="border-radius: 12px;">
                     <div class="row no-gutters">
                         <div class="col-md-5 d-flex align-items-center justify-content-center bg-white" style="border-top-left-radius: 12px; border-bottom-left-radius: 12px; overflow: hidden; min-height: 220px;">
-                            @php 
-                                $thumb = $product->thumbnail ? asset('storage/' . $product->thumbnail) : asset('assets/images/dashboard/img_1.jpg');
-                            @endphp
-                            <img src="{{ $thumb }}" class="img-fluid" alt="{{ $product->name }}" style="max-height: 260px; object-fit: contain; width: 100%;">
+                            <img src="{{ $product->getThumbnailUrl() }}" class="img-fluid" alt="{{ $product->name }}" style="max-height: 260px; object-fit: contain; width: 100%;">
                         </div>
                         <div class="col-md-7">
                             <div class="card-body p-4">
                                 <span class="badge badge-warning text-dark font-weight-bold mb-2">{{ $product->gold_type }}</span>
                                 <h4 class="font-weight-bold mb-2 text-dark">{{ $product->name }}</h4>
-                                <div class="text-muted mb-3">{!! $product->description ?? 'Premium ZAA Gold certified bullion product.' !!}</div>
+                                <div class="position-relative mb-2">
+                                    <div id="description-wrapper" class="text-muted" style="overflow: hidden; max-height: none; transition: max-height 0.3s ease-out; line-height: 1.6;">
+                                        {!! $product->description ?? 'Premium ZAA Gold certified bullion product.' !!}
+                                    </div>
+                                    <div id="description-fade" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 50px; background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1)); pointer-events: none; display: none;"></div>
+                                </div>
+                                <button type="button" id="read-more-btn" class="btn btn-link text-primary p-0 mb-3 font-weight-bold shadow-none" style="display: none; text-decoration: none; font-size: 0.85rem;">
+                                    Read More <i class="mdi mdi-chevron-down"></i>
+                                </button>
                                 
                                 <div class="row text-center text-md-left border-top pt-3">
                                     <div class="col-4">
@@ -427,6 +432,39 @@
                     element.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             }
+
+            // Read More / Read Less Toggle for HTML description
+            document.addEventListener('DOMContentLoaded', function() {
+                const wrapper = document.getElementById('description-wrapper');
+                const fade = document.getElementById('description-fade');
+                const btn = document.getElementById('read-more-btn');
+                
+                if (wrapper && btn) {
+                    const maxHeight = 160; // Max collapsed height in pixels
+                    if (wrapper.scrollHeight > maxHeight) {
+                        // Collapse initially
+                        wrapper.style.maxHeight = maxHeight + 'px';
+                        fade.style.display = 'block';
+                        btn.style.display = 'inline-block';
+                        
+                        btn.addEventListener('click', function() {
+                            if (wrapper.style.maxHeight === maxHeight + 'px') {
+                                // Expand
+                                wrapper.style.maxHeight = wrapper.scrollHeight + 'px';
+                                fade.style.display = 'none';
+                                btn.innerHTML = 'Read Less <i class="mdi mdi-chevron-up"></i>';
+                            } else {
+                                // Collapse
+                                wrapper.style.maxHeight = maxHeight + 'px';
+                                fade.style.display = 'block';
+                                btn.innerHTML = 'Read More <i class="mdi mdi-chevron-down"></i>';
+                                // Scroll wrapper into view if needed
+                                wrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                            }
+                        });
+                    }
+                }
+            });
         </script>
     @endpush
 </x-customer-layout>

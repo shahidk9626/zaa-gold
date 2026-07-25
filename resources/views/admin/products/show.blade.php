@@ -34,7 +34,7 @@
                 <div class="col-auto">
                     <div class="product-thumbnail-container bg-light d-flex align-items-center justify-content-center">
                         @if($product->thumbnail)
-                            <img src="{{ asset('storage/' . $product->thumbnail) }}" class="w-100 h-100 object-cover" alt="thumbnail" />
+                            <img src="{{ $product->getThumbnailUrl() }}" class="w-100 h-100 object-cover" alt="thumbnail" />
                         @else
                             <i class="mdi mdi-image text-muted" style="font-size: 3rem;"></i>
                         @endif
