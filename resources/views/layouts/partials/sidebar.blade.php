@@ -223,9 +223,9 @@
           </li>
           @endif
           @if(hasPermission('payment.reconciliation'))
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <a class="nav-link" href="{{ route('payments.reconciliation') }}">Reconciliation</a>
-          </li>
+          </li> -->
           @endif
           @endif
           @if(hasPermission('receipt.view'))
@@ -234,9 +234,9 @@
           </li>
           @endif
           @if(hasPermission('invoice.view'))
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <a class="nav-link" href="{{ route('invoices.index') }}">GST Invoices</a>
-          </li>
+          </li> -->
           @endif
           @if(hasPermission('delivery.view'))
           <li class="nav-item">
