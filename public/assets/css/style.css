@@ -15484,7 +15484,39 @@ dl {
   display: block !important;
   width: 100% !important;
   overflow-x: auto !important;
+  overflow-y: visible !important;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Modern sleek scrollbar design for responsive tables */
+.table-responsive::-webkit-scrollbar {
+  height: 6px;
+}
+.table-responsive::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+  transition: background 0.3s ease;
+}
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Force standard data tables to not wrap and force horizontal scroll if content overflows */
+.table-responsive table.table:not(.table-borderless):not(.table-sm) {
+  min-width: 1050px !important;
+}
+
+.table-responsive table.table:not(.table-borderless):not(.table-sm) th,
+.table-responsive table.table:not(.table-borderless):not(.table-sm) td {
+  white-space: nowrap !important;
+}
+
+.table-responsive table.table td img {
+  max-width: none !important;
 }
 
 .dataTables_wrapper {
