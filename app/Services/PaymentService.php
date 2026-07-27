@@ -468,4 +468,131 @@ class PaymentService
             'user_agent' => $userAgent,
         ]);
     }
+
+    /**
+     * Process cash payment flow for a booking
+     */
+    public function processCashBookingPayment(GoldBooking $booking, array $data)
+    {
+        return DB::transaction(function () use ($booking, $data) {
+            $bookingService = app(BookingService::class);
+
+            // 1. Convert booking number from DRAFT to real ZG26xxxx
+            if (str_starts_with((string) $booking->booking_number, 'DRAFT-')) {
+                $booking->booking_number = $bookingService->generateBookingNumber();
+            }
+            $booking->status = 'Booked';
+            $booking->booking_date = now();
+            $booking->status_change_remarks = 'Booking created with Cash Collection pending verification.';
+            $booking->save();
+
+            // 2. Generate Certificate
+            if (!$booking->certificate()->exists()) {
+                $bookingService->generateCertificate($booking);
+            }
+
+            // 3. Generate EMI Schedule
+            if (!BookingEmiSchedule::where('booking_id', $booking->id)->exists()) {
+                $this->generateScheduleForBooking($booking);
+            }
+
+            $firstEmi = BookingEmiSchedule::where('booking_id', $booking->id)
+                ->where('installment_number', 1)
+                ->firstOrFail();
+
+            // 4. Create Payment Transaction
+            $transaction = PaymentTransaction::create([
+                'transaction_number' => $this->generateTransactionNumber(),
+                'booking_id' => $booking->id,
+                'customer_id' => $booking->customer_id,
+                'payment_type' => 'booking',
+                'gateway' => 'cash',
+                'gateway_order_id' => 'CSHBOOK' . now()->format('ymdHis') . strtoupper(Str::random(6)),
+                'amount' => $booking->monthly_emi,
+                'currency' => 'INR',
+                'payment_status' => 'Pending Verification',
+                'created_by_id' => Auth::id() ?? $booking->customer_id,
+                'updated_by_id' => Auth::id() ?? $booking->customer_id,
+            ]);
+
+            // 5. Calculate proportional monthly GST
+            $monthlyGst = round(($booking->gst_on_gold_amount + $booking->gst_on_charges_amount) / $booking->duration_months, 2);
+
+            $paymentNumber = $this->generatePaymentNumber();
+            $receiptNumber = $this->generateReceiptNumber();
+
+            // 6. Create Booking Payment (Receipt) - status is Pending Verification
+            $receipt = BookingPayment::create([
+                'payment_number' => $paymentNumber,
+                'receipt_number' => $receiptNumber,
+                'booking_id' => $booking->id,
+                'emi_schedule_id' => $firstEmi->id,
+                'customer_id' => $booking->customer_id,
+                'payment_mode' => 'Cash',
+                'transaction_reference' => $transaction->transaction_number,
+                'amount_paid' => $firstEmi->emi_amount,
+                'principal_paid' => $firstEmi->principal_amount,
+                'interest_paid' => $firstEmi->interest_amount,
+                'gst_paid' => $monthlyGst,
+                'payment_date' => now(),
+                'remarks' => $data['remarks'] ?? 'Cash Collection downpayment.',
+                'status' => 'Pending Verification',
+                'created_by_id' => Auth::id() ?? $booking->created_by_id,
+                'updated_by_id' => Auth::id() ?? $booking->updated_by_id,
+            ]);
+
+            // 7. Link first EMI to this receipt
+            $firstEmi->payment_id = $receipt->id;
+            $firstEmi->save();
+
+            // 8. Create Cash Collection Request
+            $ccr = \App\Models\CashCollectionRequest::create([
+                'collection_number' => $this->generateCollectionNumber(),
+                'transaction_id' => $transaction->id,
+                'booking_id' => $booking->id,
+                'customer_id' => $booking->customer_id,
+                'payment_id' => $receipt->id,
+                'collected_by_id' => Auth::id() ?? 1,
+                'amount' => $booking->monthly_emi,
+                'status' => 'Pending Verification',
+                'collection_date' => now(),
+                'remarks' => $data['remarks'] ?? null,
+            ]);
+
+            // 9. Log activity logs
+            $this->logActivity('cash_payment_selected', "Cash payment method selected for Booking {$booking->booking_number}.", $booking->id);
+            $this->logActivity('booking_created', "Booking {$booking->booking_number} created for Customer: {$booking->customer->name}", $booking->id);
+            $this->logActivity('receipt_generated', "Receipt {$receiptNumber} generated for Payment {$paymentNumber} (Pending Verification).", $booking->id);
+            $this->logActivity('cash_collection_request_created', "Cash Collection Request {$ccr->collection_number} created.", $booking->id);
+
+            return [
+                'booking' => $booking,
+                'transaction' => $transaction,
+                'receipt' => $receipt,
+                'cash_collection_request' => $ccr
+            ];
+        });
+    }
+
+    /**
+     * Generate sequential unique collection numbers (e.g. CCR260000001)
+     */
+    public function generateCollectionNumber()
+    {
+        $year = now()->format('y'); // e.g. "26" for 2026
+        $prefix = "CCR" . $year;
+
+        $latest = \App\Models\CashCollectionRequest::where('collection_number', 'like', $prefix . '%')
+            ->latest('id')
+            ->first();
+
+        if (!$latest) {
+            return $prefix . "0000001";
+        }
+
+        $lastNumber = substr($latest->collection_number, 5);
+        $nextNumber = str_pad((int)$lastNumber + 1, 7, '0', STR_PAD_LEFT);
+
+        return $prefix . $nextNumber;
+    }
 }

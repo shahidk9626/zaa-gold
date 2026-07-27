@@ -101,7 +101,7 @@ class GoldBookingController extends Controller
             'product_id' => 'required|exists:products,id',
             'emi_plan_id' => 'required|exists:emi_plans,id',
             'remarks' => 'nullable|string',
-            'payment_method' => 'required|in:pay_now,generate_link',
+            'payment_method' => 'required|in:pay_now,generate_link,cash',
         ]);
 
         try {
@@ -134,6 +134,18 @@ class GoldBookingController extends Controller
                 $request->emi_plan_id,
                 $request->remarks
             );
+
+            if ($request->payment_method === 'cash') {
+                $this->paymentService->processCashBookingPayment($booking, [
+                    'remarks' => $request->remarks
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Booking created successfully. Cash payment is pending verification.',
+                    'redirect_url' => route('bookings.show', $booking->id),
+                ]);
+            }
 
             // Initiate payment
             $payment = $this->paymentService->initiateBookingGatewayPayment($booking, $request->payment_method === 'pay_now');
@@ -291,7 +303,7 @@ class GoldBookingController extends Controller
     public function changeStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|string|in:Draft,Booked,Active,Completed,Cancelled,Refund Initiated,Refunded',
+            'status' => 'required|string|in:Draft,Booked,Active,Paid,Completed,Cancelled,Refund Initiated,Refunded',
             'remarks' => 'nullable|string',
         ]);
 

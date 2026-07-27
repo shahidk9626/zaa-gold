@@ -153,7 +153,8 @@
                 input: 'select',
                 inputOptions: {
                     'pay_now': 'Pay Now (Redirect to Secure Checkout)',
-                    'generate_link': 'Generate Payment Link (For Customer to Pay)'
+                    'generate_link': 'Generate Payment Link (For Customer to Pay)',
+                    'cash': 'Cash Collection (Pending Verification)'
                 },
                 inputPlaceholder: 'Select payment method',
                 showCancelButton: true,
@@ -205,6 +206,16 @@
                                     showConfirmButton: false
                                 }).then(() => {
                                     window.location.href = response.checkout_url;
+                                });
+                            } else if (paymentMethod === 'cash') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Booking Created',
+                                    text: 'Booking created successfully. Cash payment is pending verification.',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    window.location.href = response.redirect_url;
                                 });
                             } else {
                                 Swal.fire({

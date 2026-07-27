@@ -11,6 +11,15 @@
             <div class="text-right">
                 <h5 class="text-success font-weight-bold mb-1">₹{{ number_format($payment->amount_paid, 2) }}</h5>
                 <span class="badge badge-light">{{ $payment->payment_mode }}</span>
+                @php
+                    $custPaymentBadge = match($payment->status) {
+                        'Paid' => 'badge-success',
+                        'Pending Verification' => 'badge-warning',
+                        'Rejected' => 'badge-danger',
+                        default => 'badge-secondary',
+                    };
+                @endphp
+                <span class="badge {{ $custPaymentBadge }} d-block mt-1">{{ $payment->status }}</span>
             </div>
         </div>
         @if($payment->status === 'Paid')

@@ -1,0 +1,56 @@
+-- ==========================================
+-- 1. Table Creation Query
+-- ==========================================
+
+CREATE TABLE cash_collection_requests (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    collection_number VARCHAR(255) NOT NULL UNIQUE,
+    transaction_id BIGINT UNSIGNED NOT NULL,
+    booking_id BIGINT UNSIGNED NOT NULL,
+    customer_id BIGINT UNSIGNED NOT NULL,
+    payment_id BIGINT UNSIGNED NULL,
+    collected_by_id BIGINT UNSIGNED NOT NULL,
+    amount DECIMAL(15, 2) NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'Pending Verification',
+    collection_date DATETIME NOT NULL,
+    remarks TEXT NULL,
+    verified_by_id BIGINT UNSIGNED NULL,
+    verified_at TIMESTAMP NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    FOREIGN KEY (transaction_id) REFERENCES payment_transactions(id) ON DELETE CASCADE,
+    FOREIGN KEY (booking_id) REFERENCES gold_bookings(id) ON DELETE CASCADE,
+    FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (payment_id) REFERENCES booking_payments(id) ON DELETE SET NULL,
+    FOREIGN KEY (collected_by_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (verified_by_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- ==========================================
+-- 2. Module & Permission Insert Queries
+-- ==========================================
+
+-- Insert the module entry
+INSERT INTO modules (name, slug, status, created_at, updated_at)
+VALUES ('Cash Collection', 'cash-collection', 'active', NOW(), NOW());
+
+-- Insert the permissions associated with the cash collection module
+INSERT INTO permissions (module_id, name, slug, created_at, updated_at) VALUES
+((SELECT id FROM modules WHERE slug = 'cash-collection' LIMIT 1), 'View Cash Collection', 'cash-collection.view', NOW(), NOW()),
+((SELECT id FROM modules WHERE slug = 'cash-collection' LIMIT 1), 'Verify Cash Collection', 'cash-collection.verify', NOW(), NOW()),
+((SELECT id FROM modules WHERE slug = 'cash-collection' LIMIT 1), 'Reject Cash Collection', 'cash-collection.reject', NOW(), NOW()),
+((SELECT id FROM modules WHERE slug = 'cash-collection' LIMIT 1), 'Manage Cash Collection', 'cash-collection.manage', NOW(), NOW());
+
+-- Assign these permissions to the 'super-admin' role
+INSERT INTO role_permissions (role_id, permission_id, allowed)
+SELECT r.id, p.id, 1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.slug = 'super-admin' AND p.slug LIKE 'cash-collection.%';
+
+-- Assign these permissions to the 'admin' role
+INSERT INTO role_permissions (role_id, permission_id, allowed)
+SELECT r.id, p.id, 1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.slug = 'admin' AND p.slug LIKE 'cash-collection.%';

@@ -11,7 +11,7 @@
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead class="bg-light">
-                                <tr><th>Receipt</th><th>Amount</th><th>Date</th><th>Mode</th><th></th></tr>
+                                <tr><th>Receipt</th><th>Amount</th><th>Date</th><th>Mode</th><th>Status</th><th></th></tr>
                             </thead>
                             <tbody>
                                 @foreach($payments as $payment)
@@ -20,6 +20,17 @@
                                     <td class="text-success font-weight-bold">₹{{ number_format($payment->amount_paid, 2) }}</td>
                                     <td>{{ $payment->payment_date?->format('d M Y') }}</td>
                                     <td>{{ $payment->payment_mode }}</td>
+                                    <td>
+                                        @php
+                                            $custPaymentBadge = match($payment->status) {
+                                                'Paid' => 'badge-success',
+                                                'Pending Verification' => 'badge-warning',
+                                                'Rejected' => 'badge-danger',
+                                                default => 'badge-secondary',
+                                            };
+                                        @endphp
+                                        <span class="badge {{ $custPaymentBadge }}">{{ $payment->status }}</span>
+                                    </td>
                                     <td>
                                         @if($payment->status === 'Paid')
                                         <a href="{{ route('customer.payments.receipt', $payment->id) }}" class="btn btn-sm btn-outline-primary">Download</a>
@@ -72,8 +83,8 @@
                                     $invoice = $receipt ? ($invoices[$receipt->id] ?? null) : null;
                                     $badge = match($transaction->payment_status) {
                                         'Success' => 'badge-success',
-                                        'Failed', 'Cancelled' => 'badge-danger',
-                                        'Processing' => 'badge-warning',
+                                        'Failed', 'Cancelled', 'Rejected' => 'badge-danger',
+                                        'Processing', 'Pending Verification' => 'badge-warning',
                                         default => 'badge-secondary',
                                     };
                                 @endphp

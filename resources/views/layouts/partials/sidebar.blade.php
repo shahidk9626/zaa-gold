@@ -203,6 +203,11 @@
             <a class="nav-link" href="{{ route('payments.index') }}">EMI Payments</a>
           </li>
           @endif
+          @if(hasPermission('cash-collection.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('admin.cash-collections.index') }}">Cash Collection Requests</a>
+          </li>
+          @endif
           @if(hasPermission('payment.dashboard') || hasPermission('payment.logs') || hasPermission('payment.links') || hasPermission('payment.failed') || hasPermission('payment.reconciliation'))
           <li class="nav-item">
             <a class="nav-link" href="{{ hasPermission('payment.dashboard') ? route('payments.dashboard') : '#' }}">Payment Dashboard</a>

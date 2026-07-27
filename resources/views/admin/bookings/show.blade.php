@@ -227,6 +227,58 @@
             <!-- 1. Overview Tab -->
             <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
                 <div class="row">
+                    @php
+                        $cashRequest = \App\Models\CashCollectionRequest::where('booking_id', $booking->id)->with('collectedBy', 'verifiedBy')->first();
+                    @endphp
+                    @if($cashRequest)
+                    <div class="col-12 mb-4">
+                        <div class="card bg-white border shadow-sm p-4">
+                            <h5 class="text-primary font-weight-bold mb-3 border-bottom pb-2">Cash Collection Details</h5>
+                            <div class="row text-dark">
+                                <div class="col-md-3 col-sm-6 mb-3">
+                                    <label class="small text-muted d-block mb-1">Payment Method</label>
+                                    <span class="font-weight-bold text-dark">Cash</span>
+                                </div>
+                                <div class="col-md-3 col-sm-6 mb-3">
+                                    <label class="small text-muted d-block mb-1">Verification Status</label>
+                                    @php
+                                        $ccrBadgeClass = match($cashRequest->status) {
+                                            'Pending Verification' => 'badge-warning',
+                                            'Verified' => 'badge-success',
+                                            'Rejected' => 'badge-danger',
+                                            default => 'badge-secondary',
+                                        };
+                                    @endphp
+                                    <span class="badge {{ $ccrBadgeClass }} text-dark font-weight-bold px-3 py-1">{{ $cashRequest->status }}</span>
+                                </div>
+                                <div class="col-md-3 col-sm-6 mb-3">
+                                    <label class="small text-muted d-block mb-1">Collection Number</label>
+                                    <a href="{{ route('admin.cash-collections.show', $cashRequest->id) }}" class="font-weight-bold text-primary">{{ $cashRequest->collection_number }}</a>
+                                </div>
+                                <div class="col-md-3 col-sm-6 mb-3">
+                                    <label class="small text-muted d-block mb-1">Collected By (Staff)</label>
+                                    <span class="font-weight-bold text-dark">{{ $cashRequest->collectedBy->name ?? 'N/A' }}</span>
+                                </div>
+                                @if($cashRequest->remarks)
+                                <div class="col-md-6 col-sm-12 mb-3">
+                                    <label class="small text-muted d-block mb-1">Verification Remark / Rejection Reason</label>
+                                    <div class="border rounded bg-light p-2 text-dark">{{ $cashRequest->remarks }}</div>
+                                </div>
+                                @endif
+                                @if($cashRequest->status !== 'Pending Verification')
+                                <div class="col-md-3 col-sm-6 mb-3">
+                                    <label class="small text-muted d-block mb-1">Processed By</label>
+                                    <span class="font-weight-bold text-dark">{{ $cashRequest->verifiedBy->name ?? 'N/A' }}</span>
+                                </div>
+                                <div class="col-md-3 col-sm-6 mb-3">
+                                    <label class="small text-muted d-block mb-1">Processed At</label>
+                                    <span class="font-weight-bold text-dark">{{ $cashRequest->verified_at ? $cashRequest->verified_at->format('d M Y, h:i A') : 'N/A' }}</span>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                     <!-- Customer Details & Product Specs -->
                     <div class="col-md-6 mb-4">
                         <div class="card bg-white border shadow-sm p-4 h-100">
@@ -541,8 +593,8 @@
                                             @php
                                                 $gatewayBadge = match($transaction->payment_status) {
                                                     'Success' => 'badge-success',
-                                                    'Failed', 'Cancelled' => 'badge-danger',
-                                                    'Processing' => 'badge-warning',
+                                                    'Failed', 'Cancelled', 'Rejected' => 'badge-danger',
+                                                    'Processing', 'Pending Verification' => 'badge-warning',
                                                     default => 'badge-secondary',
                                                 };
                                             @endphp
@@ -594,7 +646,17 @@
                                         <td>₹{{ number_format($payment->interest_paid, 2) }}</td>
                                         <td class="text-danger">₹{{ number_format($payment->late_fee_paid, 2) }}</td>
                                         <td>{{ $payment->payment_date->format('d M Y, h:i A') }}</td>
-                                        <td><span class="badge badge-success text-dark font-weight-bold px-3 py-1">{{ $payment->status }}</span></td>
+                                        <td>
+                                            @php
+                                                $paymentBadgeClass = match($payment->status) {
+                                                    'Paid' => 'badge-success',
+                                                    'Pending Verification' => 'badge-warning',
+                                                    'Rejected' => 'badge-danger',
+                                                    default => 'badge-secondary',
+                                                };
+                                            @endphp
+                                            <span class="badge {{ $paymentBadgeClass }} text-dark font-weight-bold px-3 py-1">{{ $payment->status }}</span>
+                                        </td>
                                         <td>
                                             <a href="{{ route('payments.show', $payment->id) }}" class="btn btn-sm btn-info px-2 py-1 mr-1">
                                                 <i class="mdi mdi-eye"></i> Details
