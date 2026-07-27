@@ -44,6 +44,7 @@
                             <th>Payment Number</th>
                             <th>Booking Number</th>
                             <th>Customer Name</th>
+                            <th>Contact Number</th>
                             <th>EMI Number</th>
                             <th>Total Amount Paid</th>
                             <th>Payment Date</th>
@@ -64,6 +65,9 @@
                                     <div class="font-weight-bold text-dark">{{ $payment->booking->customer->name ?? 'N/A' }}</div>
                                     <small class="text-muted">{{ $payment->booking->customer->email ?? 'N/A' }}</small>
                                 </td>
+                                <td class="align-middle">
+                                    {{ $payment->booking->customer->customerDetail->phone_number ?? $payment->booking->customer->phone ?? 'N/A' }}
+                                </td>
                                 <td class="text-center font-weight-bold text-dark">
                                     #{{ $payment->emiSchedule->installment_number ?? 'N/A' }}
                                 </td>
@@ -83,7 +87,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-4 text-muted">
+                                <td colspan="9" class="text-center py-4 text-muted">
                                     <i class="mdi mdi-alert mr-1"></i> No receipts found matching your search.
                                 </td>
                             </tr>
