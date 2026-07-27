@@ -15481,11 +15481,10 @@ dl {
 
 /* Fix DataTables and Responsive Tables Overflow Scroll issues */
 .table-responsive {
-  display: block !important;
-  width: 100% !important;
-  overflow-x: auto !important;
-  overflow-y: visible !important;
-  -webkit-overflow-scrolling: touch;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    display: block !important;
+    width: 100% !important;
 }
 
 /* Modern sleek scrollbar design for responsive tables */
