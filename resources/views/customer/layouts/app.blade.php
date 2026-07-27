@@ -11,6 +11,14 @@
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}?v={{ filemtime(public_path('assets/css/style.css')) }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/customer-portal.css') }}" />
     <link rel="shortcut icon" href="{{ asset('assets/images/favicon.png') }}" />
+    <style>
+      .table-responsive {
+          overflow-x: auto !important;
+          overflow-y: visible !important;
+          display: block !important;
+          width: 100% !important;
+      }
+    </style>
     @stack('styles')
 </head>
 <body class="customer-portal">

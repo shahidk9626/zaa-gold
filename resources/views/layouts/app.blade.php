@@ -12,6 +12,14 @@
     <link rel="stylesheet" href="{{ asset('assets/vendors/bootstrap-datepicker/bootstrap-datepicker.min.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}?v={{ filemtime(public_path('assets/css/style.css')) }}" />
     <link rel="shortcut icon" href="{{ asset('assets/images/favicon.png') }}" />
+    <style>
+      .table-responsive {
+          overflow-x: auto !important;
+          overflow-y: visible !important;
+          display: block !important;
+          width: 100% !important;
+      }
+    </style>
   </head>
   <body>
     <div class="container-scroller">
