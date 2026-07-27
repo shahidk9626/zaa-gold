@@ -7,12 +7,14 @@
   thead {
     border-top: 1px solid $table-bordertop-color;
     border-bottom: 1px solid $table-bordertop-color;
+
     th {
       border-top: 0;
       border-bottom-width: 1px;
       font-family: $type1;
       font-weight: 500;
       padding-left: 25px;
+
       .rtl & {
         padding-left: 0;
         padding-right: 25px;
@@ -53,8 +55,10 @@
     }
   }
 }
+
 .table-responsive {
-  display: inline-table;
+
+  // display: inline-table;
   @media (max-width: 767px) {
     display: block;
   }
