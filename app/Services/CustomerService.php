@@ -104,7 +104,9 @@ class CustomerService
 
     public function getEmiHistory(int $customerId): array
     {
-        $bookings = GoldBooking::where('customer_id', $customerId)->pluck('id');
+        $bookings = GoldBooking::where('customer_id', $customerId)
+            ->whereIn('status', ['Booked', 'Active', 'Completed'])
+            ->pluck('id');
         $schedule = BookingEmiSchedule::whereIn('booking_id', $bookings)
             ->with(['booking.product'])
             ->orderBy('due_date')
@@ -120,6 +122,7 @@ class CustomerService
         $pendingEmi = $schedule->whereIn('status', ['Pending', 'Overdue'])->count();
         $totalPaid = (float) BookingPayment::where('customer_id', $customerId)->where('status', 'Paid')->sum('amount_paid');
         $outstanding = GoldBooking::where('customer_id', $customerId)
+            ->whereIn('status', ['Booked', 'Active', 'Completed'])
             ->get()
             ->sum(fn ($b) => $this->getFinancialSummary($b)['outstanding']);
 
