@@ -32,7 +32,8 @@
         <div class="card bg-white border shadow-sm h-100 p-4">
             <h5 class="text-primary font-weight-bold mb-3 border-bottom pb-2">Selected Product Details</h5>
             <div class="text-center mb-4 p-3 bg-light rounded" style="min-height: 200px;">
-                <img id="prodImage" src="" alt="Product Thumbnail" class="img-fluid rounded border shadow-sm d-none" style="max-height: 180px;">
+                <img id="prodImage" src="" alt="Product Thumbnail" class="img-fluid rounded border shadow-sm d-none" style="max-height: 180px; cursor: pointer;">
+                <div id="galleryHint" class="text-muted small mt-2 d-none" style="cursor: pointer;"><i class="mdi mdi-arrow-expand-all"></i> Click image to view gallery</div>
                 <div id="prodImagePlaceholder" class="d-flex justify-content-center align-items-center bg-secondary text-white rounded border" style="height: 180px;">
                     <i class="mdi mdi-image" style="font-size: 3rem;"></i>
                 </div>
@@ -98,6 +99,35 @@
     'outstandingUrl' => route('emi-calculator.outstanding'),
     'pdfUrl' => route('emi-calculator.outstanding.pdf')
 ])
+
+<!-- Gallery Lightbox Modal -->
+<div class="modal fade" id="galleryModal" tabindex="-1" role="dialog" aria-labelledby="galleryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content bg-white text-dark" style="border-radius: 12px; border: 0;">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title font-weight-bold" id="galleryModalLabel">Product Gallery</h5>
+                <button type="button" class="close text-dark" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true" style="font-size: 1.5rem;">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body py-3">
+                <div id="productGalleryCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
+                    <div class="carousel-inner" id="carouselInner">
+                        <!-- Dynamic items -->
+                    </div>
+                    <a class="carousel-control-prev" href="#productGalleryCarousel" role="button" data-slide="prev" style="width: 10%;">
+                        <span class="carousel-control-prev-icon bg-dark rounded-circle p-2" aria-hidden="true" style="background-size: 50%; opacity: 0.7;"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#productGalleryCarousel" role="button" data-slide="next" style="width: 10%;">
+                        <span class="carousel-control-next-icon bg-dark rounded-circle p-2" aria-hidden="true" style="background-size: 50%; opacity: 0.7;"></span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -147,8 +177,37 @@
                 if (response.thumbnail) {
                     $('#prodImage').attr('src', response.thumbnail).removeClass('d-none');
                     $('#prodImagePlaceholder').addClass('d-none');
+                    
+                    let galleryUrls = [response.thumbnail];
+                    if (response.gallery_images && response.gallery_images.length > 0) {
+                        galleryUrls = [response.thumbnail, ...response.gallery_images];
+                        $('#galleryHint').removeClass('d-none');
+                    } else {
+                        $('#galleryHint').addClass('d-none');
+                    }
+                    
+                    let carouselHtml = '';
+                    galleryUrls.forEach((url, index) => {
+                        carouselHtml += `
+                            <div class="carousel-item ${index === 0 ? 'active' : ''} text-center">
+                                <img src="${url}" class="img-fluid rounded" style="max-height: 450px; object-fit: contain;">
+                            </div>
+                        `;
+                    });
+                    $('#carouselInner').html(carouselHtml);
+                    
+                    if (galleryUrls.length > 1) {
+                        $('.carousel-control-prev, .carousel-control-next').show();
+                    } else {
+                        $('.carousel-control-prev, .carousel-control-next').hide();
+                    }
+                    
+                    $('#prodImage, #galleryHint').off('click').on('click', function() {
+                        $('#galleryModal').modal('show');
+                    });
                 } else {
                     $('#prodImage').addClass('d-none');
+                    $('#galleryHint').addClass('d-none');
                     $('#prodImagePlaceholder').removeClass('d-none');
                 }
 

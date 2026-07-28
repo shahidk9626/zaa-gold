@@ -127,7 +127,13 @@ class EmiCalculatorController extends Controller
             'gold_type' => $product->gold_type,
             'gold_price_per_gram' => $pricePerGram,
             'product_price' => $productPrice,
-            'thumbnail' => $product->thumbnail ? asset('storage/' . $product->thumbnail) : null,
+            'thumbnail' => $product->getThumbnailUrl(),
+            'gallery_images' => collect($product->gallery_images ?? [])->map(function($path) {
+                if (strpos(request()->getHost(), 'aurongold.in') !== false) {
+                    return asset('storage/app/public/' . $path);
+                }
+                return asset('storage/' . $path);
+            })->toArray(),
             'description' => $product->description,
             'eligible_plans' => $eligiblePlans,
         ]);
