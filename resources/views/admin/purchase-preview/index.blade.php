@@ -44,11 +44,8 @@
         <div class="card bg-white border shadow-sm h-100 p-4">
             <h5 class="text-primary font-weight-bold mb-3 border-bottom pb-2">Selected Product Details</h5>
             <div class="text-center mb-4 p-3 bg-light rounded" style="min-height: 200px;">
-                <img id="prodImage" src="" alt="Product Thumbnail" class="img-fluid rounded border shadow-sm d-none" style="max-height: 180px; cursor: pointer;">
+                <img id="prodImage" src="" alt="Product Thumbnail" class="img-fluid rounded border shadow-sm d-none" style="max-height: 180px; cursor: pointer; margin: 0 auto;">
                 <div id="galleryHint" class="text-muted small mt-2 d-none" style="cursor: pointer;"><i class="mdi mdi-arrow-expand-all"></i> Click image to view gallery</div>
-                <div id="prodImagePlaceholder" class="d-flex justify-content-center align-items-center bg-secondary text-white rounded border" style="height: 180px;">
-                    <i class="mdi mdi-image" style="font-size: 3rem;"></i>
-                </div>
             </div>
             
             <div class="mb-3">
@@ -316,7 +313,6 @@
 
                 if (response.thumbnail) {
                     $('#prodImage').attr('src', response.thumbnail).removeClass('d-none');
-                    $('#prodImagePlaceholder').addClass('d-none');
                     
                     let galleryUrls = [response.thumbnail];
                     if (response.gallery_images && response.gallery_images.length > 0) {
@@ -346,9 +342,8 @@
                         $('#galleryModal').modal('show');
                     });
                 } else {
-                    $('#prodImage').addClass('d-none');
+                    $('#prodImage').addClass('d-none').attr('src', '');
                     $('#galleryHint').addClass('d-none');
-                    $('#prodImagePlaceholder').removeClass('d-none');
                 }
 
                 // Render eligible EMI plan cards
