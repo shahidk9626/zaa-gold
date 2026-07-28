@@ -102,7 +102,7 @@
 
                                     <div class="row border-top pt-2 mt-2">
                                         <div class="col-6">
-                                            <span class="text-muted small d-block" style="font-size: 0.7rem;">Monthly EMI</span>
+                                            <span class="text-muted small d-block" style="font-size: 0.7rem;">EMAP (Easy Monthly Advance Payment)</span>
                                             <span class="font-weight-bold text-success" style="font-size: 1.1rem;">₹{{ number_format($calc['installment'], 2) }}</span>
                                         </div>
                                         <div class="col-6 text-right">
@@ -147,7 +147,7 @@
                                     <tr>
                                         <th>EMI Plan</th>
                                         <th>Duration</th>
-                                        <th>Monthly EMI</th>
+                                        <th>EMAP (Easy Monthly Advance Payment)</th>
                                         <th>Finance Charges</th>
                                         <th>Storage Charges</th>
                                         <th>Grand Total</th>
@@ -217,14 +217,14 @@
                                         <span class="font-weight-medium text-dark" id="calc-gold-value">₹0.00</span>
                                     </div>
                                     <div class="col-6 text-right">
-                                        <span class="text-muted small d-block">GST on Gold</span>
+                                        <span class="text-muted small d-block">GST on Gold - 3%</span>
                                         <span class="font-weight-medium text-dark" id="calc-gst-gold">₹0.00</span>
                                     </div>
                                 </div>
 
                                 <div class="row border-bottom pb-2 mb-3">
                                     <div class="col-6">
-                                        <span class="text-muted small d-block">Charges (Finance & Storage)</span>
+                                        <span class="text-muted small d-block">Price Locking with secure storage charges - 12%</span>
                                         <span class="font-weight-medium text-dark" id="calc-charges">₹0.00</span>
                                     </div>
                                     <div class="col-6 text-right">
@@ -251,7 +251,7 @@
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
-                                            <span class="font-weight-bold text-success">Monthly EMI</span>
+                                            <span class="font-weight-bold text-success">EMAP (Easy Monthly Advance Payment)</span>
                                             <small class="text-muted d-block" style="font-size: 0.65rem; line-height: 1;">Payable now to confirm</small>
                                         </div>
                                         <span class="font-weight-bold text-success h4 mb-0" id="calc-monthly-emi">₹0.00</span>
@@ -272,7 +272,7 @@
                                     <div class="custom-control custom-checkbox mb-4">
                                         <input type="checkbox" name="terms" class="custom-control-input" id="terms-checkbox" required>
                                         <label class="custom-control-label small text-muted" for="terms-checkbox" style="line-height: 1.4; cursor: pointer;">
-                                            I agree to lock my gold price at today's rate and confirm booking. I authorize ZAA Gold to automatically charge my payment source for the first EMI installment of <strong id="calc-first-emi-term" class="text-success">₹0.00</strong> to activate the plan.
+                                            I agree to lock my gold price at today's rate and confirm booking. I authorize ZAA Gold to automatically charge my payment source for the first EMAP installment of <strong id="calc-first-emi-term" class="text-success">₹0.00</strong> to activate the plan.
                                         </label>
                                     </div>
 
@@ -293,7 +293,7 @@
         <div class="d-block d-md-none sticky-mobile-buy-bar bg-white border-top shadow-lg p-3">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <span class="text-muted small d-block">Monthly EMI starting</span>
+                    <span class="text-muted small d-block">EMAP (Easy Monthly Advance Payment) starting</span>
                     <span class="font-weight-bold text-success h5 mb-0" id="mobile-buy-emi">₹0.00</span>
                 </div>
                 <button type="button" class="btn btn-success px-4 py-2 font-weight-bold" onclick="scrollToCalculator()">
