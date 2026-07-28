@@ -162,6 +162,9 @@ class CustomerOnboardingService
         if (isset($files['signature'])) {
             $kycData['signature'] = $files['signature']->store('kyc/signature', 'public');
         }
+        if (isset($files['bank_document'])) {
+            $kycData['bank_document'] = $files['bank_document']->store('kyc/bank_document', 'public');
+        }
         if (isset($files['additional_documents'])) {
             $kycData['additional_documents'] = $files['additional_documents']->store('kyc/additional', 'public');
         }
@@ -179,7 +182,7 @@ class CustomerOnboardingService
                 $isResubmission = true;
             }
             // Clean old files from storage before replacing them
-            foreach (['pan_card', 'front_image', 'back_image', 'selfie', 'signature', 'additional_documents'] as $fileField) {
+            foreach (['pan_card', 'front_image', 'back_image', 'selfie', 'signature', 'bank_document', 'additional_documents'] as $fileField) {
                 if (isset($kycData[$fileField]) && $latestKyc->$fileField) {
                     \Illuminate\Support\Facades\Storage::disk('public')->delete($latestKyc->$fileField);
                 }

@@ -19,6 +19,7 @@ class Kyc extends Model
         'selfie',
         'pan_card',
         'signature',
+        'bank_document',
         'additional_documents',
         'status',
         'approved_by',

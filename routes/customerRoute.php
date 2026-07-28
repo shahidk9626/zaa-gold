@@ -27,6 +27,7 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
     // Customer Purchased Plans (My Plans)
     Route::get('/my-plans', [MyPlanController::class, 'index'])->name('my-plans.index');
     Route::get('/my-plans/{id}', [MyPlanController::class, 'show'])->name('my-plans.show');
+    Route::delete('/my-plans/{id}', [MyPlanController::class, 'destroy'])->name('my-plans.destroy');
 
     Route::get('/emi/history', [EmiController::class, 'history'])->name('emi.history');
     Route::get('/emi/repay', [EmiController::class, 'repay'])->name('emi.repay');

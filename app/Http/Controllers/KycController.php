@@ -175,6 +175,10 @@ class KycController extends Controller
         if ($kyc->front_image) Storage::disk('public')->delete($kyc->front_image);
         if ($kyc->back_image) Storage::disk('public')->delete($kyc->back_image);
         if ($kyc->selfie) Storage::disk('public')->delete($kyc->selfie);
+        if ($kyc->pan_card) Storage::disk('public')->delete($kyc->pan_card);
+        if ($kyc->signature) Storage::disk('public')->delete($kyc->signature);
+        if ($kyc->bank_document) Storage::disk('public')->delete($kyc->bank_document);
+        if ($kyc->additional_documents) Storage::disk('public')->delete($kyc->additional_documents);
 
         $kyc->delete();
 
@@ -200,6 +204,9 @@ class KycController extends Controller
         }
         if ($kyc->signature) {
             $files['signature_' . basename($kyc->signature)] = storage_path('app/public/' . $kyc->signature);
+        }
+        if ($kyc->bank_document) {
+            $files['bank_' . basename($kyc->bank_document)] = storage_path('app/public/' . $kyc->bank_document);
         }
         if ($kyc->additional_documents) {
             $files['additional_' . basename($kyc->additional_documents)] = storage_path('app/public/' . $kyc->additional_documents);

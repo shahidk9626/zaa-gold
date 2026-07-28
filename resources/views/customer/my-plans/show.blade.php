@@ -1,11 +1,29 @@
 <x-customer-layout title="Plan Details">
     <div class="page-header flex-wrap d-none d-md-flex">
         <h3 class="mb-0">Booking #{{ $booking->booking_number }}</h3>
-        <a href="{{ route('customer.my-plans.index') }}" class="btn btn-secondary btn-sm"><i class="mdi mdi-arrow-left"></i> Back</a>
+        <div>
+            @if($booking->status === 'Draft')
+                <form action="{{ route('customer.my-plans.destroy', $booking->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this draft booking?');" style="display:inline-block;" class="mr-2">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger btn-sm"><i class="mdi mdi-delete"></i> Delete Booking</button>
+                </form>
+            @endif
+            <a href="{{ route('customer.my-plans.index') }}" class="btn btn-secondary btn-sm"><i class="mdi mdi-arrow-left"></i> Back</a>
+        </div>
     </div>
     <div class="d-block d-md-none mb-3">
-        <a href="{{ route('customer.my-plans.index') }}" class="text-muted small"><i class="mdi mdi-arrow-left"></i> Back to Plans</a>
-        <h5 class="font-weight-bold mt-2">#{{ $booking->booking_number }}</h5>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <a href="{{ route('customer.my-plans.index') }}" class="text-muted small"><i class="mdi mdi-arrow-left"></i> Back to Plans</a>
+            @if($booking->status === 'Draft')
+                <form action="{{ route('customer.my-plans.destroy', $booking->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this draft booking?');" style="display:inline-block;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger btn-xs"><i class="mdi mdi-delete"></i> Delete</button>
+                </form>
+            @endif
+        </div>
+        <h5 class="font-weight-bold">#{{ $booking->booking_number }}</h5>
         <span class="badge badge-primary">{{ $booking->status }}</span>
     </div>
 
@@ -90,11 +108,17 @@
                 </div>
                 @endif
                 @foreach($invoices as $invoice)
+                @php
+                    $desc = 'Downpayment / Booking';
+                    if ($invoice->payment && $invoice->payment->emiSchedule) {
+                        $desc = 'EMI #' . $invoice->payment->emiSchedule->installment_number;
+                    }
+                @endphp
                 <div class="col-md-4 grid-margin">
                     <div class="card text-center p-4">
                         <i class="mdi mdi-file-document text-success" style="font-size: 3rem;"></i>
-                        <h6 class="mt-3">GST Invoice</h6>
-                        <p class="text-muted small">{{ $invoice->invoice_number }}</p>
+                        <h6 class="mt-3 font-weight-bold">GST Invoice ({{ $desc }})</h6>
+                        <p class="text-muted small">Invoice No: {{ $invoice->invoice_number }}</p>
                         <a href="{{ route('customer.certificates.invoice', $invoice->id) }}" class="btn btn-sm btn-primary">Download PDF</a>
                     </div>
                 </div>

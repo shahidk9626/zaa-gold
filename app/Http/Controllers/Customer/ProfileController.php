@@ -44,7 +44,7 @@ class ProfileController extends CustomerBaseController
             'country' => 'required|string|max:100',
             'occupation' => 'required|string|max:255',
             'pan_number' => 'required|string|max:20',
-            'aadhar_number' => 'required|string|max:20',
+            'aadhar_number' => 'required|digits:12',
             'dob' => 'required|date',
             'gender' => 'required|string|max:20',
             'bank_name' => 'required|string|max:255',
@@ -88,8 +88,9 @@ class ProfileController extends CustomerBaseController
             'pan_card' => ($isUpdate && $latestKyc->pan_card) ? 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048' : 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'front_image' => ($isUpdate && $latestKyc->front_image) ? 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048' : 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'back_image' => ($isUpdate && $latestKyc->back_image) ? 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048' : 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'selfie' => ($isUpdate && $latestKyc->selfie) ? 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048' : 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'signature' => ($isUpdate && $latestKyc->signature) ? 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048' : 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'selfie' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'signature' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'bank_document' => ($isUpdate && $latestKyc->bank_document) ? 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048' : 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'additional_documents' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:4096',
         ]);
 

@@ -32,4 +32,25 @@ class MyPlanController extends CustomerBaseController
 
         return view('customer.my-plans.show', $data);
     }
+
+    public function destroy(int $id): \Illuminate\Http\RedirectResponse
+    {
+        $booking = \App\Models\GoldBooking::where('customer_id', $this->customerId())
+            ->where('status', 'Draft')
+            ->findOrFail($id);
+
+        $booking->delete();
+
+        \App\Models\ActivityLog::create([
+            'module_name' => 'gold_booking',
+            'record_id' => $booking->id,
+            'action_type' => 'booking_deleted',
+            'description' => "Customer deleted Draft booking #{$booking->booking_number}.",
+            'created_by_id' => $this->customerId(),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->header('User-Agent'),
+        ]);
+
+        return redirect()->route('customer.my-plans.index')->with('success', 'Draft booking deleted successfully.');
+    }
 }

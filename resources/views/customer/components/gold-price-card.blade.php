@@ -2,13 +2,13 @@
 
 @if($goldPrice)
 <div class="row">
-    <div class="col-md-6 grid-margin stretch-card">
-        <div class="card bg-warning">
-            <div class="card-body">
+    <div class="col-12 mb-3">
+        <div class="card bg-warning text-white border-0">
+            <div class="card-body p-3">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <p class="mb-0 text-white-50">Today's 22K Gold</p>
-                        <h3 class="text-white mb-0">₹{{ number_format($goldPrice->price_22k, 2) }}<small class="h6">/g</small></h3>
+                        <p class="mb-0 text-white-50 small">Today's 22K Gold</p>
+                        <h3 class="text-white mb-0 font-weight-bold">₹{{ number_format($goldPrice->price_22k, 2) }}<small class="h6">/g</small></h3>
                     </div>
                     <div class="text-right">
                         @if($trend22k === 'up')
@@ -23,13 +23,13 @@
             </div>
         </div>
     </div>
-    <div class="col-md-6 grid-margin stretch-card">
-        <div class="card bg-primary">
-            <div class="card-body">
+    <div class="col-12 mb-3">
+        <div class="card bg-primary text-white border-0">
+            <div class="card-body p-3">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <p class="mb-0 text-white-50">Today's 24K Gold</p>
-                        <h3 class="text-white mb-0">₹{{ number_format($goldPrice->price_24k, 2) }}<small class="h6">/g</small></h3>
+                        <p class="mb-0 text-white-50 small">Today's 24K Gold</p>
+                        <h3 class="text-white mb-0 font-weight-bold">₹{{ number_format($goldPrice->price_24k, 2) }}<small class="h6">/g</small></h3>
                     </div>
                     <div class="text-right">
                         @if($trend24k === 'up')

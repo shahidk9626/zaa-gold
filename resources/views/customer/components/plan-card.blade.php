@@ -8,6 +8,7 @@
         'Booked' => 'badge-warning',
         'Completed' => 'badge-success',
         'Cancelled' => 'badge-danger',
+        'Draft' => 'badge-secondary',
         default => 'badge-secondary',
     };
     $thumb = $product ? $product->getThumbnailUrl() : asset('assets/images/dashboard/img_1.jpg');
@@ -44,8 +45,17 @@
             <div class="progress-bar bg-success" style="width: {{ $plan['progress'] }}%"></div>
         </div>
 
-        <a href="{{ route('customer.my-plans.show', $booking->id) }}" class="btn btn-sm btn-primary btn-block {{ $compact ? 'btn-mobile-lg' : '' }}">
-            View Details
-        </a>
+        <div class="d-flex align-items-center">
+            <a href="{{ route('customer.my-plans.show', $booking->id) }}" class="btn btn-sm btn-primary flex-grow-1 mr-2 {{ $compact ? 'btn-mobile-lg' : '' }}">
+                View Details
+            </a>
+            @if($booking->status === 'Draft')
+                <form action="{{ route('customer.my-plans.destroy', $booking->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this draft booking?');" class="flex-grow-1" style="display:inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-sm btn-danger btn-block {{ $compact ? 'btn-mobile-lg' : '' }}"><i class="mdi mdi-delete"></i> Delete</button>
+                </form>
+            @endif
+        </div>
     </div>
 </div>

@@ -193,7 +193,7 @@
                                     </div>
                                     <div class="col-md-6 form-group">
                                         <label>Aadhaar Card Number <span class="text-danger">*</span></label>
-                                        <input type="text" name="aadhar_number" class="form-control" value="{{ old('aadhar_number', $user->customerDetail->aadhar_number ?? '') }}" required>
+                                        <input type="text" name="aadhar_number" class="form-control" value="{{ old('aadhar_number', $user->customerDetail->aadhar_number ?? '') }}" required pattern="[0-9]{12}" maxlength="12" title="Please enter a valid 12-digit Aadhaar Card Number">
                                     </div>
                                 </div>
                             </div>
@@ -320,7 +320,7 @@
 
                                         {{-- Document 4: Passport Photo --}}
                                         <div class="col-md-6 form-group mb-4">
-                                            <label class="font-weight-bold text-dark">Passport Size Photo <span class="text-danger">*</span></label>
+                                            <label class="font-weight-bold text-dark">Passport Size Photo <span class="text-muted">(Optional)</span></label>
                                             <input type="file" name="selfie" class="form-control-file border p-2 w-100 rounded" {{ $isDisabled }}>
                                             <small class="text-muted d-block mt-1">Upload a passport-sized profile picture or selfie (Max 2MB).</small>
                                             @if($latestKyc && $latestKyc->selfie)
@@ -333,13 +333,26 @@
 
                                         {{-- Document 5: Signature --}}
                                         <div class="col-md-6 form-group mb-4">
-                                            <label class="font-weight-bold text-dark">Signature Scan <span class="text-danger">*</span></label>
+                                            <label class="font-weight-bold text-dark">Signature Scan <span class="text-muted">(Optional)</span></label>
                                             <input type="file" name="signature" class="form-control-file border p-2 w-100 rounded" {{ $isDisabled }}>
                                             <small class="text-muted d-block mt-1">Upload a scan or picture of your signature on a white paper (Max 2MB).</small>
                                             @if($latestKyc && $latestKyc->signature)
                                                 <div class="mt-2 small d-flex align-items-center">
                                                     <span class="text-success"><i class="mdi mdi-file-check mr-1"></i> Document Uploaded</span>
                                                     <a href="{{ asset('storage/' . $latestKyc->signature) }}" target="_blank" class="ml-3 font-weight-bold text-primary"><i class="mdi mdi-eye mr-1"></i> View</a>
+                                                </div>
+                                            @endif
+                                        </div>
+
+                                        {{-- Document 7: Bank Document / Cancelled Cheque --}}
+                                        <div class="col-md-6 form-group mb-4">
+                                            <label class="font-weight-bold text-dark">Bank Document / Cancelled Cheque <span class="text-danger">*</span></label>
+                                            <input type="file" name="bank_document" class="form-control-file border p-2 w-100 rounded" {{ $isDisabled }}>
+                                            <small class="text-muted d-block mt-1">Upload bank statement page showing details or a cancelled cheque (Max 2MB).</small>
+                                            @if($latestKyc && $latestKyc->bank_document)
+                                                <div class="mt-2 small d-flex align-items-center">
+                                                    <span class="text-success"><i class="mdi mdi-file-check mr-1"></i> Document Uploaded</span>
+                                                    <a href="{{ asset('storage/' . $latestKyc->bank_document) }}" target="_blank" class="ml-3 font-weight-bold text-primary"><i class="mdi mdi-eye mr-1"></i> View</a>
                                                 </div>
                                             @endif
                                         </div>

@@ -25,9 +25,47 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">EMI Schedule</h5>
-                    @foreach($schedule->take(20) as $emi)
-                        @include('customer.components.emi-card', ['schedule' => $emi, 'showPayButton' => false])
-                    @endforeach
+                    @if($schedule->isEmpty())
+                        <p class="text-muted">No EMI schedules found.</p>
+                    @else
+                        @php
+                            $groupedSchedule = $schedule->groupBy('booking_id');
+                        @endphp
+                        
+                        {{-- Tab headers --}}
+                        <ul class="nav nav-tabs border-0 bg-light rounded p-1 mb-3" id="emiBookingTabs" role="tablist">
+                            @foreach($groupedSchedule as $bookingId => $emis)
+                                @php
+                                    $booking = $emis->first()->booking;
+                                @endphp
+                                <li class="nav-item" role="presentation" style="margin-bottom:0;">
+                                    <a class="nav-link {{ $loop->first ? 'active' : '' }} font-weight-bold" 
+                                       id="tab-booking-{{ $bookingId }}" 
+                                       data-toggle="tab" 
+                                       href="#pane-booking-{{ $bookingId }}" 
+                                       role="tab" 
+                                       aria-controls="pane-booking-{{ $bookingId }}" 
+                                       aria-selected="{{ $loop->first ? 'true' : 'false' }}">
+                                        {{ $booking->product?->name ?? 'Gold Plan' }} (#{{ $booking->booking_number }})
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+
+                        {{-- Tab contents --}}
+                        <div class="tab-content" id="emiBookingTabsContent" style="padding-top:0; border: none; background: transparent; box-shadow: none;">
+                            @foreach($groupedSchedule as $bookingId => $emis)
+                                <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" 
+                                     id="pane-booking-{{ $bookingId }}" 
+                                     role="tabpanel" 
+                                     aria-labelledby="tab-booking-{{ $bookingId }}">
+                                    @foreach($emis as $emi)
+                                        @include('customer.components.emi-card', ['schedule' => $emi, 'showPayButton' => false])
+                                    @endforeach
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

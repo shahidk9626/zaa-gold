@@ -54,3 +54,10 @@ SELECT r.id, p.id, 1
 FROM roles r
 CROSS JOIN permissions p
 WHERE r.slug = 'admin' AND p.slug LIKE 'cash-collection.%';
+
+-- ==========================================
+-- 3. Add Bank Document column to kycs table
+-- ==========================================
+
+ALTER TABLE kycs ADD COLUMN bank_document VARCHAR(255) NULL AFTER signature;
+

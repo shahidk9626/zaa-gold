@@ -40,7 +40,18 @@
                                     <td>{{ $plan['remaining_emi'] }}</td>
                                     <td class="text-danger font-weight-bold">₹{{ number_format($plan['outstanding'], 0) }}</td>
                                     <td><span class="badge badge-primary">{{ $b->status }}</span></td>
-                                    <td><a href="{{ route('customer.my-plans.show', $b->id) }}" class="btn btn-sm btn-primary">View</a></td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <a href="{{ route('customer.my-plans.show', $b->id) }}" class="btn btn-sm btn-primary mr-2">View</a>
+                                            @if($b->status === 'Draft')
+                                                <form action="{{ route('customer.my-plans.destroy', $b->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this draft booking?');" style="display:inline-block;">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-danger"><i class="mdi mdi-delete"></i> Delete</button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                    </td>
                                 </tr>
                                 @endforeach
                             </tbody>

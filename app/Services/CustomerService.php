@@ -69,7 +69,7 @@ class CustomerService
             ->get();
 
         $receipts = $payments->where('status', 'Paid');
-        $invoices = GstInvoice::where('booking_id', $booking->id)->latest('invoice_date')->get();
+        $invoices = GstInvoice::with(['payment.emiSchedule'])->where('booking_id', $booking->id)->latest('invoice_date')->get();
         $delivery = BookingDelivery::where('booking_id', $booking->id)->latest()->first();
 
         $financials = $this->getFinancialSummary($booking, $receipts);

@@ -205,6 +205,7 @@ class CustomerOnboardingTest extends TestCase
             'back_image' => UploadedFile::fake()->image('aadhar_back.jpg'),
             'selfie' => UploadedFile::fake()->image('photo.jpg'),
             'signature' => UploadedFile::fake()->image('sig.jpg'),
+            'bank_document' => UploadedFile::fake()->image('bank.jpg'),
         ];
 
         $kyc = $this->onboardingService->submitKyc($this->customer, $files);
@@ -218,6 +219,7 @@ class CustomerOnboardingTest extends TestCase
         Storage::disk('public')->assertExists($kyc->back_image);
         Storage::disk('public')->assertExists($kyc->selfie);
         Storage::disk('public')->assertExists($kyc->signature);
+        Storage::disk('public')->assertExists($kyc->bank_document);
 
         // Check activity log
         $this->assertDatabaseHas('activity_logs', [
@@ -289,6 +291,7 @@ class CustomerOnboardingTest extends TestCase
             'back_image' => UploadedFile::fake()->image('aadhar_back.jpg'),
             'selfie' => UploadedFile::fake()->image('photo.jpg'),
             'signature' => UploadedFile::fake()->image('sig.jpg'),
+            'bank_document' => UploadedFile::fake()->image('bank.jpg'),
         ];
         $kyc = $this->onboardingService->submitKyc($this->customer, $files);
 
@@ -363,5 +366,66 @@ class CustomerOnboardingTest extends TestCase
         $this->assertTrue($this->onboardingService->isKycApproved($newCustomer));
         $this->assertEquals('Approved', $this->onboardingService->getKycStatus($newCustomer));
         $this->assertTrue($this->onboardingService->canRequestDelivery($newCustomer));
+    }
+
+    /**
+     * Test that customer can soft delete draft bookings.
+     */
+    public function test_customer_can_soft_delete_draft_booking(): void
+    {
+        $this->actingAs($this->customer);
+
+        // 1. Create a draft booking
+        $booking = GoldBooking::create([
+            'booking_number' => 'DRAFT-TEST-DELETE-123',
+            'customer_id' => $this->customer->id,
+            'product_id' => $this->product->id,
+            'emi_plan_id' => $this->plan->id,
+            'gold_weight' => 10,
+            'gold_purity' => 999,
+            'locked_price_per_gram' => 6000,
+            'locked_gold_value' => 60000,
+            'grand_total' => 61800,
+            'monthly_emi' => 10300,
+            'duration_months' => 6,
+            'booking_date' => now(),
+            'estimated_completion_date' => now()->addMonths(6),
+            'status' => 'Draft',
+        ]);
+
+        $this->assertDatabaseHas('gold_bookings', [
+            'id' => $booking->id,
+            'deleted_at' => null,
+        ]);
+
+        // 2. Perform delete request
+        $response = $this->delete(route('customer.my-plans.destroy', $booking->id));
+        $response->assertRedirect(route('customer.my-plans.index'));
+
+        // 3. Assert soft deleted
+        $this->assertSoftDeleted('gold_bookings', [
+            'id' => $booking->id,
+        ]);
+        
+        // 4. Try deleting a booking that is Active (should fail/throw 404 since it only retrieves draft status)
+        $activeBooking = GoldBooking::create([
+            'booking_number' => 'ACTIVE-TEST-DELETE-123',
+            'customer_id' => $this->customer->id,
+            'product_id' => $this->product->id,
+            'emi_plan_id' => $this->plan->id,
+            'gold_weight' => 10,
+            'gold_purity' => 999,
+            'locked_price_per_gram' => 6000,
+            'locked_gold_value' => 60000,
+            'grand_total' => 61800,
+            'monthly_emi' => 10300,
+            'duration_months' => 6,
+            'booking_date' => now(),
+            'estimated_completion_date' => now()->addMonths(6),
+            'status' => 'Active',
+        ]);
+
+        $failResponse = $this->delete(route('customer.my-plans.destroy', $activeBooking->id));
+        $failResponse->assertStatus(404);
     }
 }

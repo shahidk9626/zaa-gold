@@ -128,6 +128,21 @@
                     </div>
                 @endif
 
+                @if($kyc->bank_document)
+                    <div class="col-md-6 mb-4">
+                        <div class="card bg-light border p-3 text-center">
+                            <span class="font-weight-bold d-block mb-3 text-dark">Bank Document / Cancelled Cheque</span>
+                            <div class="border rounded p-1 bg-white" style="height: 200px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                @if(Str::endsWith($kyc->bank_document, '.pdf'))
+                                    <a href="{{ asset('storage/' . $kyc->bank_document) }}" target="_blank" class="btn btn-outline-primary btn-sm"><i class="mdi mdi-file-pdf mr-1"></i> View Bank Doc PDF</a>
+                                @else
+                                    <img src="{{ asset('storage/' . $kyc->bank_document) }}" class="w-100 h-100 object-cover" style="cursor: pointer;" onclick="viewImage('{{ asset('storage/' . $kyc->bank_document) }}')">
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 @if($kyc->additional_documents)
                     <div class="col-md-6 mb-4">
                         <div class="card bg-light border p-3 text-center">
