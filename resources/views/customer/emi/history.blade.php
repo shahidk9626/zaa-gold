@@ -33,12 +33,12 @@
                         @endphp
                         
                         {{-- Tab headers --}}
-                        <ul class="nav nav-tabs border-0 bg-light rounded p-1 mb-3" id="emiBookingTabs" role="tablist">
+                        <ul class="nav nav-tabs border-0 bg-light rounded p-1 mb-3 flex-row flex-nowrap" id="emiBookingTabs" role="tablist" style="overflow-x: auto; white-space: nowrap;">
                             @foreach($groupedSchedule as $bookingId => $emis)
                                 @php
                                     $booking = $emis->first()->booking;
                                 @endphp
-                                <li class="nav-item" role="presentation" style="margin-bottom:0;">
+                                <li class="nav-item" role="presentation" style="margin-bottom:0; flex-shrink: 0;">
                                     <a class="nav-link {{ $loop->first ? 'active' : '' }} font-weight-bold" 
                                        id="tab-booking-{{ $bookingId }}" 
                                        data-toggle="tab" 
@@ -46,7 +46,7 @@
                                        role="tab" 
                                        aria-controls="pane-booking-{{ $bookingId }}" 
                                        aria-selected="{{ $loop->first ? 'true' : 'false' }}">
-                                        {{ $booking->product?->name ?? 'Gold Plan' }} (#{{ $booking->booking_number }})
+                                        #{{ $booking->booking_number }} ({{ number_format($booking->gold_weight, 1) }}g)
                                     </a>
                                 </li>
                             @endforeach
