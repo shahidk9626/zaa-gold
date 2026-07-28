@@ -43,8 +43,8 @@
     <div class="col-md-5 mb-4">
         <div class="card bg-white border shadow-sm h-100 p-4">
             <h5 class="text-primary font-weight-bold mb-3 border-bottom pb-2">Selected Product Details</h5>
-            <div class="text-center mb-4 p-3 bg-light rounded">
-                <img id="prodImage" src="" alt="Product Thumbnail" class="img-fluid rounded border shadow-sm" style="max-height: 180px; display: none;">
+            <div class="text-center mb-4 p-3 bg-light rounded" style="min-height: 200px;">
+                <img id="prodImage" src="" alt="Product Thumbnail" class="img-fluid rounded border shadow-sm d-none" style="max-height: 180px;">
                 <div id="prodImagePlaceholder" class="d-flex justify-content-center align-items-center bg-secondary text-white rounded border" style="height: 180px;">
                     <i class="mdi mdi-image" style="font-size: 3rem;"></i>
                 </div>
@@ -282,14 +282,14 @@
                 $('#prodPurity').text(`${parseFloat(response.purity).toFixed(2)}% Purity`);
                 $('#prodGoldRate').text(`₹${parseFloat(response.gold_price_per_gram).toLocaleString()}/g`);
                 $('#prodPrice').text(`₹${parseFloat(response.product_price).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
-                $('#prodDesc').text(response.description || 'No description available.');
+                $('#prodDesc').html(response.description || 'No description available.');
 
                 if (response.thumbnail) {
-                    $('#prodImage').attr('src', response.thumbnail).show();
-                    $('#prodImagePlaceholder').hide();
+                    $('#prodImage').attr('src', response.thumbnail).removeClass('d-none');
+                    $('#prodImagePlaceholder').addClass('d-none');
                 } else {
-                    $('#prodImage').hide();
-                    $('#prodImagePlaceholder').show();
+                    $('#prodImage').addClass('d-none');
+                    $('#prodImagePlaceholder').removeClass('d-none');
                 }
 
                 // Render eligible EMI plan cards
