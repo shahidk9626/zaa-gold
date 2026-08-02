@@ -21,17 +21,49 @@ class InvoiceService
      */
     public function generateInvoice(BookingPayment $payment)
     {
-        // 1. Prevent duplicate invoices for the same payment
-        $existing = GstInvoice::where('payment_id', $payment->id)->first();
-        if ($existing) {
-            throw new \Exception("An invoice already exists for this payment (Invoice: {$existing->invoice_number}).");
+        $booking = GoldBooking::with(['customer.customerDetail', 'product', 'emiPlan'])->findOrFail($payment->booking_id);
+
+        // 1. Check completion conditions
+        // - Count paid EMIs
+        $totalPlanEmis = (int)$booking->duration_months;
+        $totalPaidEmis = \App\Models\BookingEmiSchedule::where('booking_id', $booking->id)
+            ->where('status', 'Paid')
+            ->count();
+
+        // - Sum total paid amount
+        $totalAmountPaid = \App\Models\BookingPayment::where('booking_id', $booking->id)
+            ->where('status', 'Paid')
+            ->sum('amount_paid');
+
+        $outstandingAmount = max(0.00, (float)$booking->grand_total - (float)$totalAmountPaid);
+
+        // Enforce the gates:
+        // Must have paid all EMIs and outstanding must be zero.
+        if ($totalPaidEmis === $totalPlanEmis && $outstandingAmount <= 0.05) {
+            if ($booking->status !== 'Completed') {
+                $booking->status = 'Completed';
+                $booking->status_change_remarks = 'Completed automatically after final EMI payment received.';
+                $booking->save();
+                
+                // Log booking completed
+                $this->logActivityDirect('booking_completed', "Booking {$booking->booking_number} completed successfully.", $booking->id);
+            }
         }
 
-        return DB::transaction(function () use ($payment) {
-            $booking = GoldBooking::with(['customer.customerDetail', 'product', 'emiPlan'])->findOrFail($payment->booking_id);
-            $customer = $booking->customer;
+        // Now verify the condition to generate the Final GST Invoice:
+        if ($booking->status !== 'Completed') {
+            // DO NOT generate GST invoice if plan is not completed
+            return null;
+        }
 
-            // Generate unique serial invoice number
+        // Prevent duplicate invoices
+        $existing = GstInvoice::where('booking_id', $booking->id)->first();
+        if ($existing) {
+            return $existing; // Return existing invoice instead of throwing exception to remain idempotent
+        }
+
+        return DB::transaction(function () use ($booking, $payment) {
+            $customer = $booking->customer;
             $invoiceNumber = $this->generateInvoiceNumber();
             $verificationToken = Str::random(32);
 
@@ -54,61 +86,40 @@ class InvoiceService
             $goldPurity = (float)$booking->gold_purity;
             $lockedGoldPrice = (float)$booking->locked_price_per_gram;
 
-            // Capture exact financial values from the payment
-            $goldValue = (float)$payment->principal_paid;
-            
-            // Calculate proportional finance and storage charges
-            $totalBookingCharges = (float)($booking->finance_charge_amount + $booking->storage_charge_amount);
-            $financeCharge = 0.00;
-            $storageCharge = 0.00;
-            if ($totalBookingCharges > 0) {
-                $financeCharge = round((float)$payment->interest_paid * ((float)$booking->finance_charge_amount / $totalBookingCharges), 2);
-                $storageCharge = round((float)$payment->interest_paid * ((float)$booking->storage_charge_amount / $totalBookingCharges), 2);
-            } else {
-                $financeCharge = (float)$payment->interest_paid;
-            }
-
-            // GST details based on plan percentages
+            // Full booking values (for final invoice)
+            $goldValue = (float)$booking->locked_gold_value;
+            $financeCharge = (float)$booking->finance_charge_amount;
+            $storageCharge = (float)$booking->storage_charge_amount;
             $gstOnGoldPercent = (float)$booking->gst_on_gold_percent;
             $gstOnChargesPercent = (float)$booking->gst_on_charges_percent;
+            $gstOnGoldAmount = (float)$booking->gst_on_gold_amount;
+            $gstOnChargesAmount = (float)$booking->gst_on_charges_amount;
 
-            $gstOnGoldAmount = round($goldValue * ($gstOnGoldPercent / 100), 2);
-            $gstOnChargesAmount = round($storageCharge * ($gstOnChargesPercent / 100), 2);
+            $subtotal = $goldValue + $financeCharge + $storageCharge;
+            $grandTotal = (float)$booking->grand_total;
+            $paymentReceived = (float)$booking->grand_total;
+            $balanceAmount = 0.00;
 
-            // Calculate subtotal (before tax) and grand total (with tax)
-            $subtotal = $goldValue + $financeCharge + $storageCharge + (float)$payment->late_fee_paid;
-            $grandTotal = $subtotal + $gstOnGoldAmount + $gstOnChargesAmount;
-
-            $paymentReceived = (float)$payment->amount_paid;
-            $balanceAmount = round(max(0, $grandTotal - $paymentReceived), 2);
-
-            // Automate CGST / SGST / IGST breakdown based on state configurations
+            // Automate CGST / SGST / IGST breakdown
             $companyState = strtolower(trim(config('app.company_state', 'Maharashtra')));
             $customerState = strtolower(trim($customer->customerDetail->state ?? ''));
 
             $totalTaxAmount = $gstOnGoldAmount + $gstOnChargesAmount;
-            
-            // We calculate the effective tax percentage
             $effectiveTaxPercent = 0.00;
             if ($subtotal > 0) {
                 $effectiveTaxPercent = round(($totalTaxAmount / $subtotal) * 100, 2);
             }
 
-            $cgstPercent = 0.00;
-            $cgstAmount = 0.00;
-            $sgstPercent = 0.00;
-            $sgstAmount = 0.00;
-            $igstPercent = 0.00;
-            $igstAmount = 0.00;
+            $cgstPercent = 0.00; $cgstAmount = 0.00;
+            $sgstPercent = 0.00; $sgstAmount = 0.00;
+            $igstPercent = 0.00; $igstAmount = 0.00;
 
             if (empty($customerState) || $customerState === $companyState) {
-                // Intra-state: CGST (50%) + SGST (50%)
                 $cgstPercent = round($effectiveTaxPercent / 2, 2);
                 $cgstAmount = round($totalTaxAmount / 2, 2);
                 $sgstPercent = $cgstPercent;
-                $sgstAmount = $totalTaxAmount - $cgstAmount; // avoid rounding deviation
+                $sgstAmount = $totalTaxAmount - $cgstAmount;
             } else {
-                // Inter-state: IGST (100%)
                 $igstPercent = $effectiveTaxPercent;
                 $igstAmount = $totalTaxAmount;
             }
@@ -167,7 +178,7 @@ class InvoiceService
             $invoice->save();
 
             // Log activity
-            $this->logActivityDirect('invoice_generated', "GST Invoice {$invoiceNumber} generated for Payment {$payment->payment_number}", $booking->id);
+            $this->logActivityDirect('invoice_generated', "Final GST Invoice {$invoiceNumber} generated for completed Booking {$booking->booking_number}", $booking->id);
 
             return $invoice;
         });

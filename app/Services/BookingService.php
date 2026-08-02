@@ -357,6 +357,20 @@ class BookingService
 
         $this->logBookingActivity('status_changed', "Booking status changed from {$oldStatus} to {$newStatus} for {$booking->booking_number}", $booking->id);
 
+        if ($newStatus === 'Completed') {
+            $lastPayment = \App\Models\BookingPayment::where('booking_id', $booking->id)
+                ->where('status', 'Paid')
+                ->latest('payment_date')
+                ->first();
+            if ($lastPayment) {
+                try {
+                    app(\App\Services\InvoiceService::class)->generateInvoice($lastPayment);
+                } catch (\Exception $e) {
+                    // Silently ignore if already generated or other issues
+                }
+            }
+        }
+
         return $booking;
     }
 
