@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to ZAA GOLD</title>
+    <title>Welcome to AurOnGold</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -124,11 +124,11 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>ZAA GOLD</h1>
+            <h1>AurOnGold</h1>
         </div>
         <div class="content">
             <h2>Hello {{ $user->name }},</h2>
-            <p class="welcome-msg">Welcome to <strong>ZAA GOLD</strong>! We are thrilled to have you onboard as a valued customer.</p>
+            <p class="welcome-msg">Welcome to <strong>AurOnGold</strong>! We are thrilled to have you onboard as a valued customer.</p>
             
             <p>Your customer account has been registered successfully. You can log in to your portal using the details below:</p>
 
@@ -147,11 +147,11 @@
                 <a href="{{ $loginUrl }}" class="button">Log In to Customer Portal</a>
             </div>
 
-            <p style="margin-top: 30px;">Regards,<br><strong>Team ZAA GOLD</strong></p>
+            <p style="margin-top: 30px;">Regards,<br><strong>Team AurOnGold</strong></p>
         </div>
         <div class="footer">
-            <p>&copy; {{ date('Y') }} ZAA GOLD. All rights reserved.</p>
-            <p>Support Contact: support@zaagold.com | +91 98765 43210</p>
+            <p>&copy; {{ date('Y') }} AurOnGold. All rights reserved.</p>
+            <p>Support Contact: support@aurongold.com | +91 98765 43210</p>
         </div>
     </div>
 </body>

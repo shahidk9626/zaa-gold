@@ -173,7 +173,7 @@ class UserRegistrationEmailTest extends TestCase
 
         $mail = new WelcomeCustomerMail($user);
         
-        $this->assertEquals('Welcome to ZAA GOLD! 🎉', $mail->envelope()->subject);
+        $this->assertEquals('Welcome to AurOnGold! 🎉', $mail->envelope()->subject);
     }
 
     /**

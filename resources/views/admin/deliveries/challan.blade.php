@@ -117,10 +117,10 @@
         <table class="header-table" width="100%" cellspacing="0">
             <tr>
                 <td>
-                    <span class="company-name">ZAA GOLD</span><br>
+                    <span class="company-name">AurOnGold</span><br>
                     <span style="font-size: 11px; color: #555;">
                         Regd. Address: 121 Bullion Chambers, BKC, Mumbai, MH - 400051<br>
-                        Email: delivery@zaagold.com | Phone: +91 22 8888 7777
+                        Email: delivery@aurongold.com | Phone: +91 22 8888 7777
                     </span>
                 </td>
                 <td style="text-align: right; vertical-align: bottom;">
@@ -213,7 +213,7 @@
                 <td width="50%" style="vertical-align: bottom;">
                     <div class="signature-box">
                         <div class="signature-line"></div><br>
-                        Authorized Signatory for ZAA GOLD<br>
+                        Authorized Signatory for AurOnGold<br>
                         <small style="font-weight: normal; color: #888;">Issued By: {{ $generatedBy }}</small>
                     </div>
                 </td>
@@ -221,7 +221,7 @@
         </table>
 
         <div style="text-align: center; font-size: 10px; color: #777; margin-top: 35px;">
-            This challan serves as confirmation of physical gold handover. ZAA GoldBKC Mumbai office.
+            This challan serves as confirmation of physical gold handover. AurOnGold BKC Mumbai office.
         </div>
     </div>
 </body>

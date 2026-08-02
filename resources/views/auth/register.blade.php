@@ -1,7 +1,7 @@
 <x-guest-layout>
     <div class="mb-4 text-center">
         <h4 class="font-weight-bold text-white mb-2">Create an Account</h4>
-        <p class="text-muted">Fill in the details below to register on Zaa Gold</p>
+        <p class="text-muted">Fill in the details below to register on AurOnGold</p>
     </div>
 
     <form method="POST" action="{{ route('register') }}">

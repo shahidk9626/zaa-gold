@@ -44,7 +44,7 @@
                                 <h4 class="font-weight-bold mb-2 text-dark">{{ $product->name }}</h4>
                                 <div class="position-relative mb-2">
                                     <div id="description-wrapper" class="text-muted" style="overflow: hidden; max-height: none; transition: max-height 0.3s ease-out; line-height: 1.6;">
-                                        {!! $product->description ?? 'Premium ZAA Gold certified bullion product.' !!}
+                                        {!! $product->description ?? 'Premium AurOnGold certified bullion product.' !!}
                                     </div>
                                     <div id="description-fade" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 50px; background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1)); pointer-events: none; display: none;"></div>
                                 </div>
@@ -272,7 +272,7 @@
                                     <div class="custom-control custom-checkbox mb-4">
                                         <input type="checkbox" name="terms" class="custom-control-input" id="terms-checkbox" required>
                                         <label class="custom-control-label small text-muted" for="terms-checkbox" style="line-height: 1.4; cursor: pointer;">
-                                            I agree to lock my gold price at today's rate and confirm booking. I authorize ZAA Gold to automatically charge my payment source for the first EMAP installment of <strong id="calc-first-emi-term" class="text-success">₹0.00</strong> to activate the plan.
+                                            I agree to lock my gold price at today's rate and confirm booking. I authorize AurOnGold to automatically charge my payment source for the first EMAP installment of <strong id="calc-first-emi-term" class="text-success">₹0.00</strong> to activate the plan.
                                         </label>
                                     </div>
 

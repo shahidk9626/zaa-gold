@@ -34,7 +34,7 @@ class WelcomeCustomerMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Welcome to ZAA GOLD! 🎉',
+            subject: 'Welcome to AurOnGold! 🎉',
         );
     }
 

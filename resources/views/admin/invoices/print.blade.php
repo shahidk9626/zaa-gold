@@ -210,11 +210,11 @@
         <table class="header-table" width="100%" cellspacing="0">
             <tr>
                 <td>
-                    <span class="company-name">ZAA GOLD</span><br>
+                    <span class="company-name">AurOnGold</span><br>
                     <span style="font-size: 11px; color: #555;">
                         GSTIN: <strong>27ZGOLD1234F1Z9</strong><br>
                         Regd. Address: 121 Bullion Chambers, BKC, Mumbai, MH - 400051<br>
-                        Email: accounts@zaagold.com | Support: +91 22 8888 7777
+                        Email: accounts@aurongold.com | Support: +91 22 8888 7777
                     </span>
                 </td>
                 <td style="text-align: right; vertical-align: bottom;">
@@ -358,7 +358,7 @@
                 <td width="50%" style="vertical-align: bottom;">
                     <div class="signature-box">
                         <div class="signature-line"></div><br>
-                        Authorized Signatory for ZAA GOLD<br>
+                        Authorized Signatory for AurOnGold<br>
                         <small style="font-weight: normal; color: #888;">Generated At: {{ now()->format('d M Y, h:i A') }}</small>
                     </div>
                 </td>
@@ -367,7 +367,7 @@
 
         <div class="footer-note">
             This is a computer generated document and requires no physical signature.<br>
-            Thank you for investing with ZAA GOLD.
+            Thank you for investing with AurOnGold.
         </div>
     </div>
 

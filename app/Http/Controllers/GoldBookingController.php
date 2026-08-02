@@ -287,14 +287,37 @@ class GoldBookingController extends Controller
         $booking = GoldBooking::with('certificate')->findOrFail($id);
         $certificate = $booking->certificate;
 
-        if (!$certificate || !$certificate->pdf_path || !Storage::disk('public')->exists($certificate->pdf_path)) {
-            return back()->with('error', 'Price Lock Certificate PDF not found.');
+        if (!$certificate) {
+            return back()->with('error', 'Price Lock Certificate not found.');
         }
+
+        // Regenerate PDF to ensure it is always up-to-date and using the premium layout
+        $bookingService = app(\App\Services\BookingService::class);
+        $pdfPath = $bookingService->generateCertificatePdf($certificate);
 
         // Log certificate download activity
         $this->logActivityDirect('certificate_downloaded', "Price Lock Certificate {$certificate->certificate_number} downloaded for Booking {$booking->booking_number}", $booking->id);
 
-        return Storage::disk('public')->download($certificate->pdf_path, "Price_Lock_Certificate_{$booking->booking_number}.pdf");
+        return Storage::disk('public')->download($pdfPath, "Price_Lock_Certificate_{$booking->booking_number}.pdf");
+    }
+
+    /**
+     * Preview Price Lock Certificate in Browser (HTML/Print View)
+     */
+    public function previewCertificate($id)
+    {
+        $booking = GoldBooking::with('certificate')->findOrFail($id);
+        $certificate = $booking->certificate;
+
+        if (!$certificate) {
+            abort(404, 'Price Lock Certificate not found.');
+        }
+
+        $bookingService = app(\App\Services\BookingService::class);
+        $data = $bookingService->getCertificateData($certificate);
+        $data['is_preview'] = true;
+
+        return view('admin.bookings.certificate-pdf', $data);
     }
 
     /**

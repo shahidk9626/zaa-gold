@@ -4,7 +4,7 @@
     <!-- Required meta tags -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>Zaa Gold - Authentication</title>
+    <title>AurOnGold - Authentication</title>
     <!-- Mappings for same assets as layout/app -->
     <link rel="stylesheet" href="{{ asset('assets/vendors/mdi/css/materialdesignicons.min.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendors/flag-icon-css/css/flag-icon.min.css') }}" />
@@ -222,8 +222,8 @@
             <div class="logo mb-4">
               <img src="{{ asset('assets/images/logo.svg') }}" alt="logo" style="max-height: 48px; filter: brightness(0) invert(1);" />
             </div>
-            <h3>Zaa Gold</h3>
-            <p>Welcome to Zaa Gold Enterprise Application. Please authenticate to access your dashboard.</p>
+            <h3>AurOnGold</h3>
+            <p>Welcome to AurOnGold Enterprise Application. Please authenticate to access your dashboard.</p>
           </div>
           <!-- Right Form Column -->
           <div class="col-lg-7 form-section">

@@ -1,6 +1,6 @@
 <x-guest-layout>
     <div class="mb-4 text-center">
-        <h4 class="font-weight-bold text-white mb-2">Sign In to Zaa Gold</h4>
+        <h4 class="font-weight-bold text-white mb-2">Sign In to AurOnGold</h4>
         <p class="text-muted">Enter your credentials below to access your account</p>
     </div>
 

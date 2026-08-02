@@ -153,7 +153,7 @@
         <table class="header-table" width="100%" cellspacing="0">
             <tr>
                 <td>
-                    <span class="company-name">ZAA GOLD</span><br>
+                    <span class="company-name">AurOnGold</span><br>
                     <small style="color: #777; font-size: 11px;">Enterprise Bullion & Accumulation Engine</small>
                 </td>
                 <td style="text-align: right; vertical-align: bottom;">
@@ -255,7 +255,7 @@
 
         <div class="footer-note">
             This is a computer generated tax receipt and requires no physical signature under the Gold Accumulation Plan.<br>
-            Thank you for choosing ZAA GOLD.
+            Thank you for choosing AurOnGold.
         </div>
     </div>
 </body>

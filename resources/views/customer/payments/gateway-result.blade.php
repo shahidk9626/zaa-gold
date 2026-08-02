@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>Payment Status - ZAA Gold</title>
+    <title>Payment Status - AurOnGold</title>
     <link rel="stylesheet" href="{{ asset('assets/vendors/mdi/css/materialdesignicons.min.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendors/css/vendor.bundle.base.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}?v={{ filemtime(public_path('assets/css/style.css')) }}" />
@@ -25,7 +25,7 @@
                             <div><strong>Amount:</strong> ₹{{ number_format($transaction->amount, 2) }}</div>
                             <div><strong>Status:</strong> {{ $transaction->payment_status }}</div>
                         </div>
-                        <a href="{{ url('/') }}" class="btn btn-primary mt-4">Go to ZAA Gold</a>
+                        <a href="{{ url('/') }}" class="btn btn-primary mt-4">Go to AurOnGold</a>
                     </div>
                 </div>
             </div>

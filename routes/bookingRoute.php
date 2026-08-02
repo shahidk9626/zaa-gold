@@ -21,9 +21,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/bookings/{id}', [GoldBookingController::class, 'show'])->name('bookings.show');
     });
 
-    // Certificate PDF downloads
+    // Certificate PDF downloads and previews
     Route::middleware('permission:booking.download_certificate')->group(function () {
         Route::get('/admin/bookings/{id}/certificate', [GoldBookingController::class, 'downloadCertificate'])->name('bookings.download_certificate');
+        Route::get('/admin/bookings/{id}/certificate/preview', [GoldBookingController::class, 'previewCertificate'])->name('bookings.preview_certificate');
     });
 
     // Status change transitions

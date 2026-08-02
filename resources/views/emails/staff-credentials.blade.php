@@ -133,7 +133,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>ZAA GOLD</h1>
+            <h1>AurOnGold</h1>
         </div>
         <div class="content">
             <h2>Hello {{ $user->name }},</h2>
@@ -165,10 +165,10 @@
                 <strong>Important Security Note:</strong> For your security, please change your password immediately after your first login. Do not share these credentials with anyone.
             </div>
 
-            <p style="margin-top: 30px;">Regards,<br><strong>Team ZAA GOLD</strong></p>
+            <p style="margin-top: 30px;">Regards,<br><strong>Team AurOnGold</strong></p>
         </div>
         <div class="footer">
-            <p>&copy; {{ date('Y') }} ZAA GOLD. All rights reserved.</p>
+            <p>&copy; {{ date('Y') }} AurOnGold. All rights reserved.</p>
             <p>If you have any issues logging in, please contact IT Support.</p>
         </div>
     </div>

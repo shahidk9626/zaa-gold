@@ -43,6 +43,7 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
 
     Route::get('/certificates', [CertificateController::class, 'index'])->name('certificates.index');
     Route::get('/certificates/{bookingId}/price-lock', [CertificateController::class, 'downloadPriceLock'])->name('certificates.price_lock');
+    Route::get('/certificates/{bookingId}/price-lock/preview', [CertificateController::class, 'previewPriceLock'])->name('certificates.price_lock_preview');
     Route::get('/certificates/invoice/{id}', [CertificateController::class, 'downloadInvoice'])->name('certificates.invoice');
 
     Route::get('/deliveries', [DeliveryController::class, 'index'])->name('deliveries.index');

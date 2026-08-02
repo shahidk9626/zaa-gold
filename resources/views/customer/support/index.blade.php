@@ -22,7 +22,7 @@
                             <div class="card bg-light p-3">
                                 <i class="mdi mdi-email text-primary" style="font-size: 2rem;"></i>
                                 <p class="mt-2 mb-0 font-weight-bold">Email</p>
-                                <p class="text-muted small">support@zaagold.com</p>
+                                <p class="text-muted small">support@aurongold.com</p>
                             </div>
                         </div>
                         <div class="col-md-4 mb-3">

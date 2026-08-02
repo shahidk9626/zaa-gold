@@ -29,6 +29,22 @@ class CertificateController extends CustomerBaseController
         return app(GoldBookingController::class)->downloadCertificate($bookingId);
     }
 
+    public function previewPriceLock(int $bookingId): \Illuminate\View\View
+    {
+        $booking = GoldBooking::where('customer_id', $this->customerId())->findOrFail($bookingId);
+        $certificate = $booking->certificate;
+
+        if (!$certificate) {
+            abort(404, 'Price Lock Certificate not found.');
+        }
+
+        $bookingService = app(\App\Services\BookingService::class);
+        $data = $bookingService->getCertificateData($certificate);
+        $data['is_preview'] = true;
+
+        return view('admin.bookings.certificate-pdf', $data);
+    }
+
     public function downloadInvoice(int $id): \Symfony\Component\HttpFoundation\Response
     {
         GstInvoice::where('customer_id', $this->customerId())->findOrFail($id);

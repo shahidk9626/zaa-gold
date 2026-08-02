@@ -16,7 +16,7 @@
     {{-- Desktop Header --}}
     <div class="d-none d-md-block">
         <div class="page-header flex-wrap">
-            <h3 class="mb-0">Hi, {{ Auth::user()->name }}! <span class="pl-0 h6 pl-sm-2 text-muted d-inline-block">Welcome to your ZAA Gold portal.</span></h3>
+            <h3 class="mb-0">Hi, {{ Auth::user()->name }}! <span class="pl-0 h6 pl-sm-2 text-muted d-inline-block">Welcome to your AurOnGold portal. Invest Smart. Grow Secure.</span></h3>
             <div class="d-flex">
                 <a href="{{ route('customer.profile.index') }}" class="btn btn-sm bg-white btn-icon-text border">
                     <i class="mdi mdi-account btn-icon-prepend"></i> Profile

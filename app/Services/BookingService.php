@@ -268,16 +268,18 @@ class BookingService
     }
 
     /**
-     * Generate the certificate PDF document using DomPDF
+     * Get data array for certificate PDF or HTML preview rendering
      */
-    public function generateCertificatePdf(PriceLockCertificate $certificate)
+    public function getCertificateData(PriceLockCertificate $certificate)
     {
         $booking = $certificate->goldBooking;
         $customer = $booking->customer;
+        if ($customer) {
+            $customer->loadMissing('customerDetail');
+        }
         $product = $booking->product;
         $plan = $booking->emiPlan;
 
-        $latestPrice = GoldPrice::find($booking->gold_price_id);
         $pricePerGram = $booking->locked_price_per_gram;
 
         $calculations = [
@@ -301,7 +303,13 @@ class BookingService
             }
         }
 
-        $pdfData = [
+        // Retrieve payments summary for the certificate
+        $payments = \App\Models\BookingPayment::where('booking_id', $booking->id)->where('status', 'Paid')->get();
+        $firstPayment = $payments->sortBy('created_at')->first();
+        $amountPaid = $payments->sum('amount_paid');
+        $outstandingAmount = max(0.00, (float)$booking->grand_total - (float)$amountPaid);
+
+        return [
             'certificate' => $certificate,
             'booking' => $booking,
             'customer' => $customer,
@@ -310,9 +318,20 @@ class BookingService
             'pricePerGram' => $pricePerGram,
             'calculations' => $calculations,
             'qrImageSrc' => $qrBase64,
-            'generatedAt' => now()->format('d M Y, h:i A'),
-            'generatedBy' => auth()->user()->name ?? 'System'
+            'firstPayment' => $firstPayment,
+            'amountPaid' => $amountPaid,
+            'outstandingAmount' => $outstandingAmount,
+            'generatedAt' => $certificate->issued_at->format('d M Y, h:i A'),
+            'generatedBy' => User::find($certificate->created_by_id)->name ?? 'System'
         ];
+    }
+
+    /**
+     * Generate the certificate PDF document using DomPDF
+     */
+    public function generateCertificatePdf(PriceLockCertificate $certificate)
+    {
+        $pdfData = $this->getCertificateData($certificate);
 
         $pdf = Pdf::loadView('admin.bookings.certificate-pdf', $pdfData);
         $pdfPath = 'certificates/PLC_' . $certificate->certificate_number . '.pdf';
@@ -374,7 +393,7 @@ class BookingService
     /**
      * Get start and end date of the financial year for a given date.
      */
-    public function getFinancialYearDates(\DateTimeInterface $date = null): array
+    public function getFinancialYearDates(?\DateTimeInterface $date = null): array
     {
         $carbonDate = $date ? \Carbon\Carbon::instance($date) : \Carbon\Carbon::now();
         $year = $carbonDate->year;
@@ -396,7 +415,7 @@ class BookingService
     /**
      * Calculate the total purchased gold weight in grams for a customer in the current financial year.
      */
-    public function getPurchasedWeightForFinancialYear(int $customerId, \DateTimeInterface $date = null): float
+    public function getPurchasedWeightForFinancialYear(int $customerId, ?\DateTimeInterface $date = null): float
     {
         list($start, $end) = $this->getFinancialYearDates($date);
 
@@ -409,7 +428,7 @@ class BookingService
     /**
      * Get the remaining gold purchase limit in grams for a customer in the current financial year.
      */
-    public function getRemainingPurchaseLimit(int $customerId, \DateTimeInterface $date = null): float
+    public function getRemainingPurchaseLimit(int $customerId, ?\DateTimeInterface $date = null): float
     {
         $maxLimit = (float) \App\Models\SystemSetting::get('customer_max_purchase_grams', 100.00);
         $purchased = $this->getPurchasedWeightForFinancialYear($customerId, $date);
@@ -420,7 +439,7 @@ class BookingService
     /**
      * Check if a customer can purchase the specified weight of gold in the current financial year.
      */
-    public function canPurchaseGold(int $customerId, float $newPurchaseWeight, \DateTimeInterface $date = null): bool
+    public function canPurchaseGold(int $customerId, float $newPurchaseWeight, ?\DateTimeInterface $date = null): bool
     {
         $remaining = $this->getRemainingPurchaseLimit($customerId, $date);
         return $newPurchaseWeight <= $remaining;

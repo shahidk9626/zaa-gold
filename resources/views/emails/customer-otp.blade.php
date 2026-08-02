@@ -109,13 +109,13 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>ZAA GOLD</h1>
+            <h1>AurOnGold</h1>
         </div>
         <div class="content">
             <h2>Hello {{ $user->name }},</h2>
             
             @if ($purpose === 'registration')
-                <p class="welcome-msg">Thank you for registering with ZAA GOLD! To complete your account activation, please use the following 6-digit One-Time Password (OTP):</p>
+                <p class="welcome-msg">Thank you for registering with AurOnGold! To complete your account activation, please use the following 6-digit One-Time Password (OTP):</p>
             @else
                 <p class="welcome-msg">We received a request to reset your password. Please use the following 6-digit One-Time Password (OTP) to proceed:</p>
             @endif
@@ -129,11 +129,11 @@
                 <strong>Important Security Notice:</strong> If you did not initiate this request, please ignore this email or contact support immediately. Do not share this OTP with anyone.
             </div>
 
-            <p style="margin-top: 30px;">Regards,<br><strong>Team ZAA GOLD</strong></p>
+            <p style="margin-top: 30px;">Regards,<br><strong>Team AurOnGold</strong></p>
         </div>
         <div class="footer">
-            <p>&copy; {{ date('Y') }} ZAA GOLD. All rights reserved.</p>
-            <p>Support Contact: support@zaagold.com | +91 98765 43210</p>
+            <p>&copy; {{ date('Y') }} AurOnGold. All rights reserved.</p>
+            <p>Support Contact: support@aurongold.com | +91 98765 43210</p>
         </div>
     </div>
 </body>
