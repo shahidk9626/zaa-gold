@@ -340,9 +340,9 @@
                                         <div class="font-weight-bold text-dark mb-1">Certificate #{{ $booking->certificate->certificate_number }}</div>
                                         <div class="small text-muted mb-2">Issued on: {{ $booking->certificate->issued_at->format('d M Y, h:i A') }}</div>
                                         @if(hasPermission('booking.download_certificate'))
-                                            <a href="{{ route('bookings.preview_certificate', $booking->id) }}" target="_blank" class="btn btn-primary btn-sm px-3 mr-2">
+                                            <!-- <a href="{{ route('bookings.preview_certificate', $booking->id) }}" target="_blank" class="btn btn-primary btn-sm px-3 mr-2">
                                                 <i class="mdi mdi-eye mr-1"></i> View & Print
-                                            </a>
+                                            </a> -->
                                             <a href="{{ route('bookings.download_certificate', $booking->id) }}" class="btn btn-success btn-sm px-3">
                                                 <i class="mdi mdi-download mr-1"></i> Download PDF
                                             </a>
@@ -765,9 +765,9 @@
                                 @endif
                                 <div class="mt-3">
                                     @if(hasPermission('booking.download_certificate'))
-                                        <a href="{{ route('bookings.preview_certificate', $booking->id) }}" target="_blank" class="btn btn-primary px-4 w-100 mb-2">
+                                        <!-- <a href="{{ route('bookings.preview_certificate', $booking->id) }}" target="_blank" class="btn btn-primary px-4 w-100 mb-2">
                                             <i class="mdi mdi-eye mr-1"></i> View & Print Certificate
-                                        </a>
+                                        </a> -->
                                         <a href="{{ route('bookings.download_certificate', $booking->id) }}" class="btn btn-success px-4 w-100">
                                             <i class="mdi mdi-download mr-1"></i> Download PDF Certificate
                                         </a>

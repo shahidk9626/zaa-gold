@@ -103,7 +103,7 @@
                         <i class="mdi mdi-certificate text-primary" style="font-size: 3rem;"></i>
                         <h6 class="mt-3">Price Lock Certificate</h6>
                         <p class="text-muted small">{{ $booking->certificate->certificate_number }}</p>
-                        <a href="{{ route('customer.certificates.price_lock_preview', $booking->id) }}" target="_blank" class="btn btn-sm btn-outline-primary btn-block mb-2">View & Print</a>
+                        <!-- <a href="{{ route('customer.certificates.price_lock_preview', $booking->id) }}" target="_blank" class="btn btn-sm btn-outline-primary btn-block mb-2">View & Print</a> -->
                         <a href="{{ route('customer.certificates.price_lock', $booking->id) }}" class="btn btn-sm btn-primary btn-block">Download PDF</a>
                     </div>
                 </div>
