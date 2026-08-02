@@ -518,7 +518,7 @@
             <table class="header-table">
                 <tr>
                     <td class="header-logo">
-                        <img src="{{ asset('assets/images/logo.svg') }}" alt="AurOnGold Logo">
+                        <img src="{{ asset('assets/images/logo.png') }}" alt="AurOnGold Logo" style="height: 60px; object-fit: contain;">
                     </td>
                     <td class="header-badge">
                         <!-- TRUSTED TRANSPARENT SECURE SVG BADGE -->

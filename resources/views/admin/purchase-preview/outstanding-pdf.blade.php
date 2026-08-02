@@ -196,7 +196,7 @@
     <table class="header-table">
         <tr>
             <td>
-                <div class="company-name">AurOnGold</div>
+                <img src="{{ asset('assets/images/logo.png') }}" alt="AurOnGold Logo" style="height: 50px; object-fit: contain; margin-bottom: 5px;" />
                 <div class="company-details">
                     AurOnGold Bullion Trading LLC<br>
                     123 Financial District, Sector 4<br>

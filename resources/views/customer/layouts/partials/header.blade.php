@@ -1,6 +1,6 @@
 <nav class="navbar col-lg-12 col-12 p-lg-0 fixed-top d-flex flex-row default-layout-navbar">
   <div class="navbar-menu-wrapper d-flex align-items-stretch justify-content-between">
-    <a class="navbar-brand brand-logo-mini align-self-center d-lg-none" href="{{ route('customer.dashboard') }}"><img src="{{ asset('assets/images/logo-mini.svg') }}" alt="logo" /></a>
+    <a class="navbar-brand brand-logo-mini align-self-center d-lg-none" href="{{ route('customer.dashboard') }}"><img src="{{ asset('assets/images/logo.png') }}" alt="logo" style="height: 40px; object-fit: contain;" /></a>
     <button class="navbar-toggler navbar-toggler align-self-center mr-2" type="button" data-toggle="minimize">
       <i class="mdi mdi-menu"></i>
     </button>

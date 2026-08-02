@@ -1,7 +1,7 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
   <div class="text-center sidebar-brand-wrapper d-flex align-items-center">
-    <a class="sidebar-brand brand-logo" href="{{ route('customer.dashboard') }}"><img src="{{ asset('assets/images/logo.svg') }}" alt="logo" /></a>
-    <a class="sidebar-brand brand-logo-mini pl-4 pt-3" href="{{ route('customer.dashboard') }}"><img src="{{ asset('assets/images/logo-mini.svg') }}" alt="logo" /></a>
+    <a class="sidebar-brand brand-logo" href="{{ route('customer.dashboard') }}"><img src="{{ asset('assets/images/logo.png') }}" alt="logo" style="height: 50px; object-fit: contain;" /></a>
+    <a class="sidebar-brand brand-logo-mini pl-4 pt-3" href="{{ route('customer.dashboard') }}"><img src="{{ asset('assets/images/logo.png') }}" alt="logo" style="height: 40px; object-fit: contain;" /></a>
   </div>
   <ul class="nav">
     <li class="nav-item nav-profile">

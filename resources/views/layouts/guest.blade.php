@@ -219,8 +219,8 @@
         <div class="row no-gutters">
           <!-- Left Illustration Column -->
           <div class="col-lg-5 illustration-section">
-            <div class="logo mb-4">
-              <img src="{{ asset('assets/images/logo.svg') }}" alt="logo" style="max-height: 48px; filter: brightness(0) invert(1);" />
+            <div class="logo mb-4" style="background: rgba(255, 255, 255, 0.95); padding: 10px 20px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
+              <img src="{{ asset('assets/images/logo.png') }}" alt="logo" style="max-height: 80px; width: auto; object-fit: contain;" />
             </div>
             <h3>AurOnGold</h3>
             <p>Welcome to AurOnGold Enterprise Application. Please authenticate to access your dashboard.</p>

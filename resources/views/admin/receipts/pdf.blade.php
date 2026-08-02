@@ -153,7 +153,7 @@
         <table class="header-table" width="100%" cellspacing="0">
             <tr>
                 <td>
-                    <span class="company-name">AurOnGold</span><br>
+                    <img src="{{ asset('assets/images/logo.png') }}" alt="AurOnGold Logo" style="height: 50px; object-fit: contain; margin-bottom: 5px;" /><br>
                     <small style="color: #777; font-size: 11px;">Enterprise Bullion & Accumulation Engine</small>
                 </td>
                 <td style="text-align: right; vertical-align: bottom;">

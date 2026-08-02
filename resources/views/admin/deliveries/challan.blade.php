@@ -117,7 +117,7 @@
         <table class="header-table" width="100%" cellspacing="0">
             <tr>
                 <td>
-                    <span class="company-name">AurOnGold</span><br>
+                    <img src="{{ asset('assets/images/logo.png') }}" alt="AurOnGold Logo" style="height: 50px; object-fit: contain; margin-bottom: 5px;" /><br>
                     <span style="font-size: 11px; color: #555;">
                         Regd. Address: 121 Bullion Chambers, BKC, Mumbai, MH - 400051<br>
                         Email: delivery@aurongold.com | Phone: +91 22 8888 7777
