@@ -1,3 +1,4 @@
+<x-customer-layout title="Plan Details">
 @php
     $hasActiveCancellation = $booking->cancellationRequests()
         ->whereIn('status', ['Requested', 'Under Review', 'Approved', 'Refund Initiated', 'Refund Completed'])
