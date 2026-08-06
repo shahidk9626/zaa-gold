@@ -23,8 +23,8 @@ if (!function_exists('hasPermission')) {
             return false;
         }
 
-        // 1. Super Admin Rule (User ID = 1)
-        if ($user->id === 1) {
+        // 1. Super Admin Rule (User ID = 1 or Role Slug = super-admin)
+        if ($user->id === 1 || ($user->role && $user->role->slug === 'super-admin')) {
             return true;
         }
 

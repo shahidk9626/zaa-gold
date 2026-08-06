@@ -189,12 +189,7 @@ class AdminCancellationController extends Controller
      */
     protected function authorizeAction(string $permission)
     {
-        if (Auth::user()->role === 'super-admin') {
-            return;
-        }
-
-        // Standard Laravel check
-        if (!Auth::user()->can($permission)) {
+        if (!hasPermission($permission)) {
             abort(403, 'Unauthorized action.');
         }
     }
