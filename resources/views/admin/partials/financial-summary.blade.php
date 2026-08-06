@@ -21,6 +21,20 @@
                 </div>
             </div>
 
+            <div class="row mt-2" id="sumOfferSelectionRow" style="display: none;">
+                <div class="col-md-6 mb-3">
+                    <label class="small text-dark font-weight-bold d-block mb-1">Apply Promotional Offer</label>
+                    <select id="sumOfferSelect" class="form-control bg-white text-dark" style="width: 100%;">
+                        <option value="">No Offer (Apply Standard Pricing)</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3 d-flex align-items-center">
+                    <div id="sumOfferBenefitNotice" class="alert alert-success py-2 px-3 m-0 d-none w-100" style="font-size: 0.875rem;">
+                        <!-- Message injected by JS -->
+                    </div>
+                </div>
+            </div>
+
             <hr class="my-3">
 
             <div class="row">
@@ -56,6 +70,14 @@
                 <div class="col-md-3 col-sm-6 mb-3" id="sumGstChargesBlock" style="display:none !important;">
                     <label class="small text-muted d-block mb-1">GST on Charges</label>
                     <span class="font-weight-bold text-dark" id="sumGstCharges">-</span>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3" id="sumOriginalAmountBlock" style="display:none !important;">
+                    <label class="small text-muted d-block mb-1">Original Plan Value</label>
+                    <span class="font-weight-bold text-dark" id="sumOriginalAmount">-</span>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3" id="sumDiscountAmountBlock" style="display:none !important;">
+                    <label class="small text-muted d-block mb-1 text-danger font-weight-bold">Offer Savings</label>
+                    <span class="font-weight-bold text-danger" id="sumDiscountAmount">-</span>
                 </div>
 
                 <div class="col-md-3 col-sm-6 mb-3">
@@ -147,8 +169,16 @@
                             <label class="small text-muted d-block uppercase mb-1">GST on Charges</label>
                             <span class="font-weight-bold text-dark" id="modalGstCharges">-</span>
                         </div>
+                        <div class="col-md-3 col-sm-6 mb-3" id="modalOriginalAmountBlock" style="display:none !important;">
+                            <label class="small text-muted d-block uppercase mb-1">Original Plan Value</label>
+                            <span class="font-weight-bold text-dark" id="modalOriginalAmount">-</span>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3" id="modalDiscountAmountBlock" style="display:none !important;">
+                            <label class="small text-muted d-block uppercase mb-1 text-danger">Offer Savings</label>
+                            <span class="font-weight-bold text-danger" id="modalDiscountAmount">-</span>
+                        </div>
                         <div class="col-md-3 col-sm-6 mb-3">
-                            <label class="small text-muted d-block uppercase mb-1 text-success font-weight-bold">Grand Total</label>
+                            <label class="small text-muted d-block uppercase mb-1 text-success font-weight-bold">Grand Total / Final Payable</label>
                             <span class="font-weight-bold text-success" id="modalGrandTotal" style="font-size: 1.1rem;">-</span>
                         </div>
                         <div class="col-md-3 col-sm-6 mb-3">
@@ -200,6 +230,7 @@
             let customerId = typeof selectedCustomerId !== 'undefined' ? selectedCustomerId : null;
             let productId = typeof selectedProductId !== 'undefined' ? selectedProductId : null;
             let planId = typeof selectedEmiPlanId !== 'undefined' ? selectedEmiPlanId : null;
+            let offerId = $('#sumOfferSelect').val();
 
             if (!productId || !planId) {
                 Swal.fire({
@@ -228,7 +259,8 @@
                     _token: '{{ csrf_token() }}',
                     product_id: productId,
                     emi_plan_id: planId,
-                    customer_id: customerId
+                    customer_id: customerId,
+                    offer_id: offerId
                 },
                 success: function(response) {
                     Swal.close();
@@ -248,20 +280,51 @@
                     $('#modalGrandTotal').text('₹' + parseFloat(response.grand_total).toLocaleString(undefined, {minimumFractionDigits: 2}));
                     $('#modalMonthlyEmi').text('₹' + parseFloat(response.monthly_emi).toLocaleString(undefined, {minimumFractionDigits: 2}));
 
+                    if (response.schedule && response.schedule.length > 0) {
+                        let firstRow = response.schedule[0];
+                        // If calculations snapshot has original / discount
+                        if (response.grand_total !== undefined) {
+                            // Let's compute original / discount
+                            let originalAmt = parseFloat(response.grand_total);
+                            // We can approximate discount from first row or calculations
+                        }
+                    }
+
+                    // Populate original and discount blocks in modal if present in calculations
+                    let calcSnapshot = (typeof productDetails !== 'undefined' && productDetails.grand_total !== undefined) ? productDetails : null;
+                    if (calcSnapshot && calcSnapshot.discount_amount && parseFloat(calcSnapshot.discount_amount) > 0) {
+                        $('#modalOriginalAmountBlock').attr('style', 'display:block !important;');
+                        $('#modalOriginalAmount').text('₹' + parseFloat(calcSnapshot.original_amount).toLocaleString(undefined, {minimumFractionDigits: 2}));
+                        
+                        $('#modalDiscountAmountBlock').attr('style', 'display:block !important;');
+                        $('#modalDiscountAmount').text('₹' + parseFloat(calcSnapshot.discount_amount).toLocaleString(undefined, {minimumFractionDigits: 2}));
+                    } else {
+                        $('#modalOriginalAmountBlock').attr('style', 'display:none !important;');
+                        $('#modalDiscountAmountBlock').attr('style', 'display:none !important;');
+                    }
+
                     // Fill table
                     let tableHtml = '';
                     response.schedule.forEach(row => {
+                        let emiAmtStr = parseFloat(row.monthly_emi || row.emi_amount) > 0 
+                            ? '₹' + parseFloat(row.monthly_emi || row.emi_amount).toLocaleString(undefined, {minimumFractionDigits: 2})
+                            : 'Waived';
+                        let rowClass = row.status === 'Waived' ? 'table-success font-weight-bold text-success' : '';
+                        let statusBadge = row.status === 'Waived' 
+                            ? '<span class="badge badge-success">Waived</span>' 
+                            : `<span class="badge badge-warning text-dark font-weight-bold">${row.status}</span>`;
+
                         tableHtml += `
-                            <tr>
-                                <td>${row.month_no}</td>
+                            <tr class="${rowClass}">
+                                <td>${row.month_no || row.installment_number}</td>
                                 <td>${row.due_date}</td>
                                 <td>₹${parseFloat(row.opening_principal).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                                 <td>₹${parseFloat(row.principal_amount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                                 <td>₹${parseFloat(row.interest_amount).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                                <td>₹${parseFloat(row.monthly_emi).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                                <td>${emiAmtStr}</td>
                                 <td>₹${parseFloat(row.closing_principal).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                                <td>₹${parseFloat(row.running_balance).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                                <td><span class="badge badge-warning text-dark font-weight-bold">${row.status}</span></td>
+                                <td>₹${parseFloat(row.running_balance || row.outstanding_balance).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                                <td>${statusBadge}</td>
                             </tr>
                         `;
                     });
@@ -273,6 +336,9 @@
                         let fullPdfUrl = `${pdfBaseUrl}?product_id=${productId}&emi_plan_id=${planId}`;
                         if (customerId) {
                             fullPdfUrl += `&customer_id=${customerId}`;
+                        }
+                        if (offerId) {
+                            fullPdfUrl += `&offer_id=${offerId}`;
                         }
                         $('#modalExportPdfBtn').attr('href', fullPdfUrl);
                     @endif

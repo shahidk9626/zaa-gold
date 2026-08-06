@@ -30,9 +30,9 @@ class BookingService
     /**
      * Create a new gold booking
      */
-    public function createBooking($customerId, $productId, $emiPlanId, $remarks = null)
+    public function createBooking($customerId, $productId, $emiPlanId, $remarks = null, $offerId = null)
     {
-        return DB::transaction(function () use ($customerId, $productId, $emiPlanId, $remarks) {
+        return DB::transaction(function () use ($customerId, $productId, $emiPlanId, $remarks, $offerId) {
             $product = Product::findOrFail($productId);
             $plan = EmiPlan::findOrFail($emiPlanId);
             $customer = User::findOrFail($customerId);
@@ -45,7 +45,8 @@ class BookingService
             $is22k = strtoupper($product->gold_type) === '22K';
             $pricePerGram = $latestPrice ? ($is22k ? $latestPrice->price_22k : $latestPrice->price_24k) : 0.00;
 
-            $calculations = $this->emiService->calculate($plan, $productPrice);
+            $offer = $offerId ? \App\Models\Offer::find($offerId) : null;
+            $calculations = $this->emiService->calculate($plan, $productPrice, $offer);
 
             // 2. Create the Booking
             $booking = new GoldBooking();
@@ -80,6 +81,27 @@ class BookingService
             $booking->remarks = $remarks;
             $booking->created_by_id = auth()->id();
             $booking->updated_by_id = auth()->id();
+
+            // Offers snapshotted fields
+            if ($offer) {
+                $booking->offer_id = $offer->id;
+                $booking->offer_name = $offer->offer_name;
+                $booking->offer_type = $offer->offer_type;
+                $booking->offer_value = $offer->offer_type === 'percentage' ? $offer->percentage : ($offer->offer_type === 'fixed' ? $offer->fixed_amount : $offer->free_emi_count);
+                $booking->original_amount = $calculations['original_total'] ?? $calculations['total_payable'];
+                $booking->discount_amount = $calculations['discount_amount'] ?? 0.00;
+                $booking->final_amount = $calculations['total_payable'];
+                $booking->savings_amount = $calculations['discount_amount'] ?? 0.00;
+                $booking->waived_emi_count = $calculations['waived_emi_count'] ?? 0;
+                $booking->offer_snapshot = $offer->toArray();
+            } else {
+                $booking->original_amount = $calculations['total_payable'];
+                $booking->discount_amount = 0.00;
+                $booking->final_amount = $calculations['total_payable'];
+                $booking->savings_amount = 0.00;
+                $booking->waived_emi_count = 0;
+            }
+
             $booking->save();
 
             // Log activities under the existing Activity Log schema
@@ -108,9 +130,9 @@ class BookingService
      * The draft captures the customer's selected product, plan, and locked pricing
      * context, but does not generate certificate, schedule, receipt, or invoice.
      */
-    public function createDraftBookingForPayment($customerId, $productId, $emiPlanId, $remarks = null): GoldBooking
+    public function createDraftBookingForPayment($customerId, $productId, $emiPlanId, $remarks = null, $offerId = null): GoldBooking
     {
-        return DB::transaction(function () use ($customerId, $productId, $emiPlanId, $remarks) {
+        return DB::transaction(function () use ($customerId, $productId, $emiPlanId, $remarks, $offerId) {
             $product = Product::findOrFail($productId);
             $plan = EmiPlan::findOrFail($emiPlanId);
             $customer = User::findOrFail($customerId);
@@ -121,9 +143,11 @@ class BookingService
 
             $is22k = strtoupper($product->gold_type) === '22K';
             $pricePerGram = $latestPrice ? ($is22k ? $latestPrice->price_22k : $latestPrice->price_24k) : 0.00;
-            $calculations = $this->emiService->calculate($plan, $productPrice);
+            
+            $offer = $offerId ? \App\Models\Offer::find($offerId) : null;
+            $calculations = $this->emiService->calculate($plan, $productPrice, $offer);
 
-            $booking = GoldBooking::create([
+            $bookingData = [
                 'booking_number' => $this->generateDraftBookingReference(),
                 'customer_id' => $customerId,
                 'product_id' => $productId,
@@ -150,7 +174,29 @@ class BookingService
                 'remarks' => $remarks,
                 'created_by_id' => auth()->id(),
                 'updated_by_id' => auth()->id(),
-            ]);
+            ];
+
+            // Offers snapshotted fields
+            if ($offer) {
+                $bookingData['offer_id'] = $offer->id;
+                $bookingData['offer_name'] = $offer->offer_name;
+                $bookingData['offer_type'] = $offer->offer_type;
+                $bookingData['offer_value'] = $offer->offer_type === 'percentage' ? $offer->percentage : ($offer->offer_type === 'fixed' ? $offer->fixed_amount : $offer->free_emi_count);
+                $bookingData['original_amount'] = $calculations['original_total'] ?? $calculations['total_payable'];
+                $bookingData['discount_amount'] = $calculations['discount_amount'] ?? 0.00;
+                $bookingData['final_amount'] = $calculations['total_payable'];
+                $bookingData['savings_amount'] = $calculations['discount_amount'] ?? 0.00;
+                $bookingData['waived_emi_count'] = $calculations['waived_emi_count'] ?? 0;
+                $bookingData['offer_snapshot'] = $offer->toArray();
+            } else {
+                $bookingData['original_amount'] = $calculations['total_payable'];
+                $bookingData['discount_amount'] = 0.00;
+                $bookingData['final_amount'] = $calculations['total_payable'];
+                $bookingData['savings_amount'] = 0.00;
+                $bookingData['waived_emi_count'] = 0;
+            }
+
+            $booking = GoldBooking::create($bookingData);
 
             $this->logBookingActivity('booking_payment_draft_created', "Draft booking {$booking->booking_number} created for Customer: {$customer->name}", $booking->id);
 

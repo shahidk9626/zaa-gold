@@ -12,6 +12,7 @@ use App\Models\Referral;
 use App\Models\SellOldGoldEnquiry;
 use App\Models\FranchiseEnquiry;
 use App\Models\Role;
+use App\Models\CancellationRequest;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -46,9 +47,10 @@ class ReportService
             ->sum('amount_paid');
 
         // Outstanding Amount
-        $totalBooked = GoldBooking::whereNotIn('status', ['Cancelled', 'Refunded'])->sum('grand_total');
+        $totalBooked = GoldBooking::whereNotIn('status', ['Cancelled', 'Cancelled', 'Refunded'])->sum('grand_total');
+        $totalSavings = GoldBooking::whereNotIn('status', ['Cancelled', 'Refunded'])->sum('savings_amount');
         $totalPaid = BookingPayment::where('status', 'Paid')->sum('amount_paid');
-        $outstandingAmount = max($totalBooked - $totalPaid, 0);
+        $outstandingAmount = max($totalBooked - $totalPaid - $totalSavings, 0);
 
         // Active Bookings
         $activeBookings = GoldBooking::whereIn('status', ['Active', 'Booked', 'Pending First EMI', 'Pending'])->count();
@@ -256,6 +258,16 @@ class ReportService
                 $query = GoldBooking::with(['customer', 'product'])
                     ->whereNotIn('status', ['Cancelled', 'Refunded']);
                 $this->applyFilters($query, $filters, 'gold_bookings');
+                return $query;
+
+            case 'cancellation':
+                $query = CancellationRequest::with(['customer', 'booking.emiPlan']);
+                if (!empty($filters['status'])) {
+                    $query->where('status', $filters['status']);
+                }
+                if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
+                    $query->whereBetween('created_at', [$filters['start_date'] . ' 00:00:00', $filters['end_date'] . ' 23:59:59']);
+                }
                 return $query;
 
             case 'referral':

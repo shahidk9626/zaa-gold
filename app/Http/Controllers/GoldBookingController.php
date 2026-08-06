@@ -100,6 +100,7 @@ class GoldBookingController extends Controller
             'customer_id' => 'required|exists:users,id',
             'product_id' => 'required|exists:products,id',
             'emi_plan_id' => 'required|exists:emi_plans,id',
+            'offer_id' => 'nullable|exists:offers,id',
             'remarks' => 'nullable|string',
             'payment_method' => 'required|in:pay_now,generate_link,cash',
         ]);
@@ -132,7 +133,8 @@ class GoldBookingController extends Controller
                 $request->customer_id,
                 $request->product_id,
                 $request->emi_plan_id,
-                $request->remarks
+                $request->remarks,
+                $request->offer_id
             );
 
             if ($request->payment_method === 'cash') {
@@ -241,7 +243,7 @@ class GoldBookingController extends Controller
         // Calculate financial summaries for Outstanding tab
         $totalBooked = (float)$booking->grand_total;
         $totalPaid = (float)$receipts->sum('amount_paid');
-        $outstandingBalance = round($totalBooked - $totalPaid, 2);
+        $outstandingBalance = $booking->status === 'Cancelled' ? 0.00 : round($totalBooked - $totalPaid - (float)$booking->savings_amount, 2);
         
         $principalPaid = (float)$receipts->sum('principal_paid');
         $interestPaid = (float)$receipts->sum('interest_paid');

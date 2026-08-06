@@ -200,7 +200,7 @@ class ReportController extends Controller
                     fputcsv($file, $columns);
                     foreach ($data as $row) {
                         $totalPaid = \App\Models\BookingPayment::where('booking_id', $row->id)->where('status', 'Paid')->sum('amount_paid');
-                        $outstanding = max($row->grand_total - $totalPaid, 0);
+                        $outstanding = $row->status === 'Cancelled' ? 0.00 : max($row->grand_total - $totalPaid - (float)$row->savings_amount, 0);
                         fputcsv($file, [
                             $row->booking_number,
                             $row->customer->name ?? 'N/A',
@@ -298,6 +298,29 @@ class ReportController extends Controller
                             $purchased,
                             $remaining,
                             $exceeded
+                        ]);
+                    }
+                    fclose($file);
+                };
+                break;
+
+            case 'cancellation':
+                $columns = ['Request Number', 'Booking Number', 'Customer Name', 'Customer Email', 'Gold Plan', 'Paid Amount (₹)', 'Cancellation Charge (₹)', 'Refund Amount (₹)', 'Status', 'Created Date'];
+                $callback = function() use($data, $columns) {
+                    $file = fopen('php://output', 'w');
+                    fputcsv($file, $columns);
+                    foreach ($data as $row) {
+                        fputcsv($file, [
+                            $row->request_number,
+                            $row->booking->booking_number ?? 'N/A',
+                            $row->customer->name ?? 'N/A',
+                            $row->customer->email ?? 'N/A',
+                            $row->booking->emiPlan->plan_name ?? 'N/A',
+                            $row->total_amount_paid,
+                            $row->cancellation_charge_amount,
+                            $row->refund_amount,
+                            $row->status,
+                            $row->created_at->format('Y-m-d')
                         ]);
                     }
                     fclose($file);

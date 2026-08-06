@@ -37,7 +37,7 @@ class CustomerService
         $totalEmi = $schedule->count() ?: (int) $booking->duration_months;
         $remainingEmi = max($totalEmi - $paidEmi, 0);
         $totalPaid = (float) $payments->sum('amount_paid');
-        $outstanding = round((float) $booking->grand_total - $totalPaid, 2);
+        $outstanding = $booking->status === 'Cancelled' ? 0.00 : round((float) $booking->grand_total - $totalPaid - (float) $booking->savings_amount, 2);
         $progress = $totalEmi > 0 ? round(($paidEmi / $totalEmi) * 100) : 0;
 
         return [
@@ -89,7 +89,10 @@ class CustomerService
         return [
             'total_booked' => $totalBooked,
             'total_paid' => $totalPaid,
-            'outstanding' => round($totalBooked - $totalPaid, 2),
+            'outstanding' => $booking->status === 'Cancelled' ? 0.00 : round($totalBooked - $totalPaid - (float) $booking->savings_amount, 2),
+            'original_amount' => (float) $booking->original_amount,
+            'savings_amount' => (float) $booking->savings_amount,
+            'offer_name' => $booking->offer_name,
             'principal_paid' => (float) $receipts->sum('principal_paid'),
             'interest_paid' => (float) $receipts->sum('interest_paid'),
             'late_fee_paid' => (float) $receipts->sum('late_fee_paid'),

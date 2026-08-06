@@ -48,6 +48,11 @@
                             </select>
                         </div>
 
+                        <div class="col-md-4 form-group">
+                            <label class="text-dark">Cancellation Charge (%) <span class="text-danger">*</span></label>
+                            <input type="number" name="cancellation_charge_percent" required min="0" max="100" step="0.01" value="0.00" class="form-control bg-white text-dark" placeholder="e.g. 2.00">
+                        </div>
+
                         <div class="col-md-4 form-group d-flex align-items-center pt-4">
                             <div class="form-check m-0">
                                 <label class="form-check-label text-dark font-weight-bold">
@@ -218,6 +223,17 @@
                             <label class="text-dark font-weight-bold">Maintenance Deduction Fee (%) <span class="text-danger">*</span></label>
                             <input type="number" name="maintenance_deduction_percent" required min="0" max="100" step="0.01" value="10.00" class="form-control bg-white text-dark" placeholder="e.g. 10.00">
                         </div>
+                        
+                        <!-- APPLICABLE OFFERS -->
+                        <div class="col-md-12 form-group mb-4">
+                            <label class="text-dark font-weight-bold">Applicable Offers</label>
+                            <select name="offers[]" class="form-control select2-offers" multiple="multiple" style="width: 100%;">
+                                @foreach($offers as $offer)
+                                    <option value="{{ $offer->id }}">{{ $offer->offer_name }} ({{ $offer->offer_code }}) - {{ $offer->offer_type }}</option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">Select promotional offers applicable to this plan template.</small>
+                        </div>
                     </div>
 
                     <div class="d-flex justify-content-end mt-4 pt-3 border-top">
@@ -233,8 +249,42 @@
 @endsection
 
 @push('scripts')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<style>
+    /* Premium style matching for Select2 inside bootstrap 5 container */
+    .select2-container--default .select2-selection--multiple {
+        border: 1px solid #ced4da !important;
+        border-radius: 0.25rem !important;
+        min-height: 38px !important;
+        background-color: #ffffff !important;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #3f50f6 !important;
+        color: white !important;
+        border: 1px solid #3f50f6 !important;
+        border-radius: 4px !important;
+        font-size: 0.8rem !important;
+        padding: 2px 6px !important;
+        margin-top: 6px !important;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: white !important;
+        margin-right: 5px !important;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+        background: transparent !important;
+        color: #ff3ca6 !important;
+    }
+</style>
 <script>
     $(document).ready(function () {
+        $('.select2-offers').select2({
+            placeholder: "Select applicable promotional offers",
+            allowClear: true,
+            closeOnSelect: false
+        });
+
         function toggleFinancialFields() {
             // GST on Gold
             let gstGoldEnabled = $('#gst_on_gold_enabled').is(':checked');

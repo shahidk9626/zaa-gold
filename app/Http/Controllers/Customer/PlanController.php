@@ -157,7 +157,10 @@ class PlanController extends CustomerBaseController
                 $product->weight_in_grams >= $plan->minimum_gold_weight && 
                 $product->weight_in_grams <= $plan->maximum_gold_weight) {
                 
-                $calc = $this->emiService->calculate($plan, $productPrice);
+                $eligibleOffers = app(\App\Services\OfferEligibilityService::class)->getEligibleOffersForPlan($plan);
+                $bestOffer = $eligibleOffers->first();
+
+                $calc = $this->emiService->calculate($plan, $productPrice, $bestOffer);
                 
                 // Set badges: Recommended based on lowest monthly EMI, Popular if marked as default
                 $badge = null;
@@ -168,7 +171,8 @@ class PlanController extends CustomerBaseController
                 $eligiblePlans[] = [
                     'plan' => $plan,
                     'calculations' => $calc,
-                    'badge' => $badge
+                    'badge' => $badge,
+                    'best_offer' => $bestOffer
                 ];
 
                 if ($lowestEmi === null || $calc['installment'] < $lowestEmi) {
@@ -202,7 +206,10 @@ class PlanController extends CustomerBaseController
         $plan = EmiPlan::where('status', 'active')->findOrFail($planId);
         $productPrice = $this->pricingService->calculateCurrentProductPrice($product);
         
-        $calculations = $this->emiService->calculate($plan, $productPrice);
+        $eligibleOffers = app(\App\Services\OfferEligibilityService::class)->getEligibleOffersForPlan($plan);
+        $bestOffer = $eligibleOffers->first();
+
+        $calculations = $this->emiService->calculate($plan, $productPrice, $bestOffer);
         
         return response()->json(array_merge([
             'product_name' => $product->name,
@@ -213,6 +220,8 @@ class PlanController extends CustomerBaseController
             'plan_name' => $plan->plan_name,
             'duration_months' => $plan->duration_months,
             'completion_date' => $calculations['completion_date'],
+            'applied_offer_id' => $bestOffer ? $bestOffer->id : null,
+            'applied_offer_name' => $bestOffer ? $bestOffer->offer_name : null,
         ], $calculations));
     }
 
@@ -272,11 +281,17 @@ class PlanController extends CustomerBaseController
         }
 
         try {
+            $plan = EmiPlan::findOrFail($request->emi_plan_id);
+            $eligibleOffers = app(\App\Services\OfferEligibilityService::class)->getEligibleOffersForPlan($plan);
+            $bestOffer = $eligibleOffers->first();
+            $offerId = $bestOffer ? $bestOffer->id : null;
+
             $booking = $this->bookingService->createDraftBookingForPayment(
                 $customerId,
                 $request->product_id,
                 $request->emi_plan_id,
-                $request->remarks
+                $request->remarks,
+                $offerId
             );
 
             $payment = $this->paymentService->initiateBookingGatewayPayment($booking);

@@ -83,7 +83,19 @@
                         <div class="col-md-6 mb-4">
                             <div class="card h-100 border-0 shadow-sm plan-select-card" id="plan-card-{{ $plan->id }}" onclick="selectPlan('{{ $plan->id }}')" style="border-radius: 12px; cursor: pointer; transition: transform 0.2s, border 0.2s; border: 2px solid transparent;">
                                 <div class="card-body p-3 position-relative">
-                                    @if($badge)
+                                    @if($pData['best_offer'])
+                                        <div class="position-absolute" style="top: -10px; right: 15px;">
+                                            <span class="badge badge-danger text-white font-weight-bold px-2 py-1 shadow-sm" style="font-size: 0.65rem; border-radius: 4px;">
+                                                @if($pData['best_offer']->offer_type === 'percentage')
+                                                    🔥 {{ (float)$pData['best_offer']->percentage }}% OFF
+                                                @elseif($pData['best_offer']->offer_type === 'fixed')
+                                                    🎁 ₹{{ number_format($pData['best_offer']->fixed_amount, 0) }} OFF
+                                                @else
+                                                    ⭐ Waive {{ $pData['best_offer']->free_emi_count }} EMI
+                                                @endif
+                                            </span>
+                                        </div>
+                                    @elseif($badge)
                                         <div class="position-absolute" style="top: -10px; right: 15px;">
                                             <span class="badge badge-success text-white font-weight-bold px-2 py-1 shadow-sm" style="font-size: 0.65rem; border-radius: 4px;">{{ $badge }}</span>
                                         </div>
@@ -245,6 +257,14 @@
                                 </div>
 
                                 <div class="bg-light rounded p-3 mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2 d-none" id="calc-original-row">
+                                        <span class="text-muted small">Original Plan Value</span>
+                                        <span class="text-muted font-weight-bold" style="text-decoration: line-through;" id="calc-original-total">₹0.00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2 d-none" id="calc-savings-row">
+                                        <span class="text-danger font-weight-bold small" id="calc-savings-label">Promo Discount</span>
+                                        <span class="text-danger font-weight-bold" id="calc-savings-amount">- ₹0.00</span>
+                                    </div>
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <span class="font-weight-bold text-dark">Grand Total</span>
                                         <span class="font-weight-bold text-primary h5 mb-0" id="calc-grand-total">₹0.00</span>
@@ -408,6 +428,18 @@
                         const grandTotal = parseFloat(data.total_payable);
                         const monthlyEmi = parseFloat(data.installment);
                         
+                        if (data.discount_amount && parseFloat(data.discount_amount) > 0) {
+                            document.getElementById('calc-original-row').classList.remove('d-none');
+                            document.getElementById('calc-savings-row').classList.remove('d-none');
+                            
+                            document.getElementById('calc-original-total').innerText = '₹' + parseFloat(data.original_total).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                            document.getElementById('calc-savings-amount').innerText = '- ₹' + parseFloat(data.discount_amount).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                            document.getElementById('calc-savings-label').innerText = data.applied_offer_name ? `${data.applied_offer_name} Savings` : 'Promo Discount';
+                        } else {
+                            document.getElementById('calc-original-row').classList.add('d-none');
+                            document.getElementById('calc-savings-row').classList.add('d-none');
+                        }
+
                         document.getElementById('calc-grand-total').innerText = '₹' + grandTotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                         document.getElementById('calc-monthly-emi').innerText = '₹' + monthlyEmi.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                         document.getElementById('calc-first-emi-term').innerText = '₹' + monthlyEmi.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});

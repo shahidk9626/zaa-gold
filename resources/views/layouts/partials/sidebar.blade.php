@@ -53,7 +53,7 @@
     </li>
     @endif
 
-    @if(hasPermission('customer.view') || hasPermission('customer.create'))
+    @if(hasPermission('customer.view') || hasPermission('customer.create') || hasPermission('cancellations.view'))
     <li class="nav-item">
       <a class="nav-link" data-toggle="collapse" href="#customer-menu" aria-expanded="false" aria-controls="customer-menu">
         <i class="mdi mdi-account-multiple menu-icon"></i>
@@ -70,6 +70,11 @@
           @if(hasPermission('customer.create'))
           <li class="nav-item">
             <a class="nav-link" href="{{ route('customers.create') }}">Add Customer</a>
+          </li>
+          @endif
+          @if(hasPermission('cancellations.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('admin.cancellations.index') }}">Cancellation Requests</a>
           </li>
           @endif
         </ul>
@@ -125,6 +130,23 @@
             <a class="nav-link" href="{{ route('franchise.index') }}">Franchise</a>
           </li>
           @endif
+        </ul>
+      </div>
+    </li>
+    @endif
+
+    @if(hasPermission('offers.view'))
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="collapse" href="#marketing-menu" aria-expanded="false" aria-controls="marketing-menu">
+        <i class="mdi mdi-bullhorn menu-icon"></i>
+        <span class="menu-title">Marketing</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="marketing-menu">
+        <ul class="nav flex-column sub-menu">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('offers.index') }}">Offers & Discounts</a>
+          </li>
         </ul>
       </div>
     </li>

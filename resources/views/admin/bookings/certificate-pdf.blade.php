@@ -822,11 +822,36 @@
                                                     <td class="kv-separator">:</td>
                                                     <td class="kv-value" style="text-align: right;">₹{{ number_format($booking->gst_on_charges_amount, 2) }}</td>
                                                 </tr>
+                                                @if((float)$booking->savings_amount > 0)
+                                                <tr style="border-top: 1.5px solid #e2e8f0;">
+                                                    <td class="kv-label" style="font-weight: bold; color: #718096; padding-top: 2px;">ORIGINAL VALUE</td>
+                                                    <td class="kv-separator" style="padding-top: 2px;">:</td>
+                                                    <td class="kv-value" style="font-weight: bold; text-decoration: line-through; text-align: right; padding-top: 2px;">₹{{ number_format($booking->original_amount, 2) }}</td>
+                                                </tr>
+                                                <tr style="color: #c53030;">
+                                                    <td class="kv-label" style="font-weight: bold; color: #c53030;">PROMO SAVINGS</td>
+                                                    <td class="kv-separator">:</td>
+                                                    <td class="kv-value" style="font-weight: bold; color: #c53030; text-align: right;">- ₹{{ number_format($booking->savings_amount, 2) }}</td>
+                                                </tr>
+                                                @if(!empty($booking->offer_name))
+                                                <tr style="color: #7c5c10; font-size: 6px;">
+                                                    <td class="kv-label" style="font-size: 6px; color: #7c5c10;">Applied Offer</td>
+                                                    <td class="kv-separator">:</td>
+                                                    <td class="kv-value" style="font-size: 6px; color: #7c5c10; text-align: right;">{{ $booking->offer_name }}</td>
+                                                </tr>
+                                                @endif
+                                                <tr style="border-top: 1px double #e2e8f0; font-weight: bold;">
+                                                    <td class="kv-label" style="font-weight: bold; color: #1a202c; padding-top: 2px;">NET GRAND TOTAL</td>
+                                                    <td class="kv-separator" style="padding-top: 2px;">:</td>
+                                                    <td class="kv-value highlight-gold" style="font-weight: 700; font-size: 9px; text-align: right; padding-top: 2px;">₹{{ number_format($booking->grand_total, 2) }}</td>
+                                                </tr>
+                                                @else
                                                 <tr style="border-top: 1px double #e2e8f0; font-weight: bold;">
                                                     <td class="kv-label" style="font-weight: bold; color: #1a202c; padding-top: 2px;">GRAND TOTAL</td>
                                                     <td class="kv-separator" style="padding-top: 2px;">:</td>
                                                     <td class="kv-value highlight-gold" style="font-weight: 700; font-size: 9px; text-align: right; padding-top: 2px;">₹{{ number_format($booking->grand_total, 2) }}</td>
                                                 </tr>
+                                                @endif
                                             </table>
                                         </div>
                                     </div>

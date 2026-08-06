@@ -41,6 +41,7 @@ class ProductPurchasePreviewController extends Controller
             'customer_id' => 'required|exists:users,id',
             'product_id' => 'required|exists:products,id',
             'emi_plan_id' => 'nullable|exists:emi_plans,id',
+            'offer_id' => 'nullable|exists:offers,id',
         ]);
 
         $product = Product::findOrFail($request->product_id);
@@ -77,7 +78,17 @@ class ProductPurchasePreviewController extends Controller
                 ], 422);
             }
 
-            $calculations = $this->emiService->calculate($plan, $productPrice);
+            $eligibleOffers = app(\App\Services\OfferEligibilityService::class)->getEligibleOffersForPlan($plan);
+
+            $offer = null;
+            if ($request->filled('offer_id')) {
+                $offer = \App\Models\Offer::find($request->offer_id);
+            } else {
+                // Default to highest priority offer
+                $offer = $eligibleOffers->first();
+            }
+
+            $calculations = $this->emiService->calculate($plan, $productPrice, $offer);
 
             return response()->json(array_merge([
                 'product_name' => $product->name,
@@ -94,6 +105,15 @@ class ProductPurchasePreviewController extends Controller
                 'total_payable' => $calculations['total_payable'],
                 'late_fee' => $calculations['late_fee'],
                 'completion_date' => $calculations['completion_date'],
+                'eligible_offers' => $eligibleOffers->map(function ($o) {
+                    return [
+                        'id' => $o->id,
+                        'offer_name' => $o->offer_name,
+                        'offer_code' => $o->offer_code,
+                        'offer_type' => $o->offer_type,
+                    ];
+                })->toArray(),
+                'applied_offer_id' => $offer ? $offer->id : null,
             ], $calculations));
         }
 
@@ -108,13 +128,26 @@ class ProductPurchasePreviewController extends Controller
                 $product->weight_in_grams >= $plan->minimum_gold_weight && 
                 $product->weight_in_grams <= $plan->maximum_gold_weight) {
                 
-                $calc = $this->emiService->calculate($plan, $productPrice);
+                // Get eligible offers for this plan
+                $eligibleOffers = app(\App\Services\OfferEligibilityService::class)->getEligibleOffersForPlan($plan);
+                $bestOffer = $eligibleOffers->first();
+
+                $calc = $this->emiService->calculate($plan, $productPrice, $bestOffer);
                 $eligiblePlans[] = array_merge(
                     $plan->toArray(),
                     [
                         'processing_fee' => $calc['processing_fee'],
                         'installment' => $calc['installment'],
                         'total_payable' => $calc['total_payable'],
+                        'best_offer' => $bestOffer ? [
+                            'id' => $bestOffer->id,
+                            'offer_name' => $bestOffer->offer_name,
+                            'offer_code' => $bestOffer->offer_code,
+                            'offer_type' => $bestOffer->offer_type,
+                            'free_emi_count' => $bestOffer->free_emi_count,
+                            'percentage' => $bestOffer->percentage,
+                            'fixed_amount' => $bestOffer->fixed_amount,
+                        ] : null,
                     ],
                     $calc
                 );
@@ -198,11 +231,14 @@ class ProductPurchasePreviewController extends Controller
             'product_id' => 'required|exists:products,id',
             'emi_plan_id' => 'required|exists:emi_plans,id',
             'customer_id' => 'nullable|exists:users,id',
+            'offer_id' => 'nullable|exists:offers,id',
         ]);
 
         $product = Product::findOrFail($request->product_id);
         $plan = EmiPlan::findOrFail($request->emi_plan_id);
         $customer = $request->customer_id ? User::find($request->customer_id) : null;
+
+        $offer = $request->filled('offer_id') ? \App\Models\Offer::find($request->offer_id) : null;
 
         $productPrice = $this->pricingService->calculateCurrentProductPrice($product);
         $latestPrice = GoldPrice::where('status', 'active')->latest('effective_date')->first() 
@@ -210,8 +246,8 @@ class ProductPurchasePreviewController extends Controller
         $is22k = strtoupper($product->gold_type) === '22K';
         $pricePerGram = $latestPrice ? ($is22k ? $latestPrice->price_22k : $latestPrice->price_24k) : 0.00;
 
-        $calculations = $this->emiService->calculate($plan, $productPrice);
-        $schedule = $this->emiService->generateOutstandingSchedule($plan, $productPrice);
+        $calculations = $this->emiService->calculate($plan, $productPrice, $offer);
+        $schedule = $this->emiService->generateOutstandingSchedule($plan, $productPrice, $offer);
 
         $customerName = $customer ? $customer->name : 'N/A';
         $this->logPurchasePreviewActivity(
@@ -219,7 +255,7 @@ class ProductPurchasePreviewController extends Controller
             "Outstanding Statement previewed for Customer: {$customerName}, Product: {$product->name}, Plan: {$plan->plan_name}",
             $product->id,
             null,
-            ['customer_id' => $request->customer_id, 'product_id' => $request->product_id, 'emi_plan_id' => $request->emi_plan_id]
+            ['customer_id' => $request->customer_id, 'product_id' => $request->product_id, 'emi_plan_id' => $request->emi_plan_id, 'offer_id' => $request->offer_id]
         );
 
         return response()->json([
@@ -252,11 +288,14 @@ class ProductPurchasePreviewController extends Controller
             'product_id' => 'required|exists:products,id',
             'emi_plan_id' => 'required|exists:emi_plans,id',
             'customer_id' => 'nullable|exists:users,id',
+            'offer_id' => 'nullable|exists:offers,id',
         ]);
 
         $product = Product::findOrFail($request->product_id);
         $plan = EmiPlan::findOrFail($request->emi_plan_id);
         $customer = $request->customer_id ? User::find($request->customer_id) : null;
+
+        $offer = $request->filled('offer_id') ? \App\Models\Offer::find($request->offer_id) : null;
 
         $productPrice = $this->pricingService->calculateCurrentProductPrice($product);
         $latestPrice = GoldPrice::where('status', 'active')->latest('effective_date')->first() 
@@ -264,8 +303,8 @@ class ProductPurchasePreviewController extends Controller
         $is22k = strtoupper($product->gold_type) === '22K';
         $pricePerGram = $latestPrice ? ($is22k ? $latestPrice->price_22k : $latestPrice->price_24k) : 0.00;
 
-        $calculations = $this->emiService->calculate($plan, $productPrice);
-        $schedule = $this->emiService->generateOutstandingSchedule($plan, $productPrice);
+        $calculations = $this->emiService->calculate($plan, $productPrice, $offer);
+        $schedule = $this->emiService->generateOutstandingSchedule($plan, $productPrice, $offer);
 
         $customerName = $customer ? $customer->name : 'N/A';
         $this->logPurchasePreviewActivity(
@@ -273,7 +312,7 @@ class ProductPurchasePreviewController extends Controller
             "Outstanding Statement PDF downloaded for Customer: {$customerName}, Product: {$product->name}, Plan: {$plan->plan_name}",
             $product->id,
             null,
-            ['customer_id' => $request->customer_id, 'product_id' => $request->product_id, 'emi_plan_id' => $request->emi_plan_id]
+            ['customer_id' => $request->customer_id, 'product_id' => $request->product_id, 'emi_plan_id' => $request->emi_plan_id, 'offer_id' => $request->offer_id]
         );
 
         $pdfData = [

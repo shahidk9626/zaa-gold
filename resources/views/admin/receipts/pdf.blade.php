@@ -520,6 +520,18 @@
                                 <td>:</td>
                                 <td align="right">₹{{ number_format($booking->grand_total - $booking->locked_gold_value, 2) }}</td>
                             </tr>
+                            @if((float)$booking->savings_amount > 0)
+                            <tr>
+                                <td>Original Plan Value</td>
+                                <td>:</td>
+                                <td align="right" style="text-decoration: line-through;">₹{{ number_format($booking->original_amount, 2) }}</td>
+                            </tr>
+                            <tr style="color: #dc3545;">
+                                <td>Promo Discount ({{ $booking->offer_name ?? 'Savings' }})</td>
+                                <td>:</td>
+                                <td align="right" style="color: #dc3545;">- ₹{{ number_format($booking->savings_amount, 2) }}</td>
+                            </tr>
+                            @endif
                             <tr class="highlight-row">
                                 <td>TOTAL PLAN VALUE (GOLD + CHARGES)</td>
                                 <td>:</td>

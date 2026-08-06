@@ -28,7 +28,8 @@ class EmiPlanController extends Controller
 
     public function create()
     {
-        return view('admin.emi-plans.create');
+        $offers = \App\Models\Offer::where('status', 'Active')->orderBy('offer_name')->get();
+        return view('admin.emi-plans.create', compact('offers'));
     }
 
     public function store(StoreEmiPlanRequest $request)
@@ -45,7 +46,14 @@ class EmiPlanController extends Controller
         $data['processing_fee_type'] = $data['processing_fee_type'] ?? 'fixed';
         $data['processing_fee'] = $data['processing_fee'] ?? 0.00;
 
+        $offers = $data['offers'] ?? [];
+        unset($data['offers']);
+
         $plan = EmiPlan::create($data);
+
+        if (!empty($offers)) {
+            $plan->offers()->sync($offers);
+        }
 
         return response()->json(['success' => 'EMI Plan created successfully', 'plan' => $plan]);
     }
@@ -58,8 +66,9 @@ class EmiPlanController extends Controller
 
     public function edit($id)
     {
-        $plan = EmiPlan::findOrFail($id);
-        return view('admin.emi-plans.edit', compact('plan'));
+        $plan = EmiPlan::with('offers')->findOrFail($id);
+        $offers = \App\Models\Offer::where('status', 'Active')->orderBy('offer_name')->get();
+        return view('admin.emi-plans.edit', compact('plan', 'offers'));
     }
 
     public function update(UpdateEmiPlanRequest $request, $id)
@@ -77,7 +86,11 @@ class EmiPlanController extends Controller
         $data['processing_fee_type'] = $data['processing_fee_type'] ?? 'fixed';
         $data['processing_fee'] = $data['processing_fee'] ?? 0.00;
 
+        $offers = $data['offers'] ?? [];
+        unset($data['offers']);
+
         $plan->update($data);
+        $plan->offers()->sync($offers);
 
         return response()->json(['success' => 'EMI Plan updated successfully']);
     }

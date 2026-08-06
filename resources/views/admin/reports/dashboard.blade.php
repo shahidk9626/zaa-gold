@@ -196,7 +196,8 @@
                             'referral' => 'Referral Report',
                             'sell_old_gold' => 'Sell Old Gold Report',
                             'franchise' => 'Franchise Report',
-                            'purchase_limit' => 'Purchase Limit Report'
+                            'purchase_limit' => 'Purchase Limit Report',
+                            'cancellation' => 'Cancellations & Refunds'
                         ] as $key => $label)
                             <a href="{{ route('reports.dashboard', ['report' => $key]) }}" class="nav-link text-dark font-weight-bold mb-1 {{ $reportType === $key ? 'active bg-primary text-white' : '' }}">
                                 <i class="mdi mdi-file-document-outline mr-2"></i> {{ $label }}
@@ -226,7 +227,7 @@
                             </div>
 
                             <!-- Customer Filter (if applicable) -->
-                            @if(in_array($reportType, ['booking', 'payment', 'delivery', 'emi', 'outstanding', 'referral', 'purchase_limit']))
+                            @if(in_array($reportType, ['booking', 'payment', 'delivery', 'emi', 'outstanding', 'referral', 'purchase_limit', 'cancellation']))
                             <div class="col-md-4 form-group mb-2">
                                 <label class="text-dark font-weight-bold">Customer</label>
                                 <select name="customer_id" class="form-control bg-white text-dark">
@@ -306,6 +307,7 @@
                                         elseif ($reportType === 'delivery') $statuses = ['Requested', 'Approved', 'Ready For Dispatch', 'Dispatched', 'Out For Delivery', 'Delivered', 'Cancelled', 'Returned'];
                                         elseif ($reportType === 'emi') $statuses = ['Pending', 'Paid', 'Partial', 'Overdue'];
                                         elseif ($reportType === 'referral') $statuses = ['Pending', 'Eligible', 'Rewarded', 'Rejected'];
+                                        elseif ($reportType === 'cancellation') $statuses = ['Requested', 'Under Review', 'Customer Retained', 'Approved', 'Refund Initiated', 'Refund Completed', 'Rejected'];
                                         elseif ($reportType === 'sell_old_gold' || $reportType === 'franchise') $statuses = ['New', 'Contacted', 'Meeting Scheduled', 'Proposal Sent', 'Approved', 'Rejected', 'Closed'];
                                     @endphp
                                     @foreach($statuses as $status)
@@ -676,6 +678,51 @@
                                     </tr>
                                     @empty
                                     <tr><td colspan="5" class="text-center text-muted">No records found.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+
+                            @elseif($reportType === 'cancellation')
+                            <table class="table table-bordered table-striped text-dark">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Request No</th>
+                                        <th>Booking No</th>
+                                        <th>Customer</th>
+                                        <th>Plan Name</th>
+                                        <th class="text-right">Paid Amount</th>
+                                        <th class="text-right">Cancellation Charge</th>
+                                        <th class="text-right">Refund Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($reportData as $row)
+                                    <tr>
+                                        <td class="font-weight-bold">{{ $row->request_number }}</td>
+                                        <td>{{ $row->booking?->booking_number }}</td>
+                                        <td>
+                                            <div class="font-weight-bold">{{ $row->customer?->name }}</div>
+                                            <small class="text-muted">{{ $row->customer?->email }}</small>
+                                        </td>
+                                        <td>{{ $row->booking?->emiPlan?->plan_name }}</td>
+                                        <td class="text-right font-weight-bold text-dark">₹{{ number_format($row->total_amount_paid, 2) }}</td>
+                                        <td class="text-right text-danger font-weight-bold">₹{{ number_format($row->cancellation_charge_amount, 2) }} ({{ number_format($row->cancellation_charge_percent, 2) }}%)</td>
+                                        <td class="text-right text-success font-weight-bold">₹{{ number_format($row->refund_amount, 2) }}</td>
+                                        <td>
+                                            @php
+                                                $badge = 'secondary';
+                                                if ($row->status === 'Requested') $badge = 'info';
+                                                elseif ($row->status === 'Under Review') $badge = 'warning';
+                                                elseif ($row->status === 'Customer Retained' || $row->status === 'Refund Completed') $badge = 'success';
+                                                elseif ($row->status === 'Approved' || $row->status === 'Refund Initiated') $badge = 'primary';
+                                                elseif ($row->status === 'Rejected') $badge = 'danger';
+                                            @endphp
+                                            <span class="badge badge-{{ $badge }}">{{ $row->status }}</span>
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr><td colspan="8" class="text-center text-muted">No records found.</td></tr>
                                     @endforelse
                                 </tbody>
                             </table>

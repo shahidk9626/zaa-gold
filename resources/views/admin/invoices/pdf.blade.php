@@ -605,12 +605,27 @@
                     <td>{{ number_format($invoice->gst_on_charges_percent, 1) }}% of 4</td>
                     <td align="right">₹{{ number_format($gstOnServiceCharges, 2) }}</td>
                 </tr>
+                @if((float)$booking->savings_amount > 0)
+                <tr>
+                    <td>6</td>
+                    <td>Promo Savings Discount (Applied Offer: {{ $booking->offer_name ?? 'Savings' }})</td>
+                    <td>Offer Benefit</td>
+                    <td align="right" style="color: #c53030; font-weight: bold;">- ₹{{ number_format($booking->savings_amount, 2) }}</td>
+                </tr>
+                <tr class="highlight-breakup-row">
+                    <td>&nbsp;</td>
+                    <td>NET TOTAL INVOICE AMOUNT</td>
+                    <td>(B + 4 + 5) - 6</td>
+                    <td align="right">₹{{ number_format($invoice->grand_total, 2) }}</td>
+                </tr>
+                @else
                 <tr class="highlight-breakup-row">
                     <td>&nbsp;</td>
                     <td>TOTAL INVOICE AMOUNT</td>
                     <td>B + 4 + 5</td>
                     <td align="right">₹{{ number_format($totalInvoiceAmount, 2) }}</td>
                 </tr>
+                @endif
             </tbody>
         </table>
 
@@ -632,7 +647,7 @@
                 <td width="30%" valign="top">
                     <div class="total-card">
                         <div style="font-size: 7.5px; color: #777777; font-weight: bold; text-transform: uppercase;">TOTAL AMOUNT PAYABLE</div>
-                        <div style="font-size: 13px; font-weight: bold; color: #b4831b; margin-top: 2px;">₹{{ number_format($totalInvoiceAmount, 2) }}</div>
+                        <div style="font-size: 13px; font-weight: bold; color: #b4831b; margin-top: 2px;">₹{{ number_format($invoice->grand_total, 2) }}</div>
                     </div>
                 </td>
             </tr>

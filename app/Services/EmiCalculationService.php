@@ -288,7 +288,7 @@ class EmiCalculationService
     /**
      * Unified calculation output dictionary
      */
-    public function calculate(EmiPlan $plan, $amount)
+    public function calculate(EmiPlan $plan, $amount, $offer = null)
     {
         $useFinancialEngine = (bool)($plan->gst_on_gold_enabled || $plan->finance_charge_enabled || $plan->storage_charge_enabled || $plan->gst_on_charges_enabled);
 
@@ -321,7 +321,7 @@ class EmiCalculationService
         $lateFee = $this->calculateLateFee($plan, $installment);
         $completionDate = $this->calculateCompletionDate($plan, now());
 
-        return [
+        $results = [
             'installment' => $installment,
             'processing_fee' => $processingFee,
             'interest' => $interest,
@@ -344,15 +344,27 @@ class EmiCalculationService
             'storage_charge_enabled' => (bool)$plan->storage_charge_enabled,
             'gst_on_charges_enabled' => (bool)$plan->gst_on_charges_enabled,
         ];
+
+        // Resolve and apply offer if present
+        if ($offer) {
+            if (!($offer instanceof \App\Models\Offer)) {
+                $offer = \App\Models\Offer::find($offer);
+            }
+            if ($offer) {
+                $results = app(\App\Services\OfferCalculationService::class)->applyOffer($offer, $results, $plan);
+            }
+        }
+
+        return $results;
     }
 
     /**
      * Generate outstanding payment/repayment schedule
      */
-    public function generateOutstandingSchedule(EmiPlan $plan, $amount)
+    public function generateOutstandingSchedule(EmiPlan $plan, $amount, $offer = null)
     {
         $duration = (int)$plan->duration_months;
-        $calc = $this->calculate($plan, $amount);
+        $calc = $this->calculate($plan, $amount, $offer);
         $monthlyEmi = $calc['installment'];
         $grandTotal = $calc['total_payable'];
         $useFinancialEngine = $calc['use_financial_engine'];
@@ -391,6 +403,19 @@ class EmiCalculationService
             ];
             
             $openingPrincipal = $closingPrincipal;
+        }
+
+        // Adjust for Type 3 EMI discount in preview
+        if (isset($calc['offer_type']) && $calc['offer_type'] === 'emi') {
+            $freeEmiCount = $calc['waived_emi_count'] ?? 1;
+            $totalRecords = count($schedule);
+            for ($k = $totalRecords - 1; $k >= $totalRecords - $freeEmiCount; $k--) {
+                if (isset($schedule[$k])) {
+                    $schedule[$k]['monthly_emi'] = 0.00;
+                    $schedule[$k]['status'] = 'Waived';
+                    $schedule[$k]['remarks'] = 'Offer Benefit';
+                }
+            }
         }
         
         return $schedule;
@@ -459,10 +484,10 @@ class EmiCalculationService
     /**
      * Generate actual EMI Schedule for a booking starting on booking date
      */
-    public function generateSchedule(EmiPlan $plan, $amount, $bookingDate = null)
+    public function generateSchedule(EmiPlan $plan, $amount, $bookingDate = null, $offer = null)
     {
         $duration = (int)$plan->duration_months;
-        $calc = $this->calculate($plan, $amount);
+        $calc = $this->calculate($plan, $amount, $offer);
         $monthlyEmi = $calc['installment'];
         $grandTotal = $calc['total_payable'];
         $useFinancialEngine = $calc['use_financial_engine'];
@@ -504,6 +529,19 @@ class EmiCalculationService
             ];
             
             $openingPrincipal = $closingPrincipal;
+        }
+
+        // Adjust for Type 3 EMI discount
+        if (isset($calc['offer_type']) && $calc['offer_type'] === 'emi') {
+            $freeEmiCount = $calc['waived_emi_count'] ?? 1;
+            $totalRecords = count($schedule);
+            for ($k = $totalRecords - 1; $k >= $totalRecords - $freeEmiCount; $k--) {
+                if (isset($schedule[$k])) {
+                    $schedule[$k]['emi_amount'] = 0.00;
+                    $schedule[$k]['status'] = 'Waived';
+                    $schedule[$k]['remarks'] = 'Offer Benefit';
+                }
+            }
         }
         
         return $schedule;

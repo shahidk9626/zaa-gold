@@ -38,6 +38,16 @@ class GoldBooking extends Model
         'remarks',
         'created_by_id',
         'updated_by_id',
+        'offer_id',
+        'offer_name',
+        'offer_type',
+        'offer_value',
+        'original_amount',
+        'discount_amount',
+        'final_amount',
+        'savings_amount',
+        'waived_emi_count',
+        'offer_snapshot',
     ];
 
     protected $casts = [
@@ -57,6 +67,13 @@ class GoldBooking extends Model
         'monthly_emi' => 'decimal:2',
         'booking_date' => 'datetime',
         'estimated_completion_date' => 'datetime',
+        'offer_value' => 'decimal:2',
+        'original_amount' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
+        'final_amount' => 'decimal:2',
+        'savings_amount' => 'decimal:2',
+        'waived_emi_count' => 'integer',
+        'offer_snapshot' => 'array',
     ];
 
     public $status_change_remarks = null;
@@ -126,5 +143,35 @@ class GoldBooking extends Model
     public function paymentTransactions()
     {
         return $this->hasMany(PaymentTransaction::class, 'booking_id');
+    }
+
+    public function offer()
+    {
+        return $this->belongsTo(Offer::class, 'offer_id');
+    }
+
+    public function cancellationRequests()
+    {
+        return $this->hasMany(CancellationRequest::class, 'booking_id')->orderBy('created_at', 'desc');
+    }
+
+    public function latestCancellationRequest()
+    {
+        return $this->hasOne(CancellationRequest::class, 'booking_id')->latestOfMany();
+    }
+
+    public function schedules()
+    {
+        return $this->hasMany(BookingEmiSchedule::class, 'booking_id');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(BookingPayment::class, 'booking_id');
+    }
+
+    public function deliveries()
+    {
+        return $this->hasMany(BookingDelivery::class, 'booking_id');
     }
 }

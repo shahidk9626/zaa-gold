@@ -34,6 +34,9 @@ class PaymentService
      */
     public function initiateBookingGatewayPayment(GoldBooking $booking, bool $isAdminSession = false): array
     {
+        if ($booking->status === 'Cancelled') {
+            throw new \RuntimeException('Cannot initiate payment. This gold plan booking is Cancelled.');
+        }
         $customer = User::with('customerDetail')->findOrFail($booking->customer_id);
         $transaction = DB::transaction(function () use ($booking) {
             return PaymentTransaction::create([
@@ -99,6 +102,10 @@ class PaymentService
         $schedule->loadMissing(['booking.customer.customerDetail', 'booking.product']);
         $booking = $schedule->booking;
         $customer = $booking->customer;
+
+        if ($booking->status === 'Cancelled') {
+            throw new \RuntimeException('Cannot initiate payment. This gold plan booking is Cancelled.');
+        }
 
         if ($schedule->status === 'Paid') {
             throw new \RuntimeException('This EMI installment is already paid.');
@@ -168,7 +175,8 @@ class PaymentService
     public function generateScheduleForBooking(GoldBooking $booking)
     {
         return DB::transaction(function () use ($booking) {
-            $scheduleData = $this->emiService->generateSchedule($booking->emiPlan, $booking->locked_gold_value, $booking->booking_date);
+            $offer = $booking->offer_id ? \App\Models\Offer::find($booking->offer_id) : null;
+            $scheduleData = $this->emiService->generateSchedule($booking->emiPlan, $booking->locked_gold_value, $booking->booking_date, $offer);
 
             foreach ($scheduleData as $row) {
                 BookingEmiSchedule::create([
@@ -181,7 +189,8 @@ class PaymentService
                     'emi_amount' => $row['emi_amount'],
                     'closing_principal' => $row['closing_principal'],
                     'outstanding_balance' => $row['outstanding_balance'],
-                    'status' => 'Pending',
+                    'status' => $row['status'] ?? 'Pending',
+                    'waived_reason' => ($row['status'] ?? 'Pending') === 'Waived' ? 'Offer Benefit' : null,
                     'created_by_id' => Auth::id() ?? $booking->created_by_id,
                     'updated_by_id' => Auth::id() ?? $booking->updated_by_id,
                 ]);
@@ -215,6 +224,9 @@ class PaymentService
      */
     public function collectPayment(GoldBooking $booking, BookingEmiSchedule $schedule, array $data, $isFirstEmi = false)
     {
+        if ($booking->status === 'Cancelled') {
+            throw new \RuntimeException('Cannot process payment. This gold plan booking is Cancelled.');
+        }
         return DB::transaction(function () use ($booking, $schedule, $data, $isFirstEmi) {
             $paymentDate = isset($data['payment_date']) ? Carbon::parse($data['payment_date']) : now();
             
@@ -474,6 +486,9 @@ class PaymentService
      */
     public function processCashBookingPayment(GoldBooking $booking, array $data)
     {
+        if ($booking->status === 'Cancelled') {
+            throw new \RuntimeException('Cannot process cash booking. This gold plan booking is Cancelled.');
+        }
         return DB::transaction(function () use ($booking, $data) {
             $bookingService = app(BookingService::class);
 

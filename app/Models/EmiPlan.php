@@ -44,6 +44,7 @@ class EmiPlan extends Model
         'gst_on_charges_enabled',
         'gst_on_charges_percent',
         'rounding_type',
+        'cancellation_charge_percent',
     ];
 
     protected $casts = [
@@ -64,6 +65,7 @@ class EmiPlan extends Model
         'storage_charge_value' => 'decimal:2',
         'gst_on_charges_enabled' => 'boolean',
         'gst_on_charges_percent' => 'decimal:2',
+        'cancellation_charge_percent' => 'decimal:2',
     ];
 
     protected static function boot()
@@ -109,5 +111,10 @@ class EmiPlan extends Model
         }
 
         return app(EmiCalculationService::class)->calculateMonthlyInstallment($plan, $amount);
+    }
+
+    public function offers()
+    {
+        return $this->belongsToMany(Offer::class, 'emi_plan_offers', 'emi_plan_id', 'offer_id');
     }
 }

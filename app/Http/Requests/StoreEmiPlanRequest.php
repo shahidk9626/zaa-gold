@@ -67,6 +67,9 @@ class StoreEmiPlanRequest extends FormRequest
             'gst_on_charges_enabled' => 'nullable|boolean',
             'gst_on_charges_percent' => 'required_if:gst_on_charges_enabled,1|nullable|numeric|min:0|max:100',
             'rounding_type' => 'required|string|in:none,nearest_rupee,nearest_10,nearest_100,None,Nearest Rupee,Nearest 10,Nearest 100',
+            'cancellation_charge_percent' => 'required|numeric|min:0|max:100',
+            'offers' => 'nullable|array',
+            'offers.*' => 'exists:offers,id',
         ];
     }
 }

@@ -219,6 +219,7 @@
                             customer_id: selectedCustomerId,
                             product_id: selectedProductId,
                             emi_plan_id: selectedEmiPlanId,
+                            offer_id: $('#sumOfferSelect').val(),
                             remarks: 'Booking created via Admin purchase preview panel.',
                             payment_method: paymentMethod
                         },
@@ -353,6 +354,19 @@
                     response.eligible_plans.forEach(plan => {
                         let defaultBadge = plan.is_default ? '<span class="badge badge-primary float-right">Default</span>' : '';
                         
+                        let offerBadge = '';
+                        if (plan.best_offer) {
+                            let badgeText = '';
+                            if (plan.best_offer.offer_type === 'percentage') {
+                                badgeText = `🔥 ${parseFloat(plan.best_offer.percentage)}% OFF`;
+                            } else if (plan.best_offer.offer_type === 'fixed') {
+                                badgeText = `🎁 ₹${parseFloat(plan.best_offer.fixed_amount)} OFF`;
+                            } else {
+                                badgeText = `⭐ Waive ${plan.best_offer.free_emi_count} EMI`;
+                            }
+                            offerBadge = `<span class="badge badge-danger float-right ml-1" title="${plan.best_offer.offer_name}">${badgeText}</span>`;
+                        }
+
                         let chargesInfo = '';
                         if (plan.use_financial_engine) {
                             if (plan.gst_on_gold_enabled) {
@@ -380,6 +394,7 @@
                                     <div class="d-block mb-2">
                                         <span class="font-weight-bold text-dark">${plan.plan_name}</span>
                                         ${defaultBadge}
+                                        ${offerBadge}
                                     </div>
                                     <div class="small text-muted mb-2">Duration: <strong class="text-dark">${plan.duration_months} Months</strong></div>
                                     ${chargesInfo}
@@ -442,59 +457,27 @@
                 emi_plan_id: planId
             },
             success: function (response) {
-                // Populate summary
-                let custName = $('#customerId option:selected').text().trim();
-                $('#sumCustomerName').text(custName);
-                $('#sumProductSpecs').text(`${response.product_name} (${parseFloat(response.weight_in_grams).toFixed(2)}g, ${response.gold_type})`);
-                $('#sumPlanName').text(`${response.plan_name} (${response.duration_months} Months)`);
+                // Populate eligible offers dropdown list
+                let offerSelect = $('#sumOfferSelect');
+                offerSelect.empty().append('<option value="">No Offer (Apply Standard Pricing)</option>');
                 
-                $('#sumGoldRate').text(`₹${parseFloat(response.gold_price_per_gram).toLocaleString()}/g`);
-                $('#sumProductPrice').text(`₹${parseFloat(response.product_price).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
-                
-                if (response.use_financial_engine) {
-                    $('#sumProcessingFeeBlock, #sumInterestBlock').attr('style', 'display: none !important;');
-                    
-                    if (response.gst_on_gold_enabled) {
-                        $('#sumGstGoldBlock').attr('style', 'display: block !important;');
-                        $('#sumGstGold').text(`₹${parseFloat(response.gst_on_gold).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
-                    } else {
-                        $('#sumGstGoldBlock').attr('style', 'display: none !important;');
-                    }
-
-                    if (response.finance_charge_enabled) {
-                        $('#sumFinanceBlock').attr('style', 'display: block !important;');
-                        $('#sumFinance').text(`₹${parseFloat(response.finance_charge).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
-                    } else {
-                        $('#sumFinanceBlock').attr('style', 'display: none !important;');
-                    }
-
-                    if (response.storage_charge_enabled) {
-                        $('#sumStorageBlock').attr('style', 'display: block !important;');
-                        $('#sumStorage').text(`₹${parseFloat(response.storage_charge).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
-                    } else {
-                        $('#sumStorageBlock').attr('style', 'display: none !important;');
-                    }
-
-                    if (response.gst_on_charges_enabled) {
-                        $('#sumGstChargesBlock').attr('style', 'display: block !important;');
-                        $('#sumGstCharges').text(`₹${parseFloat(response.gst_on_charges).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
-                    } else {
-                        $('#sumGstChargesBlock').attr('style', 'display: none !important;');
-                    }
+                if (response.eligible_offers && response.eligible_offers.length > 0) {
+                    $('#sumOfferSelectionRow').slideDown();
+                    response.eligible_offers.forEach(o => {
+                        let isSelected = o.id == response.applied_offer_id ? 'selected' : '';
+                        offerSelect.append(`<option value="${o.id}" ${isSelected}>${o.offer_name} [${o.offer_code}]</option>`);
+                    });
                 } else {
-                    $('#sumProcessingFeeBlock, #sumInterestBlock').attr('style', 'display: block !important;');
-                    $('#sumProcessingFee').text(`₹${parseFloat(response.processing_fee).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
-                    $('#sumInterest').text(`₹${parseFloat(response.interest).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
-                    
-                    $('#sumGstGoldBlock, #sumFinanceBlock, #sumStorageBlock, #sumGstChargesBlock').attr('style', 'display: none !important;');
+                    $('#sumOfferSelectionRow').slideUp();
                 }
 
-                $('#sumEmiAmount').text(`₹${parseFloat(response.installment).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
-                $('#sumTotalPayable').text(`₹${parseFloat(response.total_payable).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
-                $('#sumCompletionDate').text(response.completion_date);
-                $('#sumLateFee').text(`₹${parseFloat(response.late_fee).toLocaleString()} / Default`);
+                // Bind change event to offer dropdown
+                offerSelect.off('change').on('change', function () {
+                    let offerId = $(this).val();
+                    recalculateWithOffer(selectedEmiPlanId, offerId);
+                });
 
-                $('#summaryRow').slideDown();
+                updateFinancialSummaryView(response);
 
                 // Log EMI Plan Selection & Preview Calculation action
                 $.ajax({
@@ -519,6 +502,106 @@
                 });
             }
         });
+    }
+
+    function recalculateWithOffer(planId, offerId) {
+        $.ajax({
+            url: "{{ route('purchase-preview.calculate') }}",
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                customer_id: selectedCustomerId,
+                product_id: selectedProductId,
+                emi_plan_id: planId,
+                offer_id: offerId
+            },
+            success: function (response) {
+                updateFinancialSummaryView(response);
+            },
+            error: function (xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Evaluation Error',
+                    text: xhr.responseJSON.error || 'Failed to recalculate discount terms.',
+                    confirmButtonColor: '#ff3ca6'
+                });
+            }
+        });
+    }
+
+    function updateFinancialSummaryView(response) {
+        let custName = $('#customerId option:selected').text().trim();
+        $('#sumCustomerName').text(custName);
+        $('#sumProductSpecs').text(`${response.product_name} (${parseFloat(response.weight_in_grams).toFixed(2)}g, ${response.gold_type})`);
+        $('#sumPlanName').text(`${response.plan_name} (${response.duration_months} Months)`);
+        
+        $('#sumGoldRate').text(`₹${parseFloat(response.gold_price_per_gram).toLocaleString()}/g`);
+        $('#sumProductPrice').text(`₹${parseFloat(response.product_price).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+        
+        if (response.use_financial_engine) {
+            $('#sumProcessingFeeBlock, #sumInterestBlock').attr('style', 'display: none !important;');
+            
+            if (response.gst_on_gold_enabled) {
+                $('#sumGstGoldBlock').attr('style', 'display: block !important;');
+                $('#sumGstGold').text(`₹${parseFloat(response.gst_on_gold).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+            } else {
+                $('#sumGstGoldBlock').attr('style', 'display: none !important;');
+            }
+
+            if (response.finance_charge_enabled) {
+                $('#sumFinanceBlock').attr('style', 'display: block !important;');
+                $('#sumFinance').text(`₹${parseFloat(response.finance_charge).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+            } else {
+                $('#sumFinanceBlock').attr('style', 'display: none !important;');
+            }
+
+            if (response.storage_charge_enabled) {
+                $('#sumStorageBlock').attr('style', 'display: block !important;');
+                $('#sumStorage').text(`₹${parseFloat(response.storage_charge).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+            } else {
+                $('#sumStorageBlock').attr('style', 'display: none !important;');
+            }
+
+            if (response.gst_on_charges_enabled) {
+                $('#sumGstChargesBlock').attr('style', 'display: block !important;');
+                $('#sumGstCharges').text(`₹${parseFloat(response.gst_on_charges).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+            } else {
+                $('#sumGstChargesBlock').attr('style', 'display: none !important;');
+            }
+        } else {
+            $('#sumProcessingFeeBlock, #sumInterestBlock').attr('style', 'display: block !important;');
+            $('#sumProcessingFee').text(`₹${parseFloat(response.processing_fee).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+            $('#sumInterest').text(`₹${parseFloat(response.interest).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+            
+            $('#sumGstGoldBlock, #sumFinanceBlock, #sumStorageBlock, #sumGstChargesBlock').attr('style', 'display: none !important;');
+        }
+
+        // Show/Hide Original Amount & Discount block
+        if (response.discount_amount && parseFloat(response.discount_amount) > 0) {
+            $('#sumOriginalAmountBlock').attr('style', 'display: block !important;');
+            $('#sumOriginalAmount').text(`₹${parseFloat(response.original_amount).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+            
+            $('#sumDiscountAmountBlock').attr('style', 'display: block !important;');
+            $('#sumDiscountAmount').text(`₹${parseFloat(response.discount_amount).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+            
+            // Benefit notice
+            let offerNotice = `Applied Offer: <strong>${response.applied_offer_name || 'Promo Offer'}</strong>. Total Savings: <strong>₹${parseFloat(response.savings_amount || response.discount_amount).toLocaleString(undefined, {minimumFractionDigits: 2})}</strong>!`;
+            if (response.waived_emi_count && parseInt(response.waived_emi_count) > 0) {
+                offerNotice += ` (${response.waived_emi_count} EMI installment(s) waived).`;
+            }
+            $('#sumOfferBenefitNotice').html(offerNotice).removeClass('d-none');
+        } else {
+            $('#sumOriginalAmountBlock').attr('style', 'display: none !important;');
+            $('#sumDiscountAmountBlock').attr('style', 'display: none !important;');
+            $('#sumOfferBenefitNotice').addClass('d-none').html('');
+        }
+
+        $('#sumEmiAmount').text(`₹${parseFloat(response.installment).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+        $('#sumTotalPayable').text(`₹${parseFloat(response.total_payable).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+        $('#sumCompletionDate').text(response.completion_date);
+        $('#sumLateFee').text(`₹${parseFloat(response.late_fee).toLocaleString()} / Default`);
+
+        $('#summaryRow').slideDown();
     }
 </script>
 

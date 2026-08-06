@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Customer\DashboardController;
 use App\Http\Controllers\Customer\PlanController;
 use App\Http\Controllers\Customer\MyPlanController;
+use App\Http\Controllers\Customer\CancellationRequestController;
 use App\Http\Controllers\Customer\EmiController;
 use App\Http\Controllers\Customer\PaymentController;
 use App\Http\Controllers\Customer\BookingPaymentController;
@@ -28,6 +29,8 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
     Route::get('/my-plans', [MyPlanController::class, 'index'])->name('my-plans.index');
     Route::get('/my-plans/{id}', [MyPlanController::class, 'show'])->name('my-plans.show');
     Route::delete('/my-plans/{id}', [MyPlanController::class, 'destroy'])->name('my-plans.destroy');
+    Route::get('/my-plans/{id}/cancellation-preview', [CancellationRequestController::class, 'preview'])->name('my-plans.cancellation_preview');
+    Route::post('/my-plans/{id}/cancel', [CancellationRequestController::class, 'submit'])->name('my-plans.cancel');
 
     Route::get('/emi/history', [EmiController::class, 'history'])->name('emi.history');
     Route::get('/emi/repay', [EmiController::class, 'repay'])->name('emi.repay');
