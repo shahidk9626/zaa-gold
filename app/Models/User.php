@@ -95,6 +95,11 @@ class User extends Authenticatable
         return $this->hasMany(GoldBooking::class, 'customer_id');
     }
 
+    public function customerAddresses()
+    {
+        return $this->hasMany(CustomerAddress::class, 'customer_id');
+    }
+
     public function isCustomer(): bool
     {
         return $this->role?->slug === 'customer';

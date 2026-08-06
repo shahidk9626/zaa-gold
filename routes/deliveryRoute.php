@@ -15,11 +15,15 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware('permission:delivery.approve')->group(function () {
         Route::post('/admin/deliveries/{id}/approve', [DeliveryController::class, 'approve'])->name('deliveries.approve');
+        Route::post('/admin/deliveries/{id}/reject', [DeliveryController::class, 'reject'])->name('deliveries.reject');
+        Route::post('/admin/deliveries/{id}/hold', [DeliveryController::class, 'hold'])->name('deliveries.hold');
         Route::post('/admin/deliveries/{id}/regenerate-otp', [DeliveryController::class, 'regenerateOtp'])->name('deliveries.regenerate_otp');
     });
 
     Route::middleware('permission:delivery.dispatch')->group(function () {
+        Route::post('/admin/deliveries/{id}/ready', [DeliveryController::class, 'ready'])->name('deliveries.ready');
         Route::post('/admin/deliveries/{id}/dispatch', [DeliveryController::class, 'dispatchDelivery'])->name('deliveries.dispatch');
+        Route::post('/admin/deliveries/{id}/tracking-status', [DeliveryController::class, 'trackingStatus'])->name('deliveries.tracking_status');
     });
 
     Route::middleware('permission:delivery.complete')->group(function () {

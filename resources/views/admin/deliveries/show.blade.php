@@ -56,14 +56,18 @@
                         @php
                             $badgeClass = 'badge-secondary';
                             switch($delivery->delivery_status) {
+                                case 'Pending Admin Approval':
                                 case 'Requested': $badgeClass = 'badge-warning'; break;
                                 case 'Approved': $badgeClass = 'badge-info'; break;
+                                case 'Hold': $badgeClass = 'badge-dark'; break;
                                 case 'Ready For Dispatch': $badgeClass = 'badge-primary'; break;
                                 case 'Dispatched': $badgeClass = 'badge-secondary'; break;
+                                case 'In Transit': $badgeClass = 'badge-primary'; break;
                                 case 'Out For Delivery': $badgeClass = 'badge-dark'; break;
-                                case 'Delivered': $badgeClass = 'badge-success'; break;
+                                case 'Delivered':
+                                case 'Collected': $badgeClass = 'badge-success'; break;
+                                case 'Rejected':
                                 case 'Cancelled': $badgeClass = 'badge-danger'; break;
-                                case 'Returned': $badgeClass = 'badge-light text-dark'; break;
                             }
                         @endphp
                         <span class="badge {{ $badgeClass }} text-dark font-weight-bold px-3 py-2 mr-3">{{ $delivery->delivery_status }}</span>
@@ -79,7 +83,7 @@
                         <i class="mdi mdi-download mr-1"></i> Download Challan PDF
                     </a>
                     @endif
-                    @if($delivery->delivery_status !== 'Cancelled' && $delivery->delivery_status !== 'Delivered' && hasPermission('delivery.cancel'))
+                    @if(!in_array($delivery->delivery_status, ['Cancelled', 'Delivered', 'Collected', 'Rejected']) && hasPermission('delivery.cancel'))
                     <button type="button" class="btn btn-danger px-4" data-toggle="modal" data-target="#cancelDeliveryModal">
                         <i class="mdi mdi-close-circle mr-1"></i> Cancel Delivery
                     </button>
@@ -112,7 +116,7 @@
     @endif
 
     <!-- Cancel Modal -->
-    @if($delivery->delivery_status !== 'Cancelled' && $delivery->delivery_status !== 'Delivered' && hasPermission('delivery.cancel'))
+    @if(!in_array($delivery->delivery_status, ['Cancelled', 'Delivered', 'Collected', 'Rejected']) && hasPermission('delivery.cancel'))
     <div class="modal fade" id="cancelDeliveryModal" tabindex="-1" role="dialog" aria-labelledby="cancelDeliveryModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <form action="{{ route('deliveries.cancel', $delivery->id) }}" method="POST" class="modal-content bg-white text-dark">
@@ -141,39 +145,83 @@
     <!-- Main Grid Content -->
     <div class="col-md-7 mb-4">
         <!-- Delivery Workflow Action Forms -->
-        @if($delivery->delivery_status === 'Requested' && hasPermission('delivery.approve'))
+        @if(in_array($delivery->delivery_status, ['Requested', 'Pending Admin Approval', 'Hold']) && hasPermission('delivery.approve'))
             <!-- Approval Form -->
             <div class="card bg-white border border-info shadow-sm p-4 mb-4">
                 <h5 class="text-info font-weight-bold mb-3"><i class="mdi mdi-checkbox-marked-circle-outline mr-1"></i> Review & Approve Request</h5>
                 <p class="text-muted small">Verify that the client has completed all payments and booking matches required conditions. Click below to approve delivery and generate Challan PDF.</p>
-                <form action="{{ route('deliveries.approve', $delivery->id) }}" method="POST" class="d-inline">
+                <form action="{{ route('deliveries.approve', $delivery->id) }}" method="POST">
                     @csrf
                     <div class="form-group">
                         <label class="font-weight-bold small">Approval Remarks (Optional)</label>
                         <input type="text" name="remarks" class="form-control bg-white text-dark" placeholder="Specify approval remarks...">
                     </div>
-                    <button type="submit" class="btn btn-info px-4">Approve Delivery Order</button>
+                    <button type="submit" class="btn btn-info px-4 mr-2">Approve Delivery</button>
+                    <button type="button" class="btn btn-warning px-4 mr-2" data-toggle="collapse" data-target="#holdDeliveryForm">Hold</button>
+                    <button type="button" class="btn btn-danger px-4" data-toggle="collapse" data-target="#rejectDeliveryForm">Reject</button>
+                </form>
+                <form action="{{ route('deliveries.hold', $delivery->id) }}" method="POST" class="collapse mt-3" id="holdDeliveryForm">
+                    @csrf
+                    <label class="font-weight-bold small">Hold Remarks <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <input type="text" name="remarks" class="form-control bg-white text-dark" required>
+                        <div class="input-group-append"><button type="submit" class="btn btn-warning">Confirm Hold</button></div>
+                    </div>
+                </form>
+                <form action="{{ route('deliveries.reject', $delivery->id) }}" method="POST" class="collapse mt-3" id="rejectDeliveryForm">
+                    @csrf
+                    <label class="font-weight-bold small">Reject Reason <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <input type="text" name="remarks" class="form-control bg-white text-dark" required>
+                        <div class="input-group-append"><button type="submit" class="btn btn-danger">Confirm Reject</button></div>
+                    </div>
                 </form>
             </div>
         @endif
 
-        @if($delivery->delivery_status === 'Approved' && $delivery->delivery_method === 'Courier' && hasPermission('delivery.dispatch'))
+        @if($delivery->delivery_status === 'Approved' && hasPermission('delivery.dispatch'))
+            <div class="card bg-white border border-primary shadow-sm p-4 mb-4">
+                <h5 class="text-primary font-weight-bold mb-3"><i class="mdi mdi-package-variant-closed mr-1"></i> Mark Ready</h5>
+                <form action="{{ route('deliveries.ready', $delivery->id) }}" method="POST">
+                    @csrf
+                    <div class="form-group">
+                        <label class="font-weight-bold small">{{ $delivery->delivery_method === 'Branch Pickup' ? 'Ready for Pickup Remarks' : 'Ready for Dispatch Remarks' }}</label>
+                        <input type="text" name="remarks" class="form-control bg-white text-dark" placeholder="Packed and verified.">
+                    </div>
+                    <button type="submit" class="btn btn-primary px-4">{{ $delivery->delivery_method === 'Branch Pickup' ? 'Ready for Pickup' : 'Ready for Dispatch' }}</button>
+                </form>
+            </div>
+        @endif
+
+        @if(in_array($delivery->delivery_status, ['Approved', 'Ready For Dispatch']) && $delivery->delivery_method === 'Courier' && hasPermission('delivery.dispatch'))
             <!-- Dispatch Courier Form -->
             <div class="card bg-white border border-primary shadow-sm p-4 mb-4">
                 <h5 class="text-primary font-weight-bold mb-3"><i class="mdi mdi-truck-delivery mr-1"></i> Assign Courier & Dispatch</h5>
                 <form action="{{ route('deliveries.dispatch', $delivery->id) }}" method="POST" class="row">
                     @csrf
                     <div class="col-md-6 form-group">
-                        <label class="font-weight-bold small">Courier Partner <span class="text-danger">*</span></label>
-                        <input type="text" name="courier_partner" class="form-control bg-white text-dark" placeholder="e.g. DHL, BlueDart" required>
+                        <label class="font-weight-bold small">Courier Company <span class="text-danger">*</span></label>
+                        <input type="text" name="courier_partner" class="form-control bg-white text-dark" placeholder="Shiprocket, Delhivery, Blue Dart, DTDC, India Post" required>
                     </div>
                     <div class="col-md-6 form-group">
-                        <label class="font-weight-bold small">Tracking ID Number <span class="text-danger">*</span></label>
+                        <label class="font-weight-bold small">Tracking Number <span class="text-danger">*</span></label>
                         <input type="text" name="tracking_number" class="form-control bg-white text-dark" placeholder="e.g. AWB123456" required>
                     </div>
-                    <div class="col-12 form-group">
-                        <label class="font-weight-bold small">Tracking Website URL</label>
+                    <div class="col-md-6 form-group">
+                        <label class="font-weight-bold small">Tracking URL</label>
                         <input type="url" name="tracking_url" class="form-control bg-white text-dark" placeholder="e.g. https://dhl.com/track">
+                    </div>
+                    <div class="col-md-3 form-group">
+                        <label class="font-weight-bold small">Dispatch Date</label>
+                        <input type="date" name="dispatch_date" class="form-control bg-white text-dark" value="{{ now()->toDateString() }}">
+                    </div>
+                    <div class="col-md-3 form-group">
+                        <label class="font-weight-bold small">Expected Delivery Date</label>
+                        <input type="date" name="expected_delivery_date" class="form-control bg-white text-dark" min="{{ now()->toDateString() }}">
+                    </div>
+                    <div class="col-12 form-group">
+                        <label class="font-weight-bold small">Remarks</label>
+                        <input type="text" name="remarks" class="form-control bg-white text-dark" placeholder="Dispatch notes...">
                     </div>
                     <div class="col-12 text-right">
                         <button type="submit" class="btn btn-primary px-4">Confirm Dispatch</button>
@@ -182,7 +230,28 @@
             </div>
         @endif
 
-        @if(in_array($delivery->delivery_status, ['Approved', 'Dispatched']) && hasPermission('delivery.complete'))
+        @if(in_array($delivery->delivery_status, ['Dispatched', 'In Transit']) && $delivery->delivery_method === 'Courier' && hasPermission('delivery.dispatch'))
+            <div class="card bg-white border border-dark shadow-sm p-4 mb-4">
+                <h5 class="text-dark font-weight-bold mb-3"><i class="mdi mdi-map-marker-path mr-1"></i> Update Shipment Progress</h5>
+                <form action="{{ route('deliveries.tracking_status', $delivery->id) }}" method="POST" class="row">
+                    @csrf
+                    <div class="col-md-5 form-group">
+                        <label class="font-weight-bold small">Current Status</label>
+                        <select name="delivery_status" class="form-control bg-white text-dark" required>
+                            <option value="In Transit">In Transit</option>
+                            <option value="Out For Delivery">Out for Delivery</option>
+                        </select>
+                    </div>
+                    <div class="col-md-7 form-group">
+                        <label class="font-weight-bold small">Remarks</label>
+                        <input type="text" name="remarks" class="form-control bg-white text-dark" placeholder="Shipment update remarks...">
+                    </div>
+                    <div class="col-12 text-right"><button type="submit" class="btn btn-dark px-4">Update Tracking</button></div>
+                </form>
+            </div>
+        @endif
+
+        @if(in_array($delivery->delivery_status, ['Approved', 'Ready For Dispatch', 'Dispatched', 'In Transit', 'Out For Delivery']) && hasPermission('delivery.complete'))
             <!-- Completion Form -->
             <div class="card bg-white border border-success shadow-sm p-4 mb-4">
                 <h5 class="text-success font-weight-bold mb-3"><i class="mdi mdi-checkbox-marked-circle mr-1"></i> Complete Gold Delivery Handover</h5>
@@ -289,6 +358,18 @@
                             <span class="font-weight-bold text-dark">—</span>
                         @endif
                     </div>
+                    <div class="col-4 mb-3">
+                        <label class="small text-muted d-block mb-1">Dispatch Date</label>
+                        <span class="font-weight-bold text-dark">{{ $delivery->dispatch_date ? $delivery->dispatch_date->format('d M Y') : '—' }}</span>
+                    </div>
+                    <div class="col-4 mb-3">
+                        <label class="small text-muted d-block mb-1">Expected Delivery</label>
+                        <span class="font-weight-bold text-dark">{{ $delivery->expected_delivery_date ? $delivery->expected_delivery_date->format('d M Y') : '—' }}</span>
+                    </div>
+                    <div class="col-4 mb-3">
+                        <label class="small text-muted d-block mb-1">Current Status</label>
+                        <span class="font-weight-bold text-dark">{{ $delivery->delivery_status }}</span>
+                    </div>
                 </div>
             @elseif($delivery->delivery_method === 'Branch Pickup')
                 <div class="row">
@@ -297,8 +378,20 @@
                         <span class="font-weight-bold text-dark">{{ $delivery->pickup_branch }}</span>
                     </div>
                     <div class="col-4 mb-3">
-                        <label class="small text-muted d-block mb-1">Scheduled Pickup Date</label>
+                        <label class="small text-muted d-block mb-1">Preferred Pickup Date</label>
                         <span class="font-weight-bold text-dark">{{ $delivery->pickup_date ? $delivery->pickup_date->format('d M Y') : '—' }}</span>
+                    </div>
+                    <div class="col-4 mb-3">
+                        <label class="small text-muted d-block mb-1">Pickup OTP</label>
+                        <span class="font-weight-bold text-dark">{{ $delivery->otp ?? 'Future Ready' }}</span>
+                    </div>
+                    <div class="col-4 mb-3">
+                        <label class="small text-muted d-block mb-1">Collected By</label>
+                        <span class="font-weight-bold text-dark">{{ $delivery->receiver_name ?? '—' }}</span>
+                    </div>
+                    <div class="col-4 mb-3">
+                        <label class="small text-muted d-block mb-1">Collected At</label>
+                        <span class="font-weight-bold text-dark">{{ $delivery->collected_at ? $delivery->collected_at->format('d M Y, h:i A') : '—' }}</span>
                     </div>
                     <div class="col-4 mb-3">
                         <label class="small text-muted d-block mb-1">Scheduled Pickup Time</label>
@@ -308,7 +401,7 @@
             @else
                 <div class="row">
                     <div class="col-12">
-                        <p class="mb-0 text-dark">This delivery is scheduled for **Office Pickup** at BKC Mumbai corporate office.</p>
+                        <p class="mb-0 text-dark">This legacy delivery is scheduled for office pickup at the BKC Mumbai corporate office.</p>
                     </div>
                 </div>
             @endif
@@ -342,10 +435,15 @@
                     @php
                         $badgeClass = '';
                         switch($history->new_status) {
+                            case 'Pending Admin Approval':
                             case 'Requested': $badgeClass = 'badge-warning'; break;
                             case 'Approved': $badgeClass = 'badge-info'; break;
+                            case 'Ready For Dispatch':
+                            case 'In Transit':
                             case 'Dispatched': $badgeClass = ''; break;
-                            case 'Delivered': $badgeClass = 'badge-success'; break;
+                            case 'Delivered':
+                            case 'Collected': $badgeClass = 'badge-success'; break;
+                            case 'Rejected':
                             case 'Cancelled': $badgeClass = 'badge-danger'; break;
                         }
                     @endphp

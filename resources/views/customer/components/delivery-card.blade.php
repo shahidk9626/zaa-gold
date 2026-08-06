@@ -3,10 +3,11 @@
 @php
     $statusClass = match($delivery->delivery_status) {
         'Delivered' => 'badge-success',
-        'Dispatched', 'Out For Delivery' => 'badge-primary',
+        'Dispatched', 'In Transit', 'Out For Delivery', 'Ready For Dispatch' => 'badge-primary',
         'Approved' => 'badge-info',
-        'Requested' => 'badge-warning',
-        'Cancelled' => 'badge-danger',
+        'Requested', 'Pending Admin Approval', 'Hold' => 'badge-warning',
+        'Cancelled', 'Rejected' => 'badge-danger',
+        'Collected' => 'badge-success',
         default => 'badge-secondary',
     };
 @endphp
@@ -22,8 +23,13 @@
         </div>
         <p class="mb-1"><strong>{{ $delivery->booking?->product?->name }}</strong></p>
         <p class="text-muted small mb-2">
-            Expected: {{ $delivery->dispatch_date?->format('d M Y') ?? $delivery->pickup_date?->format('d M Y') ?? 'TBD' }}
+            Expected: {{ $delivery->expected_delivery_date?->format('d M Y') ?? $delivery->pickup_date?->format('d M Y') ?? 'TBD' }}
         </p>
-        <a href="{{ route('customer.deliveries.show', $delivery->id) }}" class="btn btn-sm btn-primary">View Details</a>
+        <div class="d-flex flex-wrap align-items-center">
+            <a href="{{ route('customer.deliveries.show', $delivery->id) }}" class="btn btn-sm btn-primary mr-2 mb-2">View Details</a>
+            @if($delivery->tracking_url)
+                <a href="{{ $delivery->tracking_url }}" target="_blank" class="btn btn-sm btn-outline-primary mb-2">Track Shipment <i class="mdi mdi-open-in-new"></i></a>
+            @endif
+        </div>
     </div>
 </div>

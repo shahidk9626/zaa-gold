@@ -37,7 +37,7 @@
                     <label class="text-dark font-weight-bold">Delivery Status</label>
                     <select name="status" class="form-control bg-white text-dark">
                         <option value="">All Statuses</option>
-                        @foreach(['Requested', 'Approved', 'Ready For Dispatch', 'Dispatched', 'Out For Delivery', 'Delivered', 'Cancelled', 'Returned'] as $st)
+                        @foreach(['Pending Admin Approval', 'Approved', 'Hold', 'Ready For Dispatch', 'Dispatched', 'In Transit', 'Out For Delivery', 'Delivered', 'Collected', 'Rejected', 'Cancelled'] as $st)
                             <option value="{{ $st }}" {{ request('status') === $st ? 'selected' : '' }}>{{ $st }}</option>
                         @endforeach
                     </select>
@@ -48,7 +48,7 @@
                     <label class="text-dark font-weight-bold">Delivery Method</label>
                     <select name="method" class="form-control bg-white text-dark">
                         <option value="">All Methods</option>
-                        @foreach(['Office Pickup', 'Courier', 'Branch Pickup'] as $method)
+                        @foreach(['Courier', 'Branch Pickup'] as $method)
                             <option value="{{ $method }}" {{ request('method') === $method ? 'selected' : '' }}>{{ $method }}</option>
                         @endforeach
                     </select>
@@ -98,14 +98,18 @@
                                     @php
                                         $badgeClass = 'badge-secondary';
                                         switch($delivery->delivery_status) {
+                                            case 'Pending Admin Approval':
                                             case 'Requested': $badgeClass = 'badge-warning'; break;
                                             case 'Approved': $badgeClass = 'badge-info'; break;
+                                            case 'Hold': $badgeClass = 'badge-dark'; break;
                                             case 'Ready For Dispatch': $badgeClass = 'badge-primary'; break;
                                             case 'Dispatched': $badgeClass = 'badge-secondary'; break;
+                                            case 'In Transit': $badgeClass = 'badge-primary'; break;
                                             case 'Out For Delivery': $badgeClass = 'badge-dark'; break;
-                                            case 'Delivered': $badgeClass = 'badge-success'; break;
+                                            case 'Delivered':
+                                            case 'Collected': $badgeClass = 'badge-success'; break;
+                                            case 'Rejected':
                                             case 'Cancelled': $badgeClass = 'badge-danger'; break;
-                                            case 'Returned': $badgeClass = 'badge-light text-dark'; break;
                                         }
                                     @endphp
                                     <span class="badge {{ $badgeClass }} text-dark font-weight-bold px-3 py-2">{{ $delivery->delivery_status }}</span>

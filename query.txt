@@ -1,63 +1,55 @@
--- ==========================================
--- 1. Table Creation Query
--- ==========================================
+-- Delivery Fulfillment Workflow schema changes
+-- Generated from database/migrations/2026_08_06_170000_add_delivery_fulfillment_fields.php
 
-CREATE TABLE cash_collection_requests (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    collection_number VARCHAR(255) NOT NULL UNIQUE,
-    transaction_id BIGINT UNSIGNED NOT NULL,
-    booking_id BIGINT UNSIGNED NOT NULL,
-    customer_id BIGINT UNSIGNED NOT NULL,
-    payment_id BIGINT UNSIGNED NULL,
-    collected_by_id BIGINT UNSIGNED NOT NULL,
-    amount DECIMAL(15, 2) NOT NULL,
-    status VARCHAR(30) NOT NULL DEFAULT 'Pending Verification',
-    collection_date DATETIME NOT NULL,
-    remarks TEXT NULL,
-    verified_by_id BIGINT UNSIGNED NULL,
-    verified_at TIMESTAMP NULL,
-    created_at TIMESTAMP NULL,
-    updated_at TIMESTAMP NULL,
-    FOREIGN KEY (transaction_id) REFERENCES payment_transactions(id) ON DELETE CASCADE,
-    FOREIGN KEY (booking_id) REFERENCES gold_bookings(id) ON DELETE CASCADE,
-    FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (payment_id) REFERENCES booking_payments(id) ON DELETE SET NULL,
-    FOREIGN KEY (collected_by_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (verified_by_id) REFERENCES users(id) ON DELETE SET NULL
-);
+CREATE TABLE `customer_addresses` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `customer_id` BIGINT UNSIGNED NOT NULL,
+  `address_name` VARCHAR(255) NOT NULL,
+  `mobile` VARCHAR(20) NOT NULL,
+  `alternate_mobile` VARCHAR(20) NULL,
+  `house_no` VARCHAR(255) NULL,
+  `street` VARCHAR(255) NULL,
+  `area` VARCHAR(255) NULL,
+  `landmark` VARCHAR(255) NULL,
+  `city` VARCHAR(255) NOT NULL,
+  `state` VARCHAR(255) NOT NULL,
+  `pin_code` VARCHAR(20) NOT NULL,
+  `country` VARCHAR(255) NOT NULL DEFAULT 'India',
+  `address_type` VARCHAR(20) NOT NULL DEFAULT 'Home',
+  `is_default` TINYINT(1) NOT NULL DEFAULT 0,
+  `created_by_id` BIGINT UNSIGNED NULL,
+  `updated_by_id` BIGINT UNSIGNED NULL,
+  `created_at` TIMESTAMP NULL,
+  `updated_at` TIMESTAMP NULL,
+  `deleted_at` TIMESTAMP NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `customer_addresses_customer_id_foreign`
+    FOREIGN KEY (`customer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `customer_addresses_created_by_id_foreign`
+    FOREIGN KEY (`created_by_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `customer_addresses_updated_by_id_foreign`
+    FOREIGN KEY (`updated_by_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) DEFAULT CHARACTER SET utf8mb4 COLLATE 'utf8mb4_unicode_ci';
 
--- ==========================================
--- 2. Module & Permission Insert Queries
--- ==========================================
+ALTER TABLE `booking_deliveries`
+  ADD `customer_address_id` BIGINT UNSIGNED NULL AFTER `customer_id`,
+  ADD CONSTRAINT `booking_deliveries_customer_address_id_foreign`
+    FOREIGN KEY (`customer_address_id`) REFERENCES `customer_addresses` (`id`) ON DELETE SET NULL;
 
--- Insert the module entry
-INSERT INTO modules (name, slug, status, created_at, updated_at)
-VALUES ('Cash Collection', 'cash-collection', 'active', NOW(), NOW());
-
--- Insert the permissions associated with the cash collection module
-INSERT INTO permissions (module_id, name, slug, created_at, updated_at) VALUES
-((SELECT id FROM modules WHERE slug = 'cash-collection' LIMIT 1), 'View Cash Collection', 'cash-collection.view', NOW(), NOW()),
-((SELECT id FROM modules WHERE slug = 'cash-collection' LIMIT 1), 'Verify Cash Collection', 'cash-collection.verify', NOW(), NOW()),
-((SELECT id FROM modules WHERE slug = 'cash-collection' LIMIT 1), 'Reject Cash Collection', 'cash-collection.reject', NOW(), NOW()),
-((SELECT id FROM modules WHERE slug = 'cash-collection' LIMIT 1), 'Manage Cash Collection', 'cash-collection.manage', NOW(), NOW());
-
--- Assign these permissions to the 'super-admin' role
-INSERT INTO role_permissions (role_id, permission_id, allowed)
-SELECT r.id, p.id, 1
-FROM roles r
-CROSS JOIN permissions p
-WHERE r.slug = 'super-admin' AND p.slug LIKE 'cash-collection.%';
-
--- Assign these permissions to the 'admin' role
-INSERT INTO role_permissions (role_id, permission_id, allowed)
-SELECT r.id, p.id, 1
-FROM roles r
-CROSS JOIN permissions p
-WHERE r.slug = 'admin' AND p.slug LIKE 'cash-collection.%';
-
--- ==========================================
--- 3. Add Bank Document column to kycs table
--- ==========================================
-
-ALTER TABLE kycs ADD COLUMN bank_document VARCHAR(255) NULL AFTER signature;
-
+ALTER TABLE `booking_deliveries`
+  ADD `delivery_address_name` VARCHAR(255) NULL AFTER `delivery_address`,
+  ADD `delivery_address_mobile` VARCHAR(20) NULL AFTER `delivery_address_name`,
+  ADD `delivery_address_alternate_mobile` VARCHAR(20) NULL AFTER `delivery_address_mobile`,
+  ADD `delivery_address_type` VARCHAR(20) NULL AFTER `delivery_address_alternate_mobile`,
+  ADD `delivery_city` VARCHAR(255) NULL AFTER `delivery_address_type`,
+  ADD `delivery_state` VARCHAR(255) NULL AFTER `delivery_city`,
+  ADD `delivery_pin_code` VARCHAR(20) NULL AFTER `delivery_state`,
+  ADD `delivery_country` VARCHAR(255) NULL AFTER `delivery_pin_code`,
+  ADD `expected_delivery_date` DATE NULL AFTER `dispatch_date`,
+  ADD `ready_for_dispatch_at` DATETIME NULL AFTER `expected_delivery_date`,
+  ADD `in_transit_at` DATETIME NULL AFTER `ready_for_dispatch_at`,
+  ADD `out_for_delivery_at` DATETIME NULL AFTER `in_transit_at`,
+  ADD `collected_at` DATETIME NULL AFTER `out_for_delivery_at`,
+  ADD `dispatch_remarks` TEXT NULL AFTER `remarks`,
+  ADD `rejection_reason` TEXT NULL AFTER `dispatch_remarks`,
+  ADD `hold_reason` TEXT NULL AFTER `rejection_reason`;

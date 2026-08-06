@@ -18,9 +18,21 @@
                     <p><strong>Tracking:</strong> {{ $delivery->tracking_number }}
                         @if($delivery->tracking_url)<a href="{{ $delivery->tracking_url }}" target="_blank" class="ml-2">Track <i class="mdi mdi-open-in-new"></i></a>@endif
                     </p>
+                    <p><strong>Dispatch Date:</strong> {{ $delivery->dispatch_date?->format('d M Y') ?? '—' }}</p>
+                    <p><strong>Expected Delivery:</strong> {{ $delivery->expected_delivery_date?->format('d M Y') ?? '—' }}</p>
+                    <p><strong>Current Status:</strong> {{ $trackingService->customerStatus($delivery) }}</p>
+                    @if($delivery->tracking_url)
+                        <a href="{{ $delivery->tracking_url }}" target="_blank" class="btn btn-outline-primary btn-sm mb-3">Track Shipment <i class="mdi mdi-open-in-new"></i></a>
+                    @endif
                     @endif
                     @if($delivery->delivery_address)
                     <p><strong>Address:</strong> {{ $delivery->delivery_address }}</p>
+                    @endif
+                    @if($delivery->delivery_method === 'Branch Pickup')
+                        <p><strong>Pickup Date:</strong> {{ $delivery->pickup_date?->format('d M Y') ?? '—' }}</p>
+                        <p><strong>Pickup Branch:</strong> {{ $delivery->pickup_branch ?? 'To be confirmed' }}</p>
+                        <p><strong>Pickup OTP:</strong> {{ $delivery->otp ?? 'Future Ready' }}</p>
+                        <p><strong>Collected By:</strong> {{ $delivery->receiver_name ?? '—' }}</p>
                     @endif
                 </div>
             </div>
@@ -41,14 +53,14 @@
                 <div class="card-body">
                     <h5 class="card-title">Delivery Timeline</h5>
                     @php
-                        $steps = ['Requested', 'Approved', 'Dispatched', 'Out For Delivery', 'Delivered'];
+                        $steps = $trackingService->timelineSteps($delivery);
                         $currentIndex = array_search($delivery->delivery_status, $steps);
                         if ($currentIndex === false) $currentIndex = -1;
                         $timelineItems = [];
                         foreach ($delivery->statusHistories as $history) {
                             $timelineItems[] = [
                                 'title' => $history->new_status,
-                                'description' => $history->remarks,
+                                'description' => trim(($history->remarks ?? '') . ' ' . ($history->changedBy ? 'Updated by ' . $history->changedBy->name : '')),
                                 'date' => $history->created_at->format('d M Y, h:i A'),
                                 'completed' => true,
                             ];

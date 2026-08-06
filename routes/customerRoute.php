@@ -52,6 +52,7 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
     Route::get('/deliveries', [DeliveryController::class, 'index'])->name('deliveries.index');
     Route::get('/deliveries/{id}', [DeliveryController::class, 'show'])->name('deliveries.show');
     Route::post('/deliveries/{bookingId}/request', [DeliveryController::class, 'storeRequest'])->name('deliveries.store_request');
+    Route::post('/addresses', [DeliveryController::class, 'storeAddress'])->name('addresses.store');
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');

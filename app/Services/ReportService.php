@@ -59,7 +59,16 @@ class ReportService
         $completedBookings = GoldBooking::where('status', 'Completed')->count();
 
         // Pending Deliveries
-        $pendingDeliveries = BookingDelivery::whereIn('delivery_status', ['Requested', 'Approved', 'Ready For Dispatch', 'Dispatched', 'Out For Delivery'])->count();
+        $pendingDeliveries = BookingDelivery::whereIn('delivery_status', ['Requested', 'Pending Admin Approval', 'Approved', 'Hold', 'Ready For Dispatch'])->count();
+        $pickupDeliveries = BookingDelivery::where('delivery_method', 'Branch Pickup')->count();
+        $courierDeliveries = BookingDelivery::where('delivery_method', 'Courier')->count();
+        $deliveredDeliveries = BookingDelivery::whereIn('delivery_status', ['Delivered', 'Collected'])->count();
+        $inTransitDeliveries = BookingDelivery::whereIn('delivery_status', ['Dispatched', 'In Transit', 'Out For Delivery'])->count();
+        $completedDeliveryDurations = BookingDelivery::whereNotNull('request_date')
+            ->whereNotNull('delivered_date')
+            ->get(['request_date', 'delivered_date'])
+            ->map(fn (BookingDelivery $delivery) => $delivery->request_date->diffInHours($delivery->delivered_date));
+        $averageDeliveryHours = $completedDeliveryDurations->isNotEmpty() ? $completedDeliveryDurations->avg() : 0;
 
         // Gold Sold
         $goldSold = GoldBooking::whereNotIn('status', ['Cancelled', 'Refunded'])->sum('gold_weight');
@@ -90,6 +99,11 @@ class ReportService
             'active_bookings' => $activeBookings,
             'completed_bookings' => $completedBookings,
             'pending_deliveries' => $pendingDeliveries,
+            'pickup_deliveries' => $pickupDeliveries,
+            'courier_deliveries' => $courierDeliveries,
+            'delivered_deliveries' => $deliveredDeliveries,
+            'in_transit_deliveries' => $inTransitDeliveries,
+            'average_delivery_hours' => round((float)($averageDeliveryHours ?? 0), 1),
             'gold_sold' => $goldSold,
             'pending_emi' => $pendingEmi,
             'overdue_emi' => $overdueEmi,

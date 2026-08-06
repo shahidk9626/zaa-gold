@@ -152,7 +152,7 @@ class ReportController extends Controller
                 break;
 
             case 'delivery':
-                $columns = ['Delivery Number', 'Booking Number', 'Customer Name', 'Delivery Method', 'Delivery Status', 'Receiver Name', 'Receiver Mobile', 'Request Date', 'Delivered Date'];
+                $columns = ['Delivery Number', 'Booking Number', 'Customer Name', 'Delivery Method', 'Delivery Status', 'Courier', 'Tracking Number', 'Expected Delivery', 'Receiver Name', 'Receiver Mobile', 'Request Date', 'Delivered Date'];
                 $callback = function() use($data, $columns) {
                     $file = fopen('php://output', 'w');
                     fputcsv($file, $columns);
@@ -163,6 +163,9 @@ class ReportController extends Controller
                             $row->customer->name ?? 'N/A',
                             $row->delivery_method,
                             $row->delivery_status,
+                            $row->courier_partner ?? 'N/A',
+                            $row->tracking_number ?? 'N/A',
+                            $row->expected_delivery_date ? $row->expected_delivery_date->format('Y-m-d') : 'N/A',
                             $row->receiver_name ?? 'N/A',
                             $row->receiver_mobile ?? 'N/A',
                             $row->request_date ? $row->request_date->format('Y-m-d') : 'N/A',

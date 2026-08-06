@@ -247,26 +247,112 @@
 
     @if(!$delivery && in_array($booking->status, ['Active', 'Completed']))
     <div class="modal fade" id="requestDeliveryModal" tabindex="-1">
-        <div class="modal-dialog">
-            <form action="{{ route('customer.deliveries.store_request', $booking->id) }}" method="POST" class="modal-content">
+        <div class="modal-dialog modal-lg">
+            <form action="{{ route('customer.deliveries.store_request', $booking->id) }}" method="POST" class="modal-content" id="deliveryRequestForm">
                 @csrf
                 <div class="modal-header"><h5 class="modal-title">Request Delivery</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>Delivery Method</label>
-                        <select name="delivery_method" class="form-control" required>
-                            <option value="Office Pickup">Office Pickup</option>
-                            <option value="Courier">Courier</option>
-                            <option value="Branch Pickup">Branch Pickup</option>
-                        </select>
+                    <div class="form-group mb-4">
+                        <label class="font-weight-bold">Delivery Method</label>
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <label class="card h-100 border p-3 mb-0">
+                                    <span class="d-flex align-items-start">
+                                        <input type="radio" name="delivery_method" value="Branch Pickup" class="mr-2 mt-1 delivery-method-radio" checked>
+                                        <span><strong>Branch Pickup</strong><small class="text-muted d-block">Collect from branch after admin verification.</small></span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="card h-100 border p-3 mb-0">
+                                    <span class="d-flex align-items-start">
+                                        <input type="radio" name="delivery_method" value="Courier" class="mr-2 mt-1 delivery-method-radio">
+                                        <span><strong>Courier Delivery</strong><small class="text-muted d-block">Ship to a saved customer address.</small></span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
+
+                    <div id="branchPickupFields">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Select Preferred Pickup Date <span class="text-danger">*</span></label>
+                            <input type="date" name="preferred_pickup_date" class="form-control" min="{{ now()->toDateString() }}">
+                        </div>
+                        <div class="alert alert-info">Our team will confirm your appointment after verification.</div>
+                    </div>
+
+                    <div id="courierFields" style="display:none;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="font-weight-bold mb-0">Select Delivery Address</h6>
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#addAddressModal"><i class="mdi mdi-plus"></i> Add New Address</button>
+                        </div>
+                        <div class="row" id="addressCardList">
+                            @forelse($customerAddresses ?? collect() as $address)
+                                <div class="col-md-6 mb-3 address-card-wrapper">
+                                    <label class="card border h-100 p-3 mb-0">
+                                        <span class="d-flex align-items-start">
+                                            <input type="radio" name="customer_address_id" value="{{ $address->id }}" class="mr-2 mt-1 address-radio" {{ $address->is_default || $loop->first ? 'checked' : '' }}>
+                                            <span>
+                                                <strong>{{ $address->address_name }}</strong>
+                                                <span class="badge badge-light text-dark ml-1">{{ $address->address_type }}</span>
+                                                @if($address->is_default)<span class="badge badge-success ml-1">Default</span>@endif
+                                                <small class="d-block text-muted mt-1">{{ $address->full_address }}</small>
+                                                <small class="d-block text-dark">Mobile: {{ $address->mobile }}</small>
+                                                <small class="d-block text-muted">{{ $address->city }}, {{ $address->state }} - {{ $address->pin_code }}</small>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                            @empty
+                                <div class="col-12" id="noAddressAlert"><div class="alert alert-warning">No saved addresses found. Add a new address to request courier delivery.</div></div>
+                            @endforelse
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label>Remarks</label>
                         <textarea name="remarks" class="form-control" rows="2"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                    <button type="submit" class="btn btn-primary">Submit Delivery Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addAddressModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <form action="{{ route('customer.addresses.store') }}" method="POST" class="modal-content" id="addAddressForm">
+                @csrf
+                <div class="modal-header"><h5 class="modal-title">Add New Address</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div>
+                <div class="modal-body">
+                    <div class="alert alert-danger d-none" id="addressFormError"></div>
+                    <div class="row">
+                        <div class="col-md-6 form-group"><label>Name <span class="text-danger">*</span></label><input type="text" name="address_name" class="form-control" required></div>
+                        <div class="col-md-3 form-group"><label>Mobile <span class="text-danger">*</span></label><input type="text" name="mobile" class="form-control" required></div>
+                        <div class="col-md-3 form-group"><label>Alternate Mobile</label><input type="text" name="alternate_mobile" class="form-control"></div>
+                        <div class="col-md-4 form-group"><label>House No <span class="text-danger">*</span></label><input type="text" name="house_no" class="form-control" required></div>
+                        <div class="col-md-4 form-group"><label>Street</label><input type="text" name="street" class="form-control"></div>
+                        <div class="col-md-4 form-group"><label>Area</label><input type="text" name="area" class="form-control"></div>
+                        <div class="col-md-4 form-group"><label>Landmark</label><input type="text" name="landmark" class="form-control"></div>
+                        <div class="col-md-4 form-group"><label>City <span class="text-danger">*</span></label><input type="text" name="city" class="form-control" required></div>
+                        <div class="col-md-4 form-group"><label>State <span class="text-danger">*</span></label><input type="text" name="state" class="form-control" required></div>
+                        <div class="col-md-4 form-group"><label>PIN Code <span class="text-danger">*</span></label><input type="text" name="pin_code" class="form-control" required></div>
+                        <div class="col-md-4 form-group"><label>Country <span class="text-danger">*</span></label><input type="text" name="country" class="form-control" value="India" required></div>
+                        <div class="col-md-4 form-group">
+                            <label>Address Type <span class="text-danger">*</span></label>
+                            <select name="address_type" class="form-control" required><option value="Home">Home</option><option value="Office">Office</option><option value="Other">Other</option></select>
+                        </div>
+                        <div class="col-md-4 form-group d-flex align-items-end">
+                            <label class="form-check-label mb-2"><input type="checkbox" name="is_default" value="1" class="form-check-input"> Mark as default <i class="input-helper"></i></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Address</button>
                 </div>
             </form>
         </div>
@@ -356,6 +442,81 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            function syncDeliveryMethodFields() {
+                var method = document.querySelector('input[name="delivery_method"]:checked')?.value;
+                var isCourier = method === 'Courier';
+                $('#courierFields').toggle(isCourier);
+                $('#branchPickupFields').toggle(!isCourier);
+                $('input[name="preferred_pickup_date"]').prop('required', !isCourier);
+                $('input[name="customer_address_id"]').prop('required', isCourier);
+            }
+
+            function escapeHtml(value) {
+                return String(value ?? '').replace(/[&<>"']/g, function(char) {
+                    return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[char];
+                });
+            }
+
+            $('.delivery-method-radio').on('change', syncDeliveryMethodFields);
+            syncDeliveryMethodFields();
+
+            $('#addAddressForm').on('submit', function(event) {
+                event.preventDefault();
+                var form = this;
+                $('#addressFormError').addClass('d-none').text('');
+
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: new FormData(form)
+                })
+                .then(response => response.json().then(data => ({ ok: response.ok, data: data })))
+                .then(result => {
+                    if (!result.ok || !result.data.success) {
+                        var message = result.data.message || 'Unable to save address.';
+                        if (result.data.errors) {
+                            message = Object.values(result.data.errors).flat().join(' ');
+                        }
+                        $('#addressFormError').text(message).removeClass('d-none');
+                        return;
+                    }
+
+                    var address = result.data.address;
+                    var badgeDefault = address.is_default ? '<span class="badge badge-success ml-1">Default</span>' : '';
+                    $('#noAddressAlert').remove();
+                    $('.address-radio').prop('checked', false);
+                    $('#addressCardList').prepend(`
+                        <div class="col-md-6 mb-3 address-card-wrapper">
+                            <label class="card border h-100 p-3 mb-0">
+                                <span class="d-flex align-items-start">
+                                    <input type="radio" name="customer_address_id" value="${address.id}" class="mr-2 mt-1 address-radio" checked>
+                                    <span>
+                                        <strong>${escapeHtml(address.address_name)}</strong>
+                                        <span class="badge badge-light text-dark ml-1">${escapeHtml(address.address_type)}</span>
+                                        ${badgeDefault}
+                                        <small class="d-block text-muted mt-1">${escapeHtml(address.full_address)}</small>
+                                        <small class="d-block text-dark">Mobile: ${escapeHtml(address.mobile)}</small>
+                                        <small class="d-block text-muted">${escapeHtml(address.city)}, ${escapeHtml(address.state)} - ${escapeHtml(address.pin_code)}</small>
+                                    </span>
+                                </span>
+                            </label>
+                        </div>
+                    `);
+                    form.reset();
+                    $('input[name="country"]', form).val('India');
+                    $('#addAddressModal').modal('hide');
+                    $('#requestDeliveryModal').modal('show');
+                    syncDeliveryMethodFields();
+                })
+                .catch(() => {
+                    $('#addressFormError').text('Unable to save address. Please try again.').removeClass('d-none');
+                });
+            });
+
             var btnCancel = document.querySelectorAll('#btnRequestCancellation, #btnRequestCancellationMobile');
             
             btnCancel.forEach(function(btn) {

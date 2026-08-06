@@ -10,6 +10,9 @@ use App\Events\DeliveryRequestedEvent;
 use App\Events\DeliveryApprovedEvent;
 use App\Events\DeliveryDispatchedEvent;
 use App\Events\DeliveryDeliveredEvent;
+use App\Events\DeliveryReadyForDispatchEvent;
+use App\Events\DeliveryTrackingUpdatedEvent;
+use App\Events\DeliveryCollectedEvent;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +22,10 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class DeliveryService
 {
+    public function __construct(protected AddressService $addressService)
+    {
+    }
+
     /**
      * Request delivery for completed bookings with zero outstanding balance
      */
@@ -39,7 +46,7 @@ class DeliveryService
 
         // 3. Prevent duplicate active delivery requests
         $activeRequest = BookingDelivery::where('booking_id', $booking->id)
-            ->whereNotIn('delivery_status', ['Cancelled', 'Returned'])
+            ->whereNotIn('delivery_status', ['Cancelled', 'Returned', 'Rejected'])
             ->exists();
         if ($activeRequest) {
             throw new \Exception("An active delivery request already exists for this booking.");
@@ -52,16 +59,23 @@ class DeliveryService
             $delivery->delivery_number = $deliveryNumber;
             $delivery->booking_id = $booking->id;
             $delivery->customer_id = $booking->customer_id;
-            $delivery->delivery_method = $data['delivery_method']; // Office Pickup, Courier, Branch Pickup
-            $delivery->delivery_status = 'Requested';
+            $delivery->delivery_method = $data['delivery_method']; // Courier, Branch Pickup, legacy Office Pickup
+            $delivery->delivery_status = 'Pending Admin Approval';
             $delivery->request_date = now();
             
             if ($data['delivery_method'] === 'Courier') {
-                $delivery->delivery_address = $data['delivery_address'] ?? $booking->customer->customerDetail->address ?? 'N/A';
+                if (!empty($data['customer_address_id'])) {
+                    $address = $this->addressService->findForCustomer($booking->customer_id, (int)$data['customer_address_id']);
+                    $delivery->fill($this->addressService->snapshot($address));
+                    $this->logActivityDirect('address_selected', "Address {$address->address_name} selected for delivery {$deliveryNumber}.", $booking->id);
+                } else {
+                    $delivery->delivery_address = $data['delivery_address'] ?? $booking->customer->customerDetail->address ?? 'N/A';
+                }
             } elseif ($data['delivery_method'] === 'Branch Pickup') {
                 $delivery->pickup_branch = $data['pickup_branch'] ?? 'Main Branch';
-                $delivery->pickup_date = $data['pickup_date'] ?? null;
+                $delivery->pickup_date = $data['preferred_pickup_date'] ?? $data['pickup_date'] ?? null;
                 $delivery->pickup_time = $data['pickup_time'] ?? null;
+                $this->logActivityDirect('pickup_date_selected', "Preferred pickup date selected for Delivery {$deliveryNumber}.", $booking->id);
             }
 
             $delivery->remarks = $data['remarks'] ?? null;
@@ -83,8 +97,8 @@ class DeliveryService
      */
     public function approveDelivery(BookingDelivery $delivery, array $data = [])
     {
-        if ($delivery->delivery_status !== 'Requested') {
-            throw new \Exception("Only Requested deliveries can be approved. Current status: {$delivery->delivery_status}.");
+        if (!in_array($delivery->delivery_status, ['Requested', 'Pending Admin Approval', 'Hold'])) {
+            throw new \Exception("Only pending or held deliveries can be approved. Current status: {$delivery->delivery_status}.");
         }
 
         return DB::transaction(function () use ($delivery, $data) {
@@ -119,6 +133,65 @@ class DeliveryService
         });
     }
 
+    public function rejectDelivery(BookingDelivery $delivery, string $reason)
+    {
+        if (in_array($delivery->delivery_status, ['Delivered', 'Collected'])) {
+            throw new \Exception("Cannot reject a completed delivery.");
+        }
+
+        return DB::transaction(function () use ($delivery, $reason) {
+            $delivery->delivery_status = 'Rejected';
+            $delivery->rejection_reason = $reason;
+            $delivery->remarks = $reason;
+            $delivery->updated_by_id = Auth::id() ?? 1;
+            $delivery->save();
+
+            $this->logActivityDirect('delivery_rejected', "Delivery {$delivery->delivery_number} rejected. Reason: {$reason}", $delivery->booking_id);
+
+            return $delivery;
+        });
+    }
+
+    public function holdDelivery(BookingDelivery $delivery, string $reason)
+    {
+        if (in_array($delivery->delivery_status, ['Delivered', 'Collected', 'Rejected', 'Cancelled'])) {
+            throw new \Exception("Delivery cannot be put on hold from current status: {$delivery->delivery_status}.");
+        }
+
+        return DB::transaction(function () use ($delivery, $reason) {
+            $delivery->delivery_status = 'Hold';
+            $delivery->hold_reason = $reason;
+            $delivery->remarks = $reason;
+            $delivery->updated_by_id = Auth::id() ?? 1;
+            $delivery->save();
+
+            $this->logActivityDirect('delivery_hold', "Delivery {$delivery->delivery_number} put on hold. Reason: {$reason}", $delivery->booking_id);
+
+            return $delivery;
+        });
+    }
+
+    public function markReadyForDispatch(BookingDelivery $delivery, array $data = [])
+    {
+        if (!in_array($delivery->delivery_status, ['Approved', 'Hold'])) {
+            throw new \Exception("Only Approved or Held deliveries can be marked ready.");
+        }
+
+        return DB::transaction(function () use ($delivery, $data) {
+            $delivery->delivery_status = 'Ready For Dispatch';
+            $delivery->ready_for_dispatch_at = now();
+            $delivery->remarks = $data['remarks'] ?? ($delivery->delivery_method === 'Branch Pickup' ? 'Ready for pickup.' : 'Packed and ready for dispatch.');
+            $delivery->updated_by_id = Auth::id() ?? 1;
+            $delivery->save();
+
+            $this->logActivityDirect('delivery_ready_for_dispatch', "Delivery {$delivery->delivery_number} marked ready for dispatch.", $delivery->booking_id);
+
+            event(new DeliveryReadyForDispatchEvent($delivery));
+
+            return $delivery;
+        });
+    }
+
     /**
      * Dispatch Delivery (Courier tracking assignment)
      */
@@ -130,12 +203,14 @@ class DeliveryService
 
         return DB::transaction(function () use ($delivery, $data) {
             $delivery->delivery_status = 'Dispatched';
-            $delivery->dispatch_date = now();
+            $delivery->dispatch_date = !empty($data['dispatch_date']) ? $data['dispatch_date'] : now();
             
             if ($delivery->delivery_method === 'Courier') {
                 $delivery->courier_partner = $data['courier_partner'] ?? null;
                 $delivery->tracking_number = $data['tracking_number'] ?? null;
                 $delivery->tracking_url = $data['tracking_url'] ?? null;
+                $delivery->expected_delivery_date = $data['expected_delivery_date'] ?? null;
+                $delivery->dispatch_remarks = $data['remarks'] ?? null;
             }
 
             $delivery->remarks = $data['remarks'] ?? $delivery->remarks;
@@ -147,10 +222,41 @@ class DeliveryService
             $delivery->pdf_path = $pdfPath;
             $delivery->save();
 
-            $this->logActivityDirect('delivery_dispatched', "Delivery {$delivery->delivery_number} marked as Dispatched.", $delivery->booking_id);
+            $this->logActivityDirect('dispatch_completed', "Delivery {$delivery->delivery_number} marked as Dispatched.", $delivery->booking_id);
+            $this->logActivityDirect('tracking_updated', "Tracking details updated for Delivery {$delivery->delivery_number}.", $delivery->booking_id);
 
             // Trigger event
             event(new DeliveryDispatchedEvent($delivery));
+
+            return $delivery;
+        });
+    }
+
+    public function updateTrackingStatus(BookingDelivery $delivery, string $status, ?string $remarks = null)
+    {
+        if (!in_array($status, ['In Transit', 'Out For Delivery'])) {
+            throw new \Exception("Unsupported tracking status: {$status}.");
+        }
+
+        if ($delivery->delivery_method !== 'Courier') {
+            throw new \Exception("Tracking status updates are only available for courier deliveries.");
+        }
+
+        return DB::transaction(function () use ($delivery, $status, $remarks) {
+            $delivery->delivery_status = $status;
+            if ($status === 'In Transit') {
+                $delivery->in_transit_at = now();
+            }
+            if ($status === 'Out For Delivery') {
+                $delivery->out_for_delivery_at = now();
+            }
+            $delivery->remarks = $remarks ?? $delivery->remarks;
+            $delivery->updated_by_id = Auth::id() ?? 1;
+            $delivery->save();
+
+            $this->logActivityDirect('tracking_updated', "Delivery {$delivery->delivery_number} updated to {$status}.", $delivery->booking_id);
+
+            event(new DeliveryTrackingUpdatedEvent($delivery, $status));
 
             return $delivery;
         });
@@ -161,7 +267,7 @@ class DeliveryService
      */
     public function completeDelivery(BookingDelivery $delivery, array $data = [])
     {
-        if (!in_array($delivery->delivery_status, ['Approved', 'Dispatched', 'Out For Delivery'])) {
+        if (!in_array($delivery->delivery_status, ['Approved', 'Ready For Dispatch', 'Dispatched', 'In Transit', 'Out For Delivery'])) {
             throw new \Exception("Delivery cannot be completed from current status: {$delivery->delivery_status}.");
         }
 
@@ -193,8 +299,11 @@ class DeliveryService
             $delivery->receiver_mobile = $data['receiver_mobile'] ?? $delivery->customer->phone;
             $delivery->receiver_id_proof = $data['receiver_id_proof'] ?? null;
 
-            $delivery->delivery_status = 'Delivered';
+            $delivery->delivery_status = $delivery->delivery_method === 'Branch Pickup' ? 'Collected' : 'Delivered';
             $delivery->delivered_date = now();
+            if ($delivery->delivery_method === 'Branch Pickup') {
+                $delivery->collected_at = now();
+            }
             $delivery->remarks = $data['remarks'] ?? $delivery->remarks;
             $delivery->updated_by_id = Auth::id() ?? 1;
             $delivery->save();
@@ -204,10 +313,13 @@ class DeliveryService
             $delivery->pdf_path = $pdfPath;
             $delivery->save();
 
-            $this->logActivityDirect('delivery_completed', "Gold Delivery {$delivery->delivery_number} completed and delivered successfully.", $delivery->booking_id);
+            $this->logActivityDirect('delivery_completed', "Gold Delivery {$delivery->delivery_number} completed successfully.", $delivery->booking_id);
 
-            // Trigger event
-            event(new DeliveryDeliveredEvent($delivery));
+            if ($delivery->delivery_status === 'Collected') {
+                event(new DeliveryCollectedEvent($delivery));
+            } else {
+                event(new DeliveryDeliveredEvent($delivery));
+            }
 
             return $delivery;
         });
@@ -218,7 +330,7 @@ class DeliveryService
      */
     public function cancelDelivery(BookingDelivery $delivery, $remarks)
     {
-        if ($delivery->delivery_status === 'Delivered') {
+        if (in_array($delivery->delivery_status, ['Delivered', 'Collected'])) {
             throw new \Exception("Cannot cancel a completed delivery.");
         }
 

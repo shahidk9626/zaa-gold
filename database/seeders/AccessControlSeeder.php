@@ -42,7 +42,7 @@ class AccessControlSeeder extends Seeder
             'Payment' => ['view', 'collect', 'edit', 'delete', 'export', 'dashboard', 'logs', 'links', 'failed', 'reconciliation', 'retry'],
             'Receipt' => ['view', 'download'],
             'Invoice' => ['view', 'generate', 'download', 'print', 'export', 'cancel'],
-            'Delivery' => ['view', 'request', 'approve', 'dispatch', 'complete', 'cancel', 'download', 'export'],
+            'Delivery' => ['view', 'request', 'approve', 'reject', 'hold', 'dispatch', 'complete', 'cancel', 'download', 'export'],
             'Referral' => ['view', 'edit', 'export'],
             'Sell Old Gold' => ['view', 'edit', 'export'],
             'Franchise' => ['view', 'edit', 'export'],

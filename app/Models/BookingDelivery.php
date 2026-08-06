@@ -16,12 +16,18 @@ class BookingDelivery extends Model
         'delivery_number',
         'booking_id',
         'customer_id',
+        'customer_address_id',
         'delivery_method',
         'delivery_status',
         'request_date',
         'approved_date',
         'dispatch_date',
+        'expected_delivery_date',
+        'ready_for_dispatch_at',
+        'in_transit_at',
+        'out_for_delivery_at',
         'delivered_date',
+        'collected_at',
         'courier_partner',
         'tracking_number',
         'tracking_url',
@@ -35,7 +41,18 @@ class BookingDelivery extends Model
         'receiver_mobile',
         'receiver_id_proof',
         'delivery_address',
+        'delivery_address_name',
+        'delivery_address_mobile',
+        'delivery_address_alternate_mobile',
+        'delivery_address_type',
+        'delivery_city',
+        'delivery_state',
+        'delivery_pin_code',
+        'delivery_country',
         'remarks',
+        'dispatch_remarks',
+        'rejection_reason',
+        'hold_reason',
         'pdf_path',
         'created_by_id',
         'updated_by_id',
@@ -45,7 +62,12 @@ class BookingDelivery extends Model
         'request_date' => 'datetime',
         'approved_date' => 'datetime',
         'dispatch_date' => 'datetime',
+        'expected_delivery_date' => 'date',
+        'ready_for_dispatch_at' => 'datetime',
+        'in_transit_at' => 'datetime',
+        'out_for_delivery_at' => 'datetime',
         'delivered_date' => 'datetime',
+        'collected_at' => 'datetime',
         'pickup_date' => 'date',
         'otp_expires_at' => 'datetime',
         'otp_verified_at' => 'datetime',
@@ -77,6 +99,11 @@ class BookingDelivery extends Model
     public function customer()
     {
         return $this->belongsTo(User::class, 'customer_id');
+    }
+
+    public function customerAddress()
+    {
+        return $this->belongsTo(CustomerAddress::class, 'customer_address_id');
     }
 
     public function statusHistories()

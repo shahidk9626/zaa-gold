@@ -6,16 +6,19 @@ use Illuminate\View\View;
 
 use App\Services\CustomerOnboardingService;
 use App\Services\CustomerService;
+use App\Services\AddressService;
 use Illuminate\Support\Facades\Auth;
 
 class MyPlanController extends CustomerBaseController
 {
     protected $onboardingService;
+    protected $addressService;
 
-    public function __construct(CustomerOnboardingService $onboardingService, CustomerService $customerService)
+    public function __construct(CustomerOnboardingService $onboardingService, CustomerService $customerService, AddressService $addressService)
     {
         parent::__construct($customerService);
         $this->onboardingService = $onboardingService;
+        $this->addressService = $addressService;
     }
 
     public function index(): View
@@ -29,6 +32,7 @@ class MyPlanController extends CustomerBaseController
     {
         $data = $this->customerService->getBookingDetails($id, $this->customerId());
         $data['canRequestDelivery'] = $this->onboardingService->canRequestDelivery(Auth::user());
+        $data['customerAddresses'] = $this->addressService->listForCustomer($this->customerId());
 
         return view('customer.my-plans.show', $data);
     }

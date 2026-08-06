@@ -65,7 +65,22 @@ class DeliveryController extends Controller
 
         $activityLogs = ActivityLog::where('module_name', 'gold_booking')
             ->where('record_id', $delivery->booking_id)
-            ->whereIn('action_type', ['delivery_requested', 'delivery_approved', 'otp_generated', 'otp_verified', 'delivery_dispatched', 'delivery_completed', 'delivery_cancelled'])
+            ->whereIn('action_type', [
+                'delivery_requested',
+                'pickup_date_selected',
+                'address_selected',
+                'delivery_approved',
+                'delivery_rejected',
+                'delivery_hold',
+                'delivery_ready_for_dispatch',
+                'otp_generated',
+                'otp_verified',
+                'dispatch_completed',
+                'tracking_updated',
+                'delivery_dispatched',
+                'delivery_completed',
+                'delivery_cancelled',
+            ])
             ->with('user')
             ->latest()
             ->get();
@@ -81,16 +96,15 @@ class DeliveryController extends Controller
         $booking = GoldBooking::findOrFail($bookingId);
 
         $rules = [
-            'delivery_method' => 'required|in:Office Pickup,Courier,Branch Pickup',
+            'delivery_method' => 'required|in:Courier,Branch Pickup',
             'remarks' => 'nullable|string|max:500'
         ];
 
         if ($request->delivery_method === 'Courier') {
             $rules['delivery_address'] = 'required|string|max:500';
         } elseif ($request->delivery_method === 'Branch Pickup') {
-            $rules['pickup_branch'] = 'required|string|max:100';
-            $rules['pickup_date'] = 'required|date|after_or_equal:today';
-            $rules['pickup_time'] = 'required';
+            $rules['pickup_branch'] = 'nullable|string|max:100';
+            $rules['preferred_pickup_date'] = 'required|date|after_or_equal:today';
         }
 
         $request->validate($rules);
@@ -129,13 +143,72 @@ class DeliveryController extends Controller
             $request->validate([
                 'courier_partner' => 'required|string|max:100',
                 'tracking_number' => 'required|string|max:100',
-                'tracking_url' => 'nullable|url'
+                'tracking_url' => 'nullable|url',
+                'dispatch_date' => 'nullable|date',
+                'expected_delivery_date' => 'nullable|date|after_or_equal:today',
+                'remarks' => 'nullable|string|max:500',
             ]);
         }
 
         try {
             $this->deliveryService->dispatchDelivery($delivery, $request->all());
             return back()->with('success', "Delivery {$delivery->delivery_number} marked as Dispatched.");
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function reject($id, Request $request)
+    {
+        $request->validate(['remarks' => 'required|string|max:500']);
+        $delivery = BookingDelivery::findOrFail($id);
+
+        try {
+            $this->deliveryService->rejectDelivery($delivery, $request->remarks);
+            return back()->with('success', "Delivery {$delivery->delivery_number} rejected.");
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function hold($id, Request $request)
+    {
+        $request->validate(['remarks' => 'required|string|max:500']);
+        $delivery = BookingDelivery::findOrFail($id);
+
+        try {
+            $this->deliveryService->holdDelivery($delivery, $request->remarks);
+            return back()->with('success', "Delivery {$delivery->delivery_number} put on hold.");
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function ready($id, Request $request)
+    {
+        $request->validate(['remarks' => 'nullable|string|max:500']);
+        $delivery = BookingDelivery::findOrFail($id);
+
+        try {
+            $this->deliveryService->markReadyForDispatch($delivery, $request->all());
+            return back()->with('success', "Delivery {$delivery->delivery_number} marked ready.");
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function trackingStatus($id, Request $request)
+    {
+        $data = $request->validate([
+            'delivery_status' => 'required|in:In Transit,Out For Delivery',
+            'remarks' => 'nullable|string|max:500',
+        ]);
+
+        $delivery = BookingDelivery::findOrFail($id);
+
+        try {
+            $this->deliveryService->updateTrackingStatus($delivery, $data['delivery_status'], $data['remarks'] ?? null);
+            return back()->with('success', "Delivery {$delivery->delivery_number} tracking status updated.");
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }

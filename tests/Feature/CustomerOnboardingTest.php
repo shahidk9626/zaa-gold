@@ -246,7 +246,8 @@ class CustomerOnboardingTest extends TestCase
         $this->assertFalse($this->onboardingService->canRequestDelivery($this->customer));
 
         $response = $this->post(route('customer.deliveries.store_request', $booking->id), [
-            'delivery_method' => 'Office Pickup',
+            'delivery_method' => 'Branch Pickup',
+            'preferred_pickup_date' => now()->addDay()->toDateString(),
         ]);
         $response->assertSessionHas('error');
 
@@ -255,7 +256,8 @@ class CustomerOnboardingTest extends TestCase
         $this->assertFalse($this->onboardingService->canRequestDelivery($this->customer));
 
         $response = $this->post(route('customer.deliveries.store_request', $booking->id), [
-            'delivery_method' => 'Office Pickup',
+            'delivery_method' => 'Branch Pickup',
+            'preferred_pickup_date' => now()->addDay()->toDateString(),
         ]);
         $response->assertSessionHas('error');
 
@@ -272,7 +274,8 @@ class CustomerOnboardingTest extends TestCase
 
         // Submit delivery request now succeeds
         $response = $this->post(route('customer.deliveries.store_request', $booking->id), [
-            'delivery_method' => 'Office Pickup',
+            'delivery_method' => 'Branch Pickup',
+            'preferred_pickup_date' => now()->addDay()->toDateString(),
         ]);
         $response->assertSessionHasNoErrors();
     }

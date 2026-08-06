@@ -304,7 +304,7 @@
                                         if ($reportType === 'booking') $statuses = ['Draft', 'Pending First EMI', 'Active', 'Completed', 'Cancelled', 'Refund Initiated', 'Refunded'];
                                         elseif ($reportType === 'payment') $statuses = ['Paid', 'Failed', 'Refunded'];
                                         elseif ($reportType === 'product') $statuses = ['active', 'inactive'];
-                                        elseif ($reportType === 'delivery') $statuses = ['Requested', 'Approved', 'Ready For Dispatch', 'Dispatched', 'Out For Delivery', 'Delivered', 'Cancelled', 'Returned'];
+                                        elseif ($reportType === 'delivery') $statuses = ['Pending Admin Approval', 'Approved', 'Hold', 'Ready For Dispatch', 'Dispatched', 'In Transit', 'Out For Delivery', 'Delivered', 'Collected', 'Rejected', 'Cancelled'];
                                         elseif ($reportType === 'emi') $statuses = ['Pending', 'Paid', 'Partial', 'Overdue'];
                                         elseif ($reportType === 'referral') $statuses = ['Pending', 'Eligible', 'Rewarded', 'Rejected'];
                                         elseif ($reportType === 'cancellation') $statuses = ['Requested', 'Under Review', 'Customer Retained', 'Approved', 'Refund Initiated', 'Refund Completed', 'Rejected'];
@@ -464,6 +464,9 @@
                                         <th>Booking #</th>
                                         <th>Customer</th>
                                         <th>Method</th>
+                                        <th>Courier</th>
+                                        <th>Tracking</th>
+                                        <th>Expected</th>
                                         <th>Receiver Name</th>
                                         <th>Receiver Contact</th>
                                         <th>Status</th>
@@ -476,12 +479,15 @@
                                         <td>{{ $row->booking->booking_number ?? 'N/A' }}</td>
                                         <td>{{ $row->customer->name ?? 'N/A' }}</td>
                                         <td>{{ $row->delivery_method }}</td>
+                                        <td>{{ $row->courier_partner ?? 'N/A' }}</td>
+                                        <td>{{ $row->tracking_number ?? 'N/A' }}</td>
+                                        <td>{{ $row->expected_delivery_date?->format('d M Y') ?? 'N/A' }}</td>
                                         <td>{{ $row->receiver_name ?? 'N/A' }}</td>
                                         <td>{{ $row->receiver_mobile ?? 'N/A' }}</td>
                                         <td><span class="badge badge-info">{{ $row->delivery_status }}</span></td>
                                     </tr>
                                     @empty
-                                    <tr><td colspan="7" class="text-center text-muted">No records found.</td></tr>
+                                    <tr><td colspan="10" class="text-center text-muted">No records found.</td></tr>
                                     @endforelse
                                 </tbody>
                             </table>
@@ -740,5 +746,4 @@
     </div>
 </div>
 @endsection
-
 

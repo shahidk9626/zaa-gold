@@ -872,10 +872,15 @@
                                         @php
                                             $deliveryBadge = 'badge-secondary';
                                             switch($delivery->delivery_status) {
+                                                case 'Pending Admin Approval':
                                                 case 'Requested': $deliveryBadge = 'badge-warning'; break;
                                                 case 'Approved': $deliveryBadge = 'badge-info'; break;
+                                                case 'Ready For Dispatch':
                                                 case 'Dispatched': $deliveryBadge = 'badge-primary'; break;
-                                                case 'Delivered': $deliveryBadge = 'badge-success'; break;
+                                                case 'In Transit': $deliveryBadge = 'badge-primary'; break;
+                                                case 'Delivered':
+                                                case 'Collected': $deliveryBadge = 'badge-success'; break;
+                                                case 'Rejected':
                                                 case 'Cancelled': $deliveryBadge = 'badge-danger'; break;
                                             }
                                         @endphp
@@ -904,6 +909,10 @@
                                                     <span class="font-weight-bold text-dark">{{ $delivery->tracking_number }}</span>
                                                 @endif
                                             </div>
+                                            <div class="col-6 mb-3">
+                                                <label class="small text-muted d-block mb-1">Expected Delivery</label>
+                                                <span class="font-weight-bold text-dark">{{ $delivery->expected_delivery_date?->format('d M Y') ?? '—' }}</span>
+                                            </div>
                                         @endif
                                     @elseif($delivery->delivery_method === 'Branch Pickup')
                                         <div class="col-4 mb-3">
@@ -911,7 +920,7 @@
                                             <span class="font-weight-bold text-dark">{{ $delivery->pickup_branch }}</span>
                                         </div>
                                         <div class="col-4 mb-3">
-                                            <label class="small text-muted d-block mb-1">Scheduled Date</label>
+                                            <label class="small text-muted d-block mb-1">Preferred Date</label>
                                             <span class="font-weight-bold text-dark">{{ $delivery->pickup_date ? $delivery->pickup_date->format('d M Y') : '—' }}</span>
                                         </div>
                                         <div class="col-4 mb-3">
@@ -976,9 +985,8 @@
                                     <div class="col-md-4 form-group">
                                         <label class="font-weight-bold small">Delivery Method <span class="text-danger">*</span></label>
                                         <select name="delivery_method" id="deliveryMethodSelect" class="form-control bg-white text-dark" required>
-                                            <option value="Office Pickup">Office Pickup (BKC Corporate Office)</option>
-                                            <option value="Courier">Courier Handover</option>
-                                            <option value="Branch Pickup">Branch Pickup (Scheduled)</option>
+                                            <option value="Branch Pickup">Branch Pickup</option>
+                                            <option value="Courier">Courier Delivery</option>
                                         </select>
                                     </div>
 
@@ -997,7 +1005,7 @@
                                             </div>
                                             <div class="col-md-4 form-group">
                                                 <label class="font-weight-bold small">Pickup Date <span class="text-danger">*</span></label>
-                                                <input type="date" name="pickup_date" class="form-control bg-white text-dark">
+                                                <input type="date" name="preferred_pickup_date" class="form-control bg-white text-dark">
                                             </div>
                                             <div class="col-md-4 form-group">
                                                 <label class="font-weight-bold small">Pickup Time <span class="text-danger">*</span></label>
@@ -1097,12 +1105,10 @@
                 $('#branchPickupBlock').hide().find('input').attr('required', false);
             } else if (selected === 'Branch Pickup') {
                 $('#courierAddressBlock').hide().find('textarea').attr('required', false);
-                $('#branchPickupBlock').show().find('input').attr('required', true);
-            } else {
-                $('#courierAddressBlock').hide().find('textarea').attr('required', false);
-                $('#branchPickupBlock').hide().find('input').attr('required', false);
+                $('#branchPickupBlock').show().find('input').attr('required', false);
+                $('#branchPickupBlock').find('input[name="preferred_pickup_date"]').attr('required', true);
             }
-        });
+        }).trigger('change');
     });
 </script>
 @endpush

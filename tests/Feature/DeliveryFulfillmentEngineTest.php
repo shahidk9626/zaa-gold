@@ -13,6 +13,7 @@ use App\Models\BookingPayment;
 use App\Models\BookingDelivery;
 use App\Models\DeliveryStatusHistory;
 use App\Models\ActivityLog;
+use App\Models\CustomerAddress;
 use App\Services\BookingService;
 use App\Services\PaymentService;
 use App\Services\DeliveryService;
@@ -120,7 +121,8 @@ class DeliveryFulfillmentEngineTest extends TestCase
         // Also has remaining unpaid schedule #2.
         $this->expectException(\Exception::class);
         $this->deliveryService->requestDelivery($booking, [
-            'delivery_method' => 'Office Pickup'
+            'delivery_method' => 'Branch Pickup',
+            'preferred_pickup_date' => now()->addDay()->toDateString(),
         ]);
     }
 
@@ -149,25 +151,26 @@ class DeliveryFulfillmentEngineTest extends TestCase
 
         // Request delivery
         $delivery = $this->deliveryService->requestDelivery($booking, [
-            'delivery_method' => 'Office Pickup',
+            'delivery_method' => 'Branch Pickup',
+            'preferred_pickup_date' => now()->addDay()->toDateString(),
             'remarks' => 'Test pickup'
         ]);
 
         $this->assertNotNull($delivery);
-        $this->assertEquals('Requested', $delivery->delivery_status);
+        $this->assertEquals('Pending Admin Approval', $delivery->delivery_status);
         $this->assertMatchesRegularExpression('/^DEL\d{9}$/', $delivery->delivery_number);
 
         // Verify status history creation
         $this->assertDatabaseHas('delivery_status_histories', [
             'delivery_id' => $delivery->id,
-            'new_status' => 'Requested'
+            'new_status' => 'Pending Admin Approval'
         ]);
     }
 
     /**
-     * Test Office Pickup verification flow with OTP
+     * Test Branch Pickup verification flow with OTP
      */
-    public function test_office_pickup_workflow(): void
+    public function test_branch_pickup_workflow(): void
     {
         $booking = $this->bookingService->createBooking(
             $this->customer->id,
@@ -180,9 +183,10 @@ class DeliveryFulfillmentEngineTest extends TestCase
         $this->paymentService->collectPayment($booking, $secondEmi, ['payment_mode' => 'Cash']);
         $this->bookingService->changeStatus($booking, 'Completed', 'Done.');
 
-        // Request Office Pickup
+        // Request Branch Pickup
         $delivery = $this->deliveryService->requestDelivery($booking, [
-            'delivery_method' => 'Office Pickup'
+            'delivery_method' => 'Branch Pickup',
+            'preferred_pickup_date' => now()->addDays(2)->toDateString(),
         ]);
 
         // Approve delivery
@@ -214,13 +218,13 @@ class DeliveryFulfillmentEngineTest extends TestCase
         ]);
 
         $delivery->refresh();
-        $this->assertEquals('Delivered', $delivery->delivery_status);
+        $this->assertEquals('Collected', $delivery->delivery_status);
         $this->assertNotNull($delivery->otp_verified_at);
 
         // Verify status histories
         $this->assertDatabaseHas('delivery_status_histories', [
             'delivery_id' => $delivery->id,
-            'new_status' => 'Delivered'
+            'new_status' => 'Collected'
         ]);
     }
 
@@ -240,10 +244,24 @@ class DeliveryFulfillmentEngineTest extends TestCase
         $this->paymentService->collectPayment($booking, $secondEmi, ['payment_mode' => 'UPI']);
         $this->bookingService->changeStatus($booking, 'Completed', 'Done.');
 
+        $address = CustomerAddress::create([
+            'customer_id' => $this->customer->id,
+            'address_name' => 'Office',
+            'mobile' => '9998887776',
+            'house_no' => '123',
+            'street' => 'Dunder Mifflin Way',
+            'city' => 'Scranton',
+            'state' => 'Pennsylvania',
+            'pin_code' => '18501',
+            'country' => 'USA',
+            'address_type' => 'Office',
+            'is_default' => true,
+        ]);
+
         // Request Courier
         $delivery = $this->deliveryService->requestDelivery($booking, [
             'delivery_method' => 'Courier',
-            'delivery_address' => '123 Dunder Mifflin Way'
+            'customer_address_id' => $address->id,
         ]);
 
         // Approve
@@ -253,13 +271,19 @@ class DeliveryFulfillmentEngineTest extends TestCase
         $this->deliveryService->dispatchDelivery($delivery, [
             'courier_partner' => 'FedEx',
             'tracking_number' => 'FEDEX999',
-            'tracking_url' => 'https://fedex.com'
+            'tracking_url' => 'https://fedex.com',
+            'expected_delivery_date' => now()->addDays(5)->toDateString(),
         ]);
 
         $delivery->refresh();
         $this->assertEquals('Dispatched', $delivery->delivery_status);
         $this->assertEquals('FedEx', $delivery->courier_partner);
         $this->assertEquals('FEDEX999', $delivery->tracking_number);
+        $this->assertEquals('123, Dunder Mifflin Way, Scranton, Pennsylvania, 18501, USA', $delivery->delivery_address);
+
+        $this->deliveryService->updateTrackingStatus($delivery, 'In Transit', 'Shipment moving.');
+        $delivery->refresh();
+        $this->assertEquals('In Transit', $delivery->delivery_status);
 
         // Complete delivery
         $this->deliveryService->completeDelivery($delivery);
