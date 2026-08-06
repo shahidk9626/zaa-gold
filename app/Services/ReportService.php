@@ -18,6 +18,10 @@ use Carbon\Carbon;
 
 class ReportService
 {
+    public function __construct(protected FinancialCalculationService $financialService)
+    {
+    }
+
     /**
      * Fetch all dashboard stats/cards
      */
@@ -47,10 +51,9 @@ class ReportService
             ->sum('amount_paid');
 
         // Outstanding Amount
-        $totalBooked = GoldBooking::whereNotIn('status', ['Cancelled', 'Cancelled', 'Refunded'])->sum('grand_total');
-        $totalSavings = GoldBooking::whereNotIn('status', ['Cancelled', 'Refunded'])->sum('savings_amount');
-        $totalPaid = BookingPayment::where('status', 'Paid')->sum('amount_paid');
-        $outstandingAmount = max($totalBooked - $totalPaid - $totalSavings, 0);
+        $outstandingAmount = GoldBooking::whereNotIn('status', ['Cancelled', 'Refunded'])
+            ->get()
+            ->sum(fn (GoldBooking $booking) => $this->financialService->outstanding($booking));
 
         // Active Bookings
         $activeBookings = GoldBooking::whereIn('status', ['Active', 'Booked', 'Pending First EMI', 'Pending'])->count();
@@ -95,7 +98,7 @@ class ReportService
             'today_collection' => $todayCollection,
             'monthly_collection' => $monthlyCollection,
             'yearly_collection' => $yearlyCollection,
-            'outstanding_amount' => $outstandingAmount,
+            'outstanding_amount' => $this->financialService->roundMoney($outstandingAmount),
             'active_bookings' => $activeBookings,
             'completed_bookings' => $completedBookings,
             'pending_deliveries' => $pendingDeliveries,

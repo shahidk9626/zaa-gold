@@ -352,8 +352,9 @@ class BookingService
         // Retrieve payments summary for the certificate
         $payments = \App\Models\BookingPayment::where('booking_id', $booking->id)->where('status', 'Paid')->get();
         $firstPayment = $payments->sortBy('created_at')->first();
-        $amountPaid = $payments->sum('amount_paid');
-        $outstandingAmount = max(0.00, (float)$booking->grand_total - (float)$amountPaid);
+        $financialService = app(FinancialCalculationService::class);
+        $amountPaid = $financialService->displayPaidTotal($booking, (float) $payments->sum('amount_paid'));
+        $outstandingAmount = $financialService->outstanding($booking, (float) $payments->sum('amount_paid'));
 
         return [
             'certificate' => $certificate,

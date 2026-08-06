@@ -11,6 +11,10 @@ use Illuminate\Support\Collection;
 
 class PaymentReportService
 {
+    public function __construct(protected FinancialCalculationService $financialService)
+    {
+    }
+
     public function dashboardStats(): array
     {
         $successful = PaymentTransaction::where('payment_status', 'Success');
@@ -126,9 +130,8 @@ class PaymentReportService
             ->whereNotIn('status', ['Cancelled', 'Refunded'])
             ->get();
 
-        return (float) $bookings->sum(function (GoldBooking $booking) {
-            $paid = BookingPayment::where('booking_id', $booking->id)->where('status', 'Paid')->sum('amount_paid');
-            return max((float) $booking->grand_total - (float) $paid, 0);
-        });
+        return $this->financialService->roundMoney((float) $bookings->sum(
+            fn (GoldBooking $booking) => $this->financialService->outstanding($booking)
+        ));
     }
 }

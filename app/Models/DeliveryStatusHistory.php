@@ -8,6 +8,10 @@ class DeliveryStatusHistory extends Model
 {
     public $timestamps = false;
 
+    protected $casts = [
+        'created_at' => 'datetime',
+    ];
+
     protected $table = 'delivery_status_histories';
 
     protected $fillable = [

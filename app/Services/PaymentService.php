@@ -21,12 +21,19 @@ class PaymentService
     protected $emiService;
     protected $invoiceService;
     protected $paymentGatewayService;
+    protected $financialService;
 
-    public function __construct(EmiCalculationService $emiService, InvoiceService $invoiceService, PaymentGatewayService $paymentGatewayService)
+    public function __construct(
+        EmiCalculationService $emiService,
+        InvoiceService $invoiceService,
+        PaymentGatewayService $paymentGatewayService,
+        FinancialCalculationService $financialService
+    )
     {
         $this->emiService = $emiService;
         $this->invoiceService = $invoiceService;
         $this->paymentGatewayService = $paymentGatewayService;
+        $this->financialService = $financialService;
     }
 
     /**
@@ -248,6 +255,11 @@ class PaymentService
             $receiptNumber = $this->generateReceiptNumber();
 
             // Create Booking Payment
+            $basePaymentAmount = $this->financialService->payableBaseAmount($booking, $schedule);
+            $totalPaymentAmount = $this->financialService->roundMoney($basePaymentAmount + $lateFee);
+            $principalPaid = min((float) $schedule->principal_amount, $basePaymentAmount);
+            $interestPaid = $this->financialService->roundMoney(max(0.00, $basePaymentAmount - $principalPaid));
+
             $payment = BookingPayment::create([
                 'payment_number' => $paymentNumber,
                 'receipt_number' => $receiptNumber,
@@ -256,9 +268,9 @@ class PaymentService
                 'customer_id' => $booking->customer_id,
                 'payment_mode' => $data['payment_mode'] ?? 'Cash',
                 'transaction_reference' => $data['transaction_reference'] ?? null,
-                'amount_paid' => $schedule->emi_amount + $lateFee,
-                'principal_paid' => $schedule->principal_amount,
-                'interest_paid' => $schedule->interest_amount,
+                'amount_paid' => $totalPaymentAmount,
+                'principal_paid' => $principalPaid,
+                'interest_paid' => $interestPaid,
                 'late_fee_paid' => $lateFee,
                 'gst_paid' => $monthlyGst,
                 'payment_date' => $paymentDate,
@@ -275,8 +287,9 @@ class PaymentService
             $schedule->late_fee = $lateFee;
             $schedule->save();
 
-            // Recalculate and update outstanding details
-            $this->logActivity('outstanding_updated', "Outstanding updated for Booking {$booking->booking_number}. Remaining Balance: ₹" . number_format($schedule->outstanding_balance, 2), $booking->id);
+            $booking->refresh();
+            $outstanding = $this->financialService->outstanding($booking);
+            $this->logActivity('outstanding_updated', "Outstanding updated for Booking {$booking->booking_number}. Remaining Balance: ₹" . number_format($outstanding, 2), $booking->id);
 
             // Log activities
             $actionType = $isFirstEmi ? 'first_emi_paid' : 'payment_collected';
@@ -288,12 +301,16 @@ class PaymentService
             $this->logActivity('receipt_generated', "Receipt {$receiptNumber} generated for Payment {$paymentNumber}", $booking->id);
 
             // Update Booking Status to ACTIVE if not already active
-            if ($booking->status !== 'Active') {
+            if (!in_array($booking->status, ['Active', 'Completed'], true)) {
                 $booking->status = 'Active';
                 $booking->status_change_remarks = 'Activated automatically after first EMI payment.';
                 $booking->save();
                 
                 $this->logActivity('booking_activated', "Booking {$booking->booking_number} activated", $booking->id);
+            }
+
+            if ($this->financialService->completeIfEligible($booking)) {
+                $this->logActivity('booking_completed', "Booking {$booking->booking_number} completed automatically after normalized outstanding reached ₹0.00.", $booking->id);
             }
 
             // Automatically generate GST Invoice after successful EMI payment
@@ -382,7 +399,7 @@ class PaymentService
             $lateFee = (float) $this->emiService->calculateLateFee($booking->emiPlan, $schedule->emi_amount);
         }
 
-        return round((float) $schedule->emi_amount + $lateFee, 2);
+        return $this->financialService->roundMoney($this->financialService->payableBaseAmount($booking, $schedule) + $lateFee);
     }
 
     protected function buildCashfreeOrderPayload(GoldBooking $booking, PaymentTransaction $transaction, User $customer, bool $isAdminSession = false): array

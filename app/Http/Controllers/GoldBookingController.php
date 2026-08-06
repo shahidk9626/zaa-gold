@@ -226,6 +226,8 @@ class GoldBookingController extends Controller
     public function show($id)
     {
         $booking = GoldBooking::with(['customer', 'product', 'emiPlan', 'certificate', 'statusHistory.changedBy', 'paymentTransactions'])->findOrFail($id);
+        app(\App\Services\FinancialCalculationService::class)->completeIfEligible($booking);
+        $booking->refresh();
         
         // Fetch actual EMI Schedule from database
         $schedule = \App\Models\BookingEmiSchedule::where('booking_id', $booking->id)
@@ -242,8 +244,9 @@ class GoldBookingController extends Controller
 
         // Calculate financial summaries for Outstanding tab
         $totalBooked = (float)$booking->grand_total;
-        $totalPaid = (float)$receipts->sum('amount_paid');
-        $outstandingBalance = $booking->status === 'Cancelled' ? 0.00 : round($totalBooked - $totalPaid - (float)$booking->savings_amount, 2);
+        $financialService = app(\App\Services\FinancialCalculationService::class);
+        $totalPaid = $financialService->displayPaidTotal($booking, (float)$receipts->sum('amount_paid'));
+        $outstandingBalance = $financialService->outstanding($booking, (float)$receipts->sum('amount_paid'));
         
         $principalPaid = (float)$receipts->sum('principal_paid');
         $interestPaid = (float)$receipts->sum('interest_paid');

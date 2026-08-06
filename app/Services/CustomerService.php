@@ -15,6 +15,10 @@ use Illuminate\Support\Collection;
 
 class CustomerService
 {
+    public function __construct(protected FinancialCalculationService $financialService)
+    {
+    }
+
     public function getCustomerBookings(int $customerId, array $statuses = []): Collection
     {
         $query = GoldBooking::with(['product', 'emiPlan', 'certificate'])
@@ -30,14 +34,17 @@ class CustomerService
 
     public function enrichBookingSummary(GoldBooking $booking): array
     {
+        $this->financialService->completeIfEligible($booking);
+        $booking->refresh();
+
         $schedule = BookingEmiSchedule::where('booking_id', $booking->id)->orderBy('installment_number')->get();
         $payments = BookingPayment::where('booking_id', $booking->id)->where('status', 'Paid')->get();
 
         $paidEmi = $schedule->where('status', 'Paid')->count();
         $totalEmi = $schedule->count() ?: (int) $booking->duration_months;
         $remainingEmi = max($totalEmi - $paidEmi, 0);
-        $totalPaid = (float) $payments->sum('amount_paid');
-        $outstanding = $booking->status === 'Cancelled' ? 0.00 : round((float) $booking->grand_total - $totalPaid - (float) $booking->savings_amount, 2);
+        $totalPaid = $this->financialService->displayPaidTotal($booking, (float) $payments->sum('amount_paid'));
+        $outstanding = $this->financialService->outstanding($booking, (float) $payments->sum('amount_paid'));
         $progress = $totalEmi > 0 ? round(($paidEmi / $totalEmi) * 100) : 0;
 
         return [
@@ -58,6 +65,8 @@ class CustomerService
         $booking = GoldBooking::with(['customer', 'product', 'emiPlan', 'certificate', 'statusHistory'])
             ->where('customer_id', $customerId)
             ->findOrFail($bookingId);
+        $this->financialService->completeIfEligible($booking);
+        $booking->refresh();
 
         $schedule = BookingEmiSchedule::where('booking_id', $booking->id)
             ->orderBy('installment_number')
@@ -84,12 +93,12 @@ class CustomerService
             ->get();
 
         $totalBooked = (float) $booking->grand_total;
-        $totalPaid = (float) $receipts->sum('amount_paid');
+        $totalPaid = $this->financialService->displayPaidTotal($booking, (float) $receipts->sum('amount_paid'));
 
         return [
             'total_booked' => $totalBooked,
             'total_paid' => $totalPaid,
-            'outstanding' => $booking->status === 'Cancelled' ? 0.00 : round($totalBooked - $totalPaid - (float) $booking->savings_amount, 2),
+            'outstanding' => $this->financialService->outstanding($booking, (float) $receipts->sum('amount_paid')),
             'original_amount' => (float) $booking->original_amount,
             'savings_amount' => (float) $booking->savings_amount,
             'offer_name' => $booking->offer_name,
@@ -136,7 +145,7 @@ class CustomerService
             'pending_emi' => $pendingEmi,
             'remaining_emi' => $pendingEmi,
             'total_paid' => $totalPaid,
-            'outstanding' => round($outstanding, 2),
+            'outstanding' => $this->financialService->roundMoney($outstanding),
         ];
     }
 

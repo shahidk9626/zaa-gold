@@ -202,8 +202,10 @@ class ReportController extends Controller
                     $file = fopen('php://output', 'w');
                     fputcsv($file, $columns);
                     foreach ($data as $row) {
-                        $totalPaid = \App\Models\BookingPayment::where('booking_id', $row->id)->where('status', 'Paid')->sum('amount_paid');
-                        $outstanding = $row->status === 'Cancelled' ? 0.00 : max($row->grand_total - $totalPaid - (float)$row->savings_amount, 0);
+                        $financialService = app(\App\Services\FinancialCalculationService::class);
+                        $rawPaid = \App\Models\BookingPayment::where('booking_id', $row->id)->where('status', 'Paid')->sum('amount_paid');
+                        $totalPaid = $financialService->displayPaidTotal($row, (float) $rawPaid);
+                        $outstanding = $financialService->outstanding($row, (float) $rawPaid);
                         fputcsv($file, [
                             $row->booking_number,
                             $row->customer->name ?? 'N/A',

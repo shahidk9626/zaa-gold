@@ -22,7 +22,10 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class DeliveryService
 {
-    public function __construct(protected AddressService $addressService)
+    public function __construct(
+        protected AddressService $addressService,
+        protected FinancialCalculationService $financialService
+    )
     {
     }
 
@@ -31,6 +34,9 @@ class DeliveryService
      */
     public function requestDelivery(GoldBooking $booking, array $data)
     {
+        $this->financialService->completeIfEligible($booking);
+        $booking->refresh();
+
         // 1. Validate Booking Status = Completed
         if ($booking->status !== 'Completed') {
             throw new \Exception("Gold delivery can only be requested for Completed bookings. Current status: {$booking->status}.");
@@ -38,7 +44,7 @@ class DeliveryService
 
         // 2. Validate Outstanding Balance = 0 (No unpaid EMI schedules)
         $hasUnpaid = BookingEmiSchedule::where('booking_id', $booking->id)
-            ->where('status', '!=', 'Paid')
+            ->whereNotIn('status', ['Paid', 'Waived'])
             ->exists();
         if ($hasUnpaid) {
             throw new \Exception("Delivery request is blocked because there is a remaining outstanding balance on this booking plan.");

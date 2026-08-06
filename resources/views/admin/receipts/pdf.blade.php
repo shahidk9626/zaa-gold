@@ -5,15 +5,17 @@
         ->where('payment_date', '<=', $payment->payment_date)
         ->get();
     
-    $totalPaidTillDate = $allPayments->sum('amount_paid');
-    $remainingBalance = max(0, $booking->grand_total - $totalPaidTillDate);
+    $financialService = app(\App\Services\FinancialCalculationService::class);
+    $rawPaidTillDate = (float) $allPayments->sum('amount_paid');
+    $totalPaidTillDate = $financialService->displayPaidTotal($booking, $rawPaidTillDate);
+    $remainingBalance = $financialService->outstanding($booking, $rawPaidTillDate);
     
     $completedPaymentsCount = \App\Models\BookingPayment::where('booking_id', $booking->id)
         ->where('status', 'Paid')
         ->where('payment_date', '<=', $payment->payment_date)
         ->count();
     
-    $completionPercentage = $booking->grand_total > 0 ? ($totalPaidTillDate / $booking->grand_total) * 100 : 0;
+    $completionPercentage = $booking->grand_total > 0 ? min(100, ($totalPaidTillDate / $booking->grand_total) * 100) : 0;
     
     $nextEmi = \App\Models\BookingEmiSchedule::where('booking_id', $booking->id)
         ->where('status', 'Pending')

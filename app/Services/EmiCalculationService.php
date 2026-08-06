@@ -7,6 +7,10 @@ use Carbon\Carbon;
 
 class EmiCalculationService
 {
+    public function __construct(protected FinancialCalculationService $financialService)
+    {
+    }
+
     /**
      * Calculate monthly EMI installment amount
      */
@@ -365,8 +369,9 @@ class EmiCalculationService
     {
         $duration = (int)$plan->duration_months;
         $calc = $this->calculate($plan, $amount, $offer);
-        $monthlyEmi = $calc['installment'];
         $grandTotal = $calc['total_payable'];
+        $scheduleAmounts = $this->financialService->scheduleAmounts((float) $grandTotal, $duration);
+        $monthlyEmi = $scheduleAmounts[0] ?? 0.00;
         $useFinancialEngine = $calc['use_financial_engine'];
         
         $schedule = [];
@@ -374,18 +379,19 @@ class EmiCalculationService
         $runningBalance = $grandTotal;
         
         for ($i = 1; $i <= $duration; $i++) {
-            $interestAmount = $this->calculateInterestBreakup($plan, $amount, $i, $openingPrincipal, $monthlyEmi, $useFinancialEngine, $calc);
-            $principalAmount = $this->calculatePrincipalBreakup($plan, $amount, $i, $openingPrincipal, $monthlyEmi, $useFinancialEngine, $calc);
+            $emiAmount = $scheduleAmounts[$i - 1] ?? $monthlyEmi;
+            $interestAmount = $this->calculateInterestBreakup($plan, $amount, $i, $openingPrincipal, $emiAmount, $useFinancialEngine, $calc);
+            $principalAmount = $this->calculatePrincipalBreakup($plan, $amount, $i, $openingPrincipal, $emiAmount, $useFinancialEngine, $calc);
             
             // Adjust for last month rounding
             if ($i === $duration) {
                 $principalAmount = $openingPrincipal;
-                $interestAmount = round($monthlyEmi - $principalAmount, 2);
+                $interestAmount = round($emiAmount - $principalAmount, 2);
                 $closingPrincipal = 0.00;
                 $runningBalance = 0.00;
             } else {
                 $closingPrincipal = $this->calculateClosingBalance($openingPrincipal, $principalAmount);
-                $runningBalance = round($runningBalance - $monthlyEmi, 2);
+                $runningBalance = round($runningBalance - $emiAmount, 2);
             }
             
             $dueDate = Carbon::now()->addMonths($i)->format('Y-m-d');
@@ -396,7 +402,7 @@ class EmiCalculationService
                 'opening_principal' => $openingPrincipal,
                 'principal_amount' => $principalAmount,
                 'interest_amount' => $interestAmount,
-                'monthly_emi' => $monthlyEmi,
+                'monthly_emi' => $emiAmount,
                 'closing_principal' => $closingPrincipal,
                 'running_balance' => $runningBalance,
                 'status' => 'Preview'
@@ -488,8 +494,9 @@ class EmiCalculationService
     {
         $duration = (int)$plan->duration_months;
         $calc = $this->calculate($plan, $amount, $offer);
-        $monthlyEmi = $calc['installment'];
         $grandTotal = $calc['total_payable'];
+        $scheduleAmounts = $this->financialService->scheduleAmounts((float) $grandTotal, $duration);
+        $monthlyEmi = $scheduleAmounts[0] ?? 0.00;
         $useFinancialEngine = $calc['use_financial_engine'];
         
         $schedule = [];
@@ -499,18 +506,19 @@ class EmiCalculationService
         $startDate = $bookingDate ? Carbon::parse($bookingDate) : Carbon::now();
         
         for ($i = 1; $i <= $duration; $i++) {
-            $interestAmount = $this->calculateInterest($plan, $amount, $i, $openingPrincipal, $monthlyEmi, $useFinancialEngine, $calc);
-            $principalAmount = $this->calculatePrincipal($plan, $amount, $i, $openingPrincipal, $monthlyEmi, $useFinancialEngine, $calc);
+            $emiAmount = $scheduleAmounts[$i - 1] ?? $monthlyEmi;
+            $interestAmount = $this->calculateInterest($plan, $amount, $i, $openingPrincipal, $emiAmount, $useFinancialEngine, $calc);
+            $principalAmount = $this->calculatePrincipal($plan, $amount, $i, $openingPrincipal, $emiAmount, $useFinancialEngine, $calc);
             
             // Adjust for last month rounding
             if ($i === $duration) {
                 $principalAmount = $openingPrincipal;
-                $interestAmount = round($monthlyEmi - $principalAmount, 2);
+                $interestAmount = round($emiAmount - $principalAmount, 2);
                 $closingPrincipal = 0.00;
                 $runningBalance = 0.00;
             } else {
                 $closingPrincipal = $this->calculateClosingBalance($openingPrincipal, $principalAmount);
-                $runningBalance = round($runningBalance - $monthlyEmi, 2);
+                $runningBalance = round($runningBalance - $emiAmount, 2);
             }
             
             // First EMI is due today (month_no = 1, monthsToAdd = 0)
@@ -522,7 +530,7 @@ class EmiCalculationService
                 'opening_principal' => $openingPrincipal,
                 'principal_amount' => $principalAmount,
                 'interest_amount' => $interestAmount,
-                'emi_amount' => $monthlyEmi,
+                'emi_amount' => $emiAmount,
                 'closing_principal' => $closingPrincipal,
                 'outstanding_balance' => $runningBalance,
                 'status' => 'Pending'

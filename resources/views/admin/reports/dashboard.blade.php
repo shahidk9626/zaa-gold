@@ -537,8 +537,10 @@
                                 <tbody>
                                     @forelse($reportData as $row)
                                     @php
-                                        $totalPaid = \App\Models\BookingPayment::where('booking_id', $row->id)->where('status', 'Paid')->sum('amount_paid');
-                                        $outstanding = max($row->grand_total - $totalPaid, 0);
+                                        $financialService = app(\App\Services\FinancialCalculationService::class);
+                                        $rawPaid = \App\Models\BookingPayment::where('booking_id', $row->id)->where('status', 'Paid')->sum('amount_paid');
+                                        $totalPaid = $financialService->displayPaidTotal($row, (float) $rawPaid);
+                                        $outstanding = $financialService->outstanding($row, (float) $rawPaid);
                                     @endphp
                                     <tr>
                                         <td class="font-weight-bold text-primary">{{ $row->booking_number }}</td>
@@ -746,4 +748,3 @@
     </div>
 </div>
 @endsection
-

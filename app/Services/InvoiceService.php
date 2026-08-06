@@ -23,31 +23,11 @@ class InvoiceService
     {
         $booking = GoldBooking::with(['customer.customerDetail', 'product', 'emiPlan'])->findOrFail($payment->booking_id);
 
-        // 1. Check completion conditions
-        // - Count paid EMIs
-        $totalPlanEmis = (int)$booking->duration_months;
-        $totalPaidEmis = \App\Models\BookingEmiSchedule::where('booking_id', $booking->id)
-            ->where('status', 'Paid')
-            ->count();
+        $financialService = app(FinancialCalculationService::class);
 
-        // - Sum total paid amount
-        $totalAmountPaid = \App\Models\BookingPayment::where('booking_id', $booking->id)
-            ->where('status', 'Paid')
-            ->sum('amount_paid');
-
-        $outstandingAmount = max(0.00, (float)$booking->grand_total - (float)$totalAmountPaid);
-
-        // Enforce the gates:
-        // Must have paid all EMIs and outstanding must be zero.
-        if ($totalPaidEmis === $totalPlanEmis && $outstandingAmount <= 0.05) {
-            if ($booking->status !== 'Completed') {
-                $booking->status = 'Completed';
-                $booking->status_change_remarks = 'Completed automatically after final EMI payment received.';
-                $booking->save();
-                
-                // Log booking completed
-                $this->logActivityDirect('booking_completed', "Booking {$booking->booking_number} completed successfully.", $booking->id);
-            }
+        if ($financialService->completeIfEligible($booking)) {
+            $this->logActivityDirect('booking_completed', "Booking {$booking->booking_number} completed successfully.", $booking->id);
+            $booking->refresh();
         }
 
         // Now verify the condition to generate the Final GST Invoice:
