@@ -24,34 +24,6 @@
         <span class="menu-title">Dashboard</span>
       </a>
     </li>
-    @if(hasPermission('roles.view') || hasPermission('user-permissions.view') || hasPermission('staff.view'))
-    <li class="nav-item">
-      <a class="nav-link" data-toggle="collapse" href="#access-control" aria-expanded="false" aria-controls="access-control">
-        <i class="mdi mdi-security menu-icon"></i>
-        <span class="menu-title">Access Control</span>
-        <i class="menu-arrow"></i>
-      </a>
-      <div class="collapse" id="access-control">
-        <ul class="nav flex-column sub-menu">
-          @if(hasPermission('roles.view'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('roles.index') }}">Roles</a>
-          </li>
-          @endif
-          @if(hasPermission('roles.view'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('role-permissions.index') }}">Role Permissions</a>
-          </li>
-          @endif
-          @if(hasPermission('user-permissions.view'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('user-permissions.index') }}">User Permissions</a>
-          </li>
-          @endif
-        </ul>
-      </div>
-    </li>
-    @endif
 
     @if(hasPermission('customer.view') || hasPermission('customer.create') || hasPermission('cancellations.view'))
     <li class="nav-item">
@@ -64,17 +36,154 @@
         <ul class="nav flex-column sub-menu">
           @if(hasPermission('customer.view'))
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('customers.index') }}">Customer List</a>
+            <a class="nav-link" href="{{ route('customers.index') }}">Customer list</a>
           </li>
           @endif
           @if(hasPermission('customer.create'))
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('customers.create') }}">Add Customer</a>
+            <a class="nav-link" href="{{ route('customers.create') }}">Add customer</a>
           </li>
           @endif
           @if(hasPermission('cancellations.view'))
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('admin.cancellations.index') }}">Cancellation Requests</a>
+            <a class="nav-link" href="{{ route('admin.cancellations.index') }}">Cancellation requests</a>
+          </li>
+          @endif
+        </ul>
+      </div>
+    </li>
+    @endif
+
+    @if(hasPermission('booking.view') || hasPermission('purchase-preview.view') || hasPermission('emi-schedule.view') || hasPermission('payment.view') || hasPermission('cash-collection.view') || hasPermission('payment.dashboard') || hasPermission('payment.logs') || hasPermission('payment.links') || hasPermission('payment.failed') || hasPermission('receipt.view') || hasPermission('delivery.view') || hasPermission('emi-calculator.view'))
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="collapse" href="#transactions-menu" aria-expanded="false" aria-controls="transactions-menu">
+        <i class="mdi mdi-currency-usd menu-icon"></i>
+        <span class="menu-title">Transactions</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="transactions-menu">
+        <ul class="nav flex-column sub-menu">
+          @if(hasPermission('booking.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('bookings.index') }}">Bookings</a>
+          </li>
+          @endif
+          @if(hasPermission('purchase-preview.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('purchase-preview.index') }}">Customer plan purchase</a>
+          </li>
+          @endif
+          @if(hasPermission('emi-schedule.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('emi-schedules.index') }}">EMI schedule</a>
+          </li>
+          @endif
+          @if(hasPermission('payment.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('payments.index') }}">EMI payments</a>
+          </li>
+          @endif
+          @if(hasPermission('cash-collection.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('admin.cash-collections.index') }}">Cash collection request</a>
+          </li>
+          @endif
+          @if(hasPermission('payment.dashboard'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('payments.dashboard') }}">Payment dashboard</a>
+          </li>
+          @endif
+          @if(hasPermission('payment.logs'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('payment-logs.index') }}">Payment logs</a>
+          </li>
+          @endif
+          @if(hasPermission('payment.links'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('payment-links.index') }}">Payment links</a>
+          </li>
+          @endif
+          @if(hasPermission('payment.failed'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('payments.failed') }}">Failed payments</a>
+          </li>
+          @endif
+          @if(hasPermission('receipt.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('receipts.index') }}">Receipts</a>
+          </li>
+          @endif
+          @if(hasPermission('delivery.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('deliveries.index') }}">Delivery</a>
+          </li>
+          @endif
+          @if(hasPermission('emi-calculator.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('emi-calculator.index') }}">EMI calculator</a>
+          </li>
+          @endif
+        </ul>
+      </div>
+    </li>
+    @endif
+
+    @if(hasPermission('product.view') || hasPermission('gold-price.view') || hasPermission('kyc.view') || hasPermission('emi-plan.view'))
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="collapse" href="#masters-menu" aria-expanded="false" aria-controls="masters-menu">
+        <i class="mdi mdi-database menu-icon"></i>
+        <span class="menu-title">Gold plan</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="masters-menu">
+        <ul class="nav flex-column sub-menu">
+          @if(hasPermission('gold-price.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('gold-prices.index') }}">Gold prices</a>
+          </li>
+          @endif
+          @if(hasPermission('kyc.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('kyc.index') }}">KYC review</a>
+          </li>
+          @endif
+          @if(hasPermission('emi-plan.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('emi-plans.index') }}">EMI plans</a>
+          </li>
+          @endif
+          @if(hasPermission('product.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('products.index') }}">Products</a>
+          </li>
+          @endif
+        </ul>
+      </div>
+    </li>
+    @endif
+
+    @if(hasPermission('roles.view') || hasPermission('user-permissions.view'))
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="collapse" href="#access-control" aria-expanded="false" aria-controls="access-control">
+        <i class="mdi mdi-security menu-icon"></i>
+        <span class="menu-title">Access control</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="access-control">
+        <ul class="nav flex-column sub-menu">
+          @if(hasPermission('roles.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('roles.index') }}">Roles</a>
+          </li>
+          @endif
+          @if(hasPermission('roles.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('role-permissions.index') }}">Roles permission</a>
+          </li>
+          @endif
+          @if(hasPermission('user-permissions.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('user-permissions.index') }}">User permission</a>
           </li>
           @endif
         </ul>
@@ -93,12 +202,12 @@
         <ul class="nav flex-column sub-menu">
           @if(hasPermission('staff.view'))
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('staff.index') }}">Staff List</a>
+            <a class="nav-link" href="{{ route('staff.index') }}">Staff list</a>
           </li>
           @endif
           @if(hasPermission('staff.create'))
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('staff.create') }}">Add Staff</a>
+            <a class="nav-link" href="{{ route('staff.create') }}">Add staff</a>
           </li>
           @endif
         </ul>
@@ -122,7 +231,7 @@
           @endif
           @if(hasPermission('sell-old-gold.view'))
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('sell-old-gold.index') }}">Sell Old Gold</a>
+            <a class="nav-link" href="{{ route('sell-old-gold.index') }}">Sell old gold</a>
           </li>
           @endif
           @if(hasPermission('franchise.view'))
@@ -152,129 +261,6 @@
     </li>
     @endif
 
-    @if(hasPermission('product.view') || hasPermission('gold-price.view') || hasPermission('inventory.view') || hasPermission('kyc.view') || hasPermission('emi-plan.view'))
-    <li class="nav-item">
-      <a class="nav-link" data-toggle="collapse" href="#masters-menu" aria-expanded="false" aria-controls="masters-menu">
-        <i class="mdi mdi-database menu-icon"></i>
-        <span class="menu-title">Masters</span>
-        <i class="menu-arrow"></i>
-      </a>
-      <div class="collapse" id="masters-menu">
-        <ul class="nav flex-column sub-menu">
-          @if(hasPermission('gold-price.view'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('gold-prices.index') }}">Gold Prices</a>
-          </li>
-          @endif
-          @if(hasPermission('product.view'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('products.index') }}">Products</a>
-          </li>
-          @endif
-          
-          @if(hasPermission('inventory.view'))
-          <!-- <li class="nav-item">
-            <a class="nav-link" href="{{ route('inventory.index') }}">Inventory</a>
-          </li> -->
-          @endif
-          @if(hasPermission('kyc.view'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('kyc.index') }}">KYC Review</a>
-          </li>
-          @endif
-          @if(hasPermission('emi-plan.view'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('emi-plans.index') }}">EMI Plans</a>
-          </li>
-          @endif
-        </ul>
-      </div>
-    </li>
-    @endif
-    @if(hasPermission('purchase-preview.view') || hasPermission('emi-calculator.view') || hasPermission('booking.view') || hasPermission('emi-schedule.view') || hasPermission('payment.view') || hasPermission('receipt.view') || hasPermission('invoice.view') || hasPermission('delivery.view'))
-    <li class="nav-item">
-      <a class="nav-link" data-toggle="collapse" href="#transactions-menu" aria-expanded="false" aria-controls="transactions-menu">
-        <i class="mdi mdi-currency-usd menu-icon"></i>
-        <span class="menu-title">Transactions</span>
-        <i class="menu-arrow"></i>
-      </a>
-      <div class="collapse" id="transactions-menu">
-        <ul class="nav flex-column sub-menu">
-          @if(hasPermission('purchase-preview.view'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('purchase-preview.index') }}">Customer Plan purchase</a>
-          </li>
-          @endif
-          @if(hasPermission('emi-calculator.view'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('emi-calculator.index') }}">EMI Calculator</a>
-          </li>
-          @endif
-          @if(hasPermission('booking.view'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('bookings.index') }}">Bookings</a>
-          </li>
-          @endif
-          @if(hasPermission('emi-schedule.view'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('emi-schedules.index') }}">EMI Schedule</a>
-          </li>
-          @endif
-          @if(hasPermission('payment.view'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('payments.index') }}">EMI Payments</a>
-          </li>
-          @endif
-          @if(hasPermission('cash-collection.view'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('admin.cash-collections.index') }}">Cash Collection Requests</a>
-          </li>
-          @endif
-          @if(hasPermission('payment.dashboard') || hasPermission('payment.logs') || hasPermission('payment.links') || hasPermission('payment.failed') || hasPermission('payment.reconciliation'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ hasPermission('payment.dashboard') ? route('payments.dashboard') : '#' }}">Payment Dashboard</a>
-          </li>
-          @if(hasPermission('payment.logs'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('payment-logs.index') }}">Payment Logs</a>
-          </li>
-          @endif
-          @if(hasPermission('payment.links'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('payment-links.index') }}">Payment Links</a>
-          </li>
-          @endif
-          @if(hasPermission('payment.failed'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('payments.failed') }}">Failed Payments</a>
-          </li>
-          @endif
-          @if(hasPermission('payment.reconciliation'))
-          <!-- <li class="nav-item">
-            <a class="nav-link" href="{{ route('payments.reconciliation') }}">Reconciliation</a>
-          </li> -->
-          @endif
-          @endif
-          @if(hasPermission('receipt.view'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('receipts.index') }}">Receipts</a>
-          </li>
-          @endif
-          @if(hasPermission('invoice.view'))
-          <!-- <li class="nav-item">
-            <a class="nav-link" href="{{ route('invoices.index') }}">GST Invoices</a>
-          </li> -->
-          @endif
-          @if(hasPermission('delivery.view'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('deliveries.index') }}">Delivery</a>
-          </li>
-          @endif
-        </ul>
-      </div>
-    </li>
-    @endif
-
     @if(hasPermission('report.view'))
     <li class="nav-item">
       <a class="nav-link" href="{{ route('reports.dashboard') }}">
@@ -283,6 +269,7 @@
       </a>
     </li>
     @endif
+
     @if(hasPermission('audit.view'))
     <li class="nav-item">
       <a class="nav-link" data-toggle="collapse" href="#system-menu" aria-expanded="false" aria-controls="system-menu">
@@ -293,7 +280,7 @@
       <div class="collapse" id="system-menu">
         <ul class="nav flex-column sub-menu">
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('audit-trail.index') }}">Audit Trail</a>
+            <a class="nav-link" href="{{ route('audit-trail.index') }}">Audit trail</a>
           </li>
         </ul>
       </div>
