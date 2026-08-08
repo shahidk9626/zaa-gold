@@ -86,6 +86,7 @@ class UserRegistrationEmailTest extends TestCase
         $registerData = [
             'name' => 'Jane Public',
             'email' => 'janepublic@example.com',
+            'phone' => '1234567890',
             'password' => 'SecurePassword123!',
             'password_confirmation' => 'SecurePassword123!',
         ];

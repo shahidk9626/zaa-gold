@@ -74,6 +74,7 @@ class CustomerOtpTest extends TestCase
         $registerData = [
             'name' => 'New Customer',
             'email' => 'newcustomer@zaagold.com',
+            'phone' => '1234567890',
             'password' => 'SecurePassword123!',
             'password_confirmation' => 'SecurePassword123!',
         ];

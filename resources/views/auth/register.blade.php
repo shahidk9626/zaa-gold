@@ -35,6 +35,20 @@
             @enderror
         </div>
 
+        <!-- Mobile Number -->
+        <div class="form-group mb-3">
+            <label for="phone">Mobile Number</label>
+            <input id="phone" type="text" name="phone" 
+                   class="form-control @error('phone') is-invalid @enderror" 
+                   value="{{ old('phone') }}" required autocomplete="tel" 
+                   placeholder="Enter your mobile number" />
+            @error('phone')
+                <span class="invalid-feedback" role="alert">
+                    <strong>{{ $message }}</strong>
+                </span>
+            @enderror
+        </div>
+
         <!-- Password -->
         <div class="form-group mb-3">
             <label for="password">Password</label>
