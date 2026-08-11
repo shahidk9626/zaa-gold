@@ -53,3 +53,46 @@ ALTER TABLE `booking_deliveries`
   ADD `dispatch_remarks` TEXT NULL AFTER `remarks`,
   ADD `rejection_reason` TEXT NULL AFTER `dispatch_remarks`,
   ADD `hold_reason` TEXT NULL AFTER `rejection_reason`;
+
+-- Website Enquiries Module Integration schema changes
+-- Generated from database/migrations/2026_08_11_110000_create_website_enquiries_table.php
+
+CREATE TABLE `website_enquiries` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(255) NOT NULL,
+  `email` VARCHAR(255) NOT NULL,
+  `phone` VARCHAR(20) NOT NULL,
+  `subject` VARCHAR(255) NOT NULL,
+  `message` TEXT NOT NULL,
+  `status` VARCHAR(20) NOT NULL DEFAULT 'New',
+  `admin_remark` TEXT NULL,
+  `resolved_at` TIMESTAMP NULL,
+  `resolved_by` BIGINT UNSIGNED NULL,
+  `created_by_id` BIGINT UNSIGNED NULL,
+  `updated_by_id` BIGINT UNSIGNED NULL,
+  `created_at` TIMESTAMP NULL,
+  `updated_at` TIMESTAMP NULL,
+  `deleted_at` TIMESTAMP NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `website_enquiries_resolved_by_foreign`
+    FOREIGN KEY (`resolved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) DEFAULT CHARACTER SET utf8mb4 COLLATE 'utf8mb4_unicode_ci';
+
+-- Insert Module for Website Enquiries
+INSERT INTO `modules` (`name`, `slug`, `created_at`, `updated_at`)
+VALUES ('Website Enquiries', 'website-enquiries', NOW(), NOW())
+ON DUPLICATE KEY UPDATE `name` = 'Website Enquiries', `updated_at` = NOW();
+
+-- Insert Permissions for Website Enquiries
+INSERT INTO `permissions` (`name`, `slug`, `module_id`, `created_at`, `updated_at`) VALUES
+('View Website Enquiries', 'website-enquiries.view', (SELECT `id` FROM `modules` WHERE `slug` = 'website-enquiries' LIMIT 1), NOW(), NOW()),
+('Update Website Enquiry Status', 'website-enquiries.update', (SELECT `id` FROM `modules` WHERE `slug` = 'website-enquiries' LIMIT 1), NOW(), NOW()),
+('Delete Website Enquiries', 'website-enquiries.delete', (SELECT `id` FROM `modules` WHERE `slug` = 'website-enquiries' LIMIT 1), NOW(), NOW());
+
+
+-- Global Maintenance Mode configuration
+-- Generated from database/migrations/2026_08_11_120000_add_maintenance_mode_to_system_settings.php
+
+INSERT INTO `system_settings` (`key`, `value`, `description`, `created_at`, `updated_at`)
+VALUES ('maintenance_mode', '0', 'Global website maintenance mode toggle (0 = Off, 1 = On).', NOW(), NOW())
+ON DUPLICATE KEY UPDATE `value` = '0', `updated_at` = NOW();

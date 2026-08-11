@@ -9,8 +9,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
-        health: '/up',
         then: function () {
+            Route::middleware('api')
+                ->prefix('api/public')
+                ->group(base_path('routes/publicApiRoute.php'));
+
             Route::middleware('web')
                 ->group(base_path('routes/adminCustomerRoute.php'));
             Route::middleware('web')
@@ -63,6 +66,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->group(base_path('routes/offerRoute.php'));
             Route::middleware('web')
                 ->group(base_path('routes/cancellationRoute.php'));
+            Route::middleware('web')
+                ->group(base_path('routes/websiteEnquiryRoute.php'));
+            Route::middleware('web')
+                ->group(base_path('routes/systemSettingsRoute.php'));
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
@@ -73,6 +80,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             \App\Http\Middleware\RedirectCustomersFromAdmin::class,
+            \App\Http\Middleware\CheckMaintenanceMode::class,
+        ]);
+
+        $middleware->api(append: [
+            \App\Http\Middleware\CheckMaintenanceMode::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

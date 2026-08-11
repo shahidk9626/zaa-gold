@@ -215,7 +215,7 @@
     </li>
     @endif
 
-    @if(hasPermission('referral.view') || hasPermission('sell-old-gold.view') || hasPermission('franchise.view'))
+    @if(hasPermission('referral.view') || hasPermission('sell-old-gold.view') || hasPermission('franchise.view') || hasPermission('website-enquiries.view'))
     <li class="nav-item">
       <a class="nav-link" data-toggle="collapse" href="#crm-menu" aria-expanded="false" aria-controls="crm-menu">
         <i class="mdi mdi-briefcase-outline menu-icon"></i>
@@ -237,6 +237,11 @@
           @if(hasPermission('franchise.view'))
           <li class="nav-item">
             <a class="nav-link" href="{{ route('franchise.index') }}">Franchise</a>
+          </li>
+          @endif
+          @if(hasPermission('website-enquiries.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('website-enquiries.index') }}">Website Enquiries</a>
           </li>
           @endif
         </ul>
@@ -270,7 +275,7 @@
     </li>
     @endif
 
-    @if(hasPermission('audit.view'))
+    @if(hasPermission('audit.view') || (auth()->user() && (auth()->user()->id === 1 || (auth()->user()->role && auth()->user()->role->slug === 'super-admin'))))
     <li class="nav-item">
       <a class="nav-link" data-toggle="collapse" href="#system-menu" aria-expanded="false" aria-controls="system-menu">
         <i class="mdi mdi-shield-search menu-icon"></i>
@@ -279,9 +284,16 @@
       </a>
       <div class="collapse" id="system-menu">
         <ul class="nav flex-column sub-menu">
+          @if(hasPermission('audit.view'))
           <li class="nav-item">
             <a class="nav-link" href="{{ route('audit-trail.index') }}">Audit trail</a>
           </li>
+          @endif
+          @if(auth()->user() && (auth()->user()->id === 1 || (auth()->user()->role && auth()->user()->role->slug === 'super-admin')))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('admin.system-settings.index') }}">System settings</a>
+          </li>
+          @endif
         </ul>
       </div>
     </li>
