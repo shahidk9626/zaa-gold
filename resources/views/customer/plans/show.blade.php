@@ -222,6 +222,12 @@
                                     <span class="text-muted small d-block">Selected EMI Plan</span>
                                     <span class="font-weight-bold text-dark" id="calc-plan-name">Loading...</span>
                                 </div>
+                                <div class="mb-3 border-bottom pb-2 d-none" id="calc-offer-container">
+                                    <span class="text-muted small d-block mb-1 font-weight-bold">Select Available Offer</span>
+                                    <select class="form-control form-control-sm text-dark bg-white" id="calc-offer-select" onchange="changeOffer(this.value)">
+                                        <!-- Will be dynamically populated -->
+                                    </select>
+                                </div>
 
                                 <div class="row border-bottom pb-2 mb-3">
                                     <div class="col-6">
@@ -283,6 +289,7 @@
                                     @csrf
                                     <input type="hidden" name="product_id" value="{{ $product->id }}">
                                     <input type="hidden" name="emi_plan_id" id="form-emi-plan-id" value="">
+                                    <input type="hidden" name="offer_id" id="form-offer-id" value="">
                                     
                                     <div class="form-group mb-3">
                                         <label class="font-weight-bold text-muted small">Special Remarks (Optional)</label>
@@ -394,14 +401,14 @@
                 fetchCalculations(planId);
             }
 
-            function fetchCalculations(planId) {
+            function fetchCalculations(planId, offerId = null) {
                 const spinner = document.getElementById('calculator-spinner');
                 const output = document.getElementById('calculator-output');
 
                 spinner.classList.remove('d-none');
                 output.classList.add('d-none');
 
-                const url = '{{ route('customer.plans.calculate', ['productId' => $product->id, 'planId' => ':planId']) }}'.replace(':planId', planId);
+                const url = '{{ route('customer.plans.calculate', ['productId' => $product->id, 'planId' => ':planId']) }}'.replace(':planId', planId) + (offerId !== null ? '?offer_id=' + offerId : '');
 
                 fetch(url)
                     .then(response => {
@@ -427,12 +434,44 @@
 
                         const grandTotal = parseFloat(data.total_payable);
                         const monthlyEmi = parseFloat(data.installment);
+
+                        // Populate eligible offers dropdown
+                        const offerContainer = document.getElementById('calc-offer-container');
+                        const offerSelect = document.getElementById('calc-offer-select');
+                        
+                        if (data.eligible_offers && data.eligible_offers.length > 0) {
+                            offerSelect.innerHTML = '';
+                            
+                            // Option 1: No Offer
+                            const noOfferOpt = document.createElement('option');
+                            noOfferOpt.value = 'none';
+                            noOfferOpt.innerText = 'No Offer / Apply Normal Price';
+                            offerSelect.appendChild(noOfferOpt);
+                            
+                            // Other options
+                            data.eligible_offers.forEach(offer => {
+                                const opt = document.createElement('option');
+                                opt.value = offer.id;
+                                opt.innerText = offer.offer_name + offer.savings_message;
+                                offerSelect.appendChild(opt);
+                            });
+                            
+                            // Set current selected value
+                            offerSelect.value = data.applied_offer_id || 'none';
+                            document.getElementById('form-offer-id').value = data.applied_offer_id || 'none';
+                            
+                            offerContainer.classList.remove('d-none');
+                        } else {
+                            offerSelect.innerHTML = '';
+                            offerContainer.classList.add('d-none');
+                            document.getElementById('form-offer-id').value = '';
+                        }
                         
                         if (data.discount_amount && parseFloat(data.discount_amount) > 0) {
                             document.getElementById('calc-original-row').classList.remove('d-none');
                             document.getElementById('calc-savings-row').classList.remove('d-none');
                             
-                            document.getElementById('calc-original-total').innerText = '₹' + parseFloat(data.original_total).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                            document.getElementById('calc-original-total').innerText = '₹' + parseFloat(data.original_amount || data.original_total).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                             document.getElementById('calc-savings-amount').innerText = '- ₹' + parseFloat(data.discount_amount).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                             document.getElementById('calc-savings-label').innerText = data.applied_offer_name ? `${data.applied_offer_name} Savings` : 'Promo Discount';
                         } else {
@@ -456,6 +495,13 @@
                         console.error('Error fetching calculations:', error);
                         spinner.classList.add('d-none');
                     });
+            }
+
+            function changeOffer(offerId) {
+                const planId = document.getElementById('form-emi-plan-id').value;
+                if (planId) {
+                    fetchCalculations(planId, offerId);
+                }
             }
 
             function scrollToCalculator() {

@@ -207,9 +207,36 @@ class PlanController extends CustomerBaseController
         $productPrice = $this->pricingService->calculateCurrentProductPrice($product);
         
         $eligibleOffers = app(\App\Services\OfferEligibilityService::class)->getEligibleOffersForPlan($plan);
-        $bestOffer = $eligibleOffers->first();
+        
+        $selectedOffer = null;
+        $offerId = request()->input('offer_id');
+        if ($offerId !== null && $offerId !== '') {
+            if ($offerId !== 'none') {
+                $selectedOffer = $eligibleOffers->firstWhere('id', $offerId);
+            }
+        } else {
+            $selectedOffer = $eligibleOffers->first();
+        }
 
-        $calculations = $this->emiService->calculate($plan, $productPrice, $bestOffer);
+        $calculations = $this->emiService->calculate($plan, $productPrice, $selectedOffer);
+        
+        $offersList = $eligibleOffers->map(function($offer) use ($plan, $productPrice) {
+            $offerCalc = $this->emiService->calculate($plan, $productPrice, $offer);
+            $savingsMsg = '';
+            if ($offer->offer_type === 'percentage') {
+                $savingsMsg = " (" . (float)$offer->percentage . "% Off - Save ₹" . number_format($offerCalc['discount_amount'], 2) . ")";
+            } elseif ($offer->offer_type === 'fixed') {
+                $savingsMsg = " (Save ₹" . number_format($offer->fixed_amount, 2) . ")";
+            } else {
+                $savingsMsg = " (Waive " . $offer->free_emi_count . " EMI - Value ₹" . number_format($offerCalc['savings_amount'], 2) . ")";
+            }
+
+            return [
+                'id' => $offer->id,
+                'offer_name' => $offer->offer_name,
+                'savings_message' => $savingsMsg,
+            ];
+        });
         
         return response()->json(array_merge([
             'product_name' => $product->name,
@@ -220,8 +247,9 @@ class PlanController extends CustomerBaseController
             'plan_name' => $plan->plan_name,
             'duration_months' => $plan->duration_months,
             'completion_date' => $calculations['completion_date'],
-            'applied_offer_id' => $bestOffer ? $bestOffer->id : null,
-            'applied_offer_name' => $bestOffer ? $bestOffer->offer_name : null,
+            'applied_offer_id' => $selectedOffer ? $selectedOffer->id : null,
+            'applied_offer_name' => $selectedOffer ? $selectedOffer->offer_name : null,
+            'eligible_offers' => $offersList,
         ], $calculations));
     }
 
@@ -251,6 +279,7 @@ class PlanController extends CustomerBaseController
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'emi_plan_id' => 'required|exists:emi_plans,id',
+            'offer_id' => 'nullable|string',
             'remarks' => 'nullable|string',
             'terms' => 'accepted'
         ]);
@@ -283,8 +312,15 @@ class PlanController extends CustomerBaseController
         try {
             $plan = EmiPlan::findOrFail($request->emi_plan_id);
             $eligibleOffers = app(\App\Services\OfferEligibilityService::class)->getEligibleOffersForPlan($plan);
-            $bestOffer = $eligibleOffers->first();
-            $offerId = $bestOffer ? $bestOffer->id : null;
+            
+            $selectedOffer = null;
+            if ($request->filled('offer_id') && $request->offer_id !== 'none') {
+                $selectedOffer = $eligibleOffers->firstWhere('id', $request->offer_id);
+            } else if (!$request->has('offer_id')) {
+                $selectedOffer = $eligibleOffers->first();
+            }
+            
+            $offerId = $selectedOffer ? $selectedOffer->id : null;
 
             $booking = $this->bookingService->createDraftBookingForPayment(
                 $customerId,
