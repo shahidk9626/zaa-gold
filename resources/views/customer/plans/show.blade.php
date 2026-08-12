@@ -515,7 +515,7 @@
                             document.getElementById('form-offer-id').value = '';
                         }
                         
-                        if (data.discount_amount && parseFloat(data.discount_amount) > 0) {
+                        if (data.applied_offer_id && data.applied_offer_id !== 'none' && data.discount_amount && parseFloat(data.discount_amount) > 0) {
                             document.getElementById('calc-original-row').classList.remove('d-none');
                             document.getElementById('calc-savings-row').classList.remove('d-none');
                             
