@@ -529,7 +529,10 @@
 
                         document.getElementById('calc-grand-total').innerText = '₹' + grandTotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                         document.getElementById('calc-monthly-emi').innerText = '₹' + monthlyEmi.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                        document.getElementById('calc-first-emi-term').innerText = '₹' + monthlyEmi.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                        const firstEmiTerm = document.getElementById('calc-first-emi-term');
+                        if (firstEmiTerm) {
+                            firstEmiTerm.innerText = '₹' + monthlyEmi.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                        }
                         
                         // Update mobile sticky buy bar
                         if (document.getElementById('mobile-buy-emi')) {
