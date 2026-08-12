@@ -160,7 +160,8 @@ class PlanController extends CustomerBaseController
                 $eligibleOffers = app(\App\Services\OfferEligibilityService::class)->getEligibleOffersForPlan($plan);
                 $bestOffer = $eligibleOffers->first();
 
-                $calc = $this->emiService->calculate($plan, $productPrice, $bestOffer);
+                // Calculate base plan details without auto-applying any offer by default
+                $calc = $this->emiService->calculate($plan, $productPrice, null);
                 
                 // Set badges: Recommended based on lowest monthly EMI, Popular if marked as default
                 $badge = null;
@@ -215,7 +216,8 @@ class PlanController extends CustomerBaseController
                 $selectedOffer = $eligibleOffers->firstWhere('id', $offerId);
             }
         } else {
-            $selectedOffer = $eligibleOffers->first();
+            // Default to no offer selected
+            $selectedOffer = null;
         }
 
         $calculations = $this->emiService->calculate($plan, $productPrice, $selectedOffer);
@@ -316,8 +318,6 @@ class PlanController extends CustomerBaseController
             $selectedOffer = null;
             if ($request->filled('offer_id') && $request->offer_id !== 'none') {
                 $selectedOffer = $eligibleOffers->firstWhere('id', $request->offer_id);
-            } else if (!$request->has('offer_id')) {
-                $selectedOffer = $eligibleOffers->first();
             }
             
             $offerId = $selectedOffer ? $selectedOffer->id : null;

@@ -296,14 +296,12 @@
                                         <textarea name="remarks" class="form-control" rows="2" placeholder="Any special request..."></textarea>
                                     </div>
 
-                                    <div class="custom-control custom-checkbox mb-4">
-                                        <input type="checkbox" name="terms" class="custom-control-input" id="terms-checkbox" required>
-                                        <label class="custom-control-label small text-muted" for="terms-checkbox" style="line-height: 1.4; cursor: pointer;">
-                                            I agree to lock my gold price at today's rate and confirm booking. I authorize AurOnGold to automatically charge my payment source for the first EMAP installment of <strong id="calc-first-emi-term" class="text-success">₹0.00</strong> to activate the plan.
-                                        </label>
+                                    <input type="checkbox" name="terms" id="terms-checkbox" class="d-none">
+                                    <div class="mb-4 small text-muted" style="line-height: 1.4;">
+                                        By clicking "Proceed To Booking", you agree to lock your gold price at today's rate. You will be prompted to review and accept the booking terms on the next step.
                                     </div>
 
-                                    <button type="submit" class="btn btn-success btn-lg btn-block font-weight-bold shadow-sm" style="border-radius: 8px;">
+                                    <button type="button" class="btn btn-success btn-lg btn-block font-weight-bold shadow-sm" style="border-radius: 8px;" onclick="openTermsModal()">
                                         <i class="mdi mdi-shield-check mr-1"></i> Proceed To Booking
                                     </button>
                                 </form>
@@ -329,6 +327,56 @@
             </div>
         </div>
     @endif
+
+    <!-- Terms and Conditions Modal -->
+    <div class="modal fade text-dark" id="termsModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="termsModalLabel" aria-hidden="true" style="background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content bg-white border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+                <div class="modal-header bg-primary text-white border-bottom-0 p-3">
+                    <h5 class="modal-title font-weight-bold" id="termsModalLabel">
+                        <i class="mdi mdi-shield-text mr-1"></i> AurOnGold – Gold Booking Terms
+                    </h5>
+                    <button type="button" class="close text-white shadow-none" data-dismiss="modal" aria-label="Close" style="outline: none;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4" style="max-height: 60vh; overflow-y: auto; font-size: 0.9rem; line-height: 1.6; color: #334155;">
+                    <h6 class="font-weight-bold text-primary mb-3">IMPORTANT TERMS & CONDITIONS – GOLD BOOKING</h6>
+                    <p class="text-muted small mb-3">Please read the following important terms before proceeding with your booking.</p>
+                    
+                    <ol class="pl-3 mb-4 text-secondary" style="list-style-type: decimal;">
+                        <li class="mb-2"><strong>Price Lock:</strong> The gold price will be locked on the Booking Date after receipt of the first EMAP payment.</li>
+                        <li class="mb-2"><strong>EMAP Plan:</strong> AurOnGold offers 12-month and 24-month Easy Monthly Advance Payment (EMAP) plans.</li>
+                        <li class="mb-2"><strong>Monthly Payments:</strong> Up to two missed monthly payments may be cleared before plan completion. More than two missed payments may result in cancellation of the plan.</li>
+                        <li class="mb-2"><strong>Applicable Charges & GST:</strong> Applicable Price Locking & Secure Storage Charges, Processing/Platform/Service/Delivery Charges, and GST will apply as displayed during the booking process.</li>
+                        <li class="mb-2"><strong>Gold Delivery:</strong> Delivery within India will be made only after full payment, KYC completion and verification. Estimated delivery time is 7–10 business days.</li>
+                        <li class="mb-2"><strong>KYC Requirement:</strong> PAN and Aadhaar KYC are mandatory for completing the purchase.</li>
+                        <li class="mb-2"><strong>Cancellation & Refund:</strong> Cancellation and refunds are subject to the applicable Cancellation and Refund Policy, including any applicable deductions.</li>
+                        <li class="mb-2"><strong>Buyback:</strong> Buyback, where offered, is subject to verification and the applicable prevailing gold price. Buyback deductions may apply, and no exchange facility is provided.</li>
+                        <li class="mb-2"><strong>Customer Confirmation:</strong> By proceeding with the booking, you confirm that you have read, understood and agreed to these important terms and the applicable policies.</li>
+                    </ol>
+                    
+                    <p class="text-muted small border-top pt-3 mb-0">
+                        For complete Terms & Conditions, please visit the <a href="/terms-and-conditions" target="_blank" class="font-weight-medium text-primary">Terms & Conditions</a> page available in the footer of our website.
+                    </p>
+                </div>
+                <div class="modal-footer bg-light p-3 flex-column align-items-stretch">
+                    <div class="custom-control custom-checkbox mb-3 pl-4">
+                        <input type="checkbox" class="custom-control-input" id="modal-terms-checkbox" onchange="toggleModalSubmitButton(this.checked)">
+                        <label class="custom-control-label font-weight-medium text-dark" for="modal-terms-checkbox" style="cursor: pointer; font-size: 0.9rem; line-height: 1.4;">
+                            I have read and agree to the above Terms & Conditions and applicable policies.
+                        </label>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary mr-2" data-dismiss="modal" style="border-radius: 8px;">Cancel</button>
+                        <button type="button" class="btn btn-success font-weight-bold" id="modal-submit-btn" disabled onclick="submitCheckoutForm()" style="border-radius: 8px;">
+                            Confirm & Proceed to Payment
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     @push('styles')
         <style>
@@ -501,6 +549,41 @@
                 const planId = document.getElementById('form-emi-plan-id').value;
                 if (planId) {
                     fetchCalculations(planId, offerId);
+                }
+            }
+
+            function openTermsModal() {
+                // Reset checkbox state to unchecked when opening
+                const checkbox = document.getElementById('modal-terms-checkbox');
+                if (checkbox) {
+                    checkbox.checked = false;
+                }
+                const submitBtn = document.getElementById('modal-submit-btn');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                }
+                
+                // Show modal
+                $('#termsModal').modal('show');
+            }
+
+            function toggleModalSubmitButton(isChecked) {
+                const submitBtn = document.getElementById('modal-submit-btn');
+                if (submitBtn) {
+                    submitBtn.disabled = !isChecked;
+                }
+            }
+
+            function submitCheckoutForm() {
+                const checkbox = document.getElementById('modal-terms-checkbox');
+                if (checkbox && checkbox.checked) {
+                    // Check the hidden checkbox in the form
+                    const formTerms = document.getElementById('terms-checkbox');
+                    if (formTerms) {
+                        formTerms.checked = true;
+                    }
+                    // Submit the form
+                    document.getElementById('checkout-form').submit();
                 }
             }
 
