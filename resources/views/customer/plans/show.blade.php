@@ -263,13 +263,15 @@
                                 </div>
 
                                 <div class="bg-light rounded p-3 mb-4">
-                                    <div class="d-flex justify-content-between align-items-center mb-2 d-none" id="calc-original-row">
-                                        <span class="text-muted small">Original Plan Value</span>
-                                        <span class="text-muted font-weight-bold" style="text-decoration: line-through;" id="calc-original-total">₹0.00</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center mb-2 d-none" id="calc-savings-row">
-                                        <span class="text-danger font-weight-bold small" id="calc-savings-label">Promo Discount</span>
-                                        <span class="text-danger font-weight-bold" id="calc-savings-amount">- ₹0.00</span>
+                                    <div id="calc-discount-section" class="d-none">
+                                        <div class="d-flex justify-content-between align-items-center mb-2" id="calc-original-row">
+                                            <span class="text-muted small">Original Plan Value</span>
+                                            <span class="text-muted font-weight-bold" style="text-decoration: line-through;" id="calc-original-total">₹0.00</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mb-2" id="calc-savings-row">
+                                            <span class="text-danger font-weight-bold small" id="calc-savings-label">Promo Discount</span>
+                                            <span class="text-danger font-weight-bold" id="calc-savings-amount">- ₹0.00</span>
+                                        </div>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <span class="font-weight-bold text-dark">Grand Total</span>
@@ -408,6 +410,13 @@
                 from { transform: translateY(100%); }
                 to { transform: translateY(0); }
             }
+            .fade-in-slide {
+                animation: fadeInSlide 0.3s ease-out forwards;
+            }
+            @keyframes fadeInSlide {
+                from { opacity: 0; transform: translateY(-5px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
             @media (max-width: 767.98px) {
                 .content-wrapper {
                     padding-bottom: 140px !important; /* Make room for both navigation bars */
@@ -517,16 +526,26 @@
                             document.getElementById('form-offer-id').value = '';
                         }
                         
+                        const discountSection = document.getElementById('calc-discount-section');
                         if (data.applied_offer_id && data.applied_offer_id !== 'none' && data.discount_amount && parseFloat(data.discount_amount) > 0) {
-                            document.getElementById('calc-original-row').classList.remove('d-none');
-                            document.getElementById('calc-savings-row').classList.remove('d-none');
+                            discountSection.classList.remove('d-none');
+                            discountSection.classList.add('fade-in-slide');
                             
                             document.getElementById('calc-original-total').innerText = '₹' + parseFloat(data.original_amount || data.original_total).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                             document.getElementById('calc-savings-amount').innerText = '- ₹' + parseFloat(data.discount_amount).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                             document.getElementById('calc-savings-label').innerText = data.applied_offer_name ? `${data.applied_offer_name} Savings` : 'Promo Discount';
                         } else {
-                            document.getElementById('calc-original-row').classList.add('d-none');
-                            document.getElementById('calc-savings-row').classList.add('d-none');
+                            discountSection.classList.add('d-none');
+                            discountSection.classList.remove('fade-in-slide');
+                            
+                            document.getElementById('calc-original-total').innerText = '';
+                            document.getElementById('calc-savings-amount').innerText = '';
+                            document.getElementById('calc-savings-label').innerText = '';
+                            
+                            if (offerSelect) {
+                                offerSelect.value = 'none';
+                            }
+                            document.getElementById('form-offer-id').value = 'none';
                         }
 
                         document.getElementById('calc-grand-total').innerText = '₹' + grandTotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});

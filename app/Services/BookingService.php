@@ -45,7 +45,7 @@ class BookingService
             $is22k = strtoupper($product->gold_type) === '22K';
             $pricePerGram = $latestPrice ? ($is22k ? $latestPrice->price_22k : $latestPrice->price_24k) : 0.00;
 
-            $offer = $offerId ? \App\Models\Offer::find($offerId) : null;
+            $offer = ($offerId && $offerId !== 'none' && $offerId !== 'null') ? \App\Models\Offer::find($offerId) : null;
             $calculations = $this->emiService->calculate($plan, $productPrice, $offer);
 
             // 2. Create the Booking
@@ -144,7 +144,7 @@ class BookingService
             $is22k = strtoupper($product->gold_type) === '22K';
             $pricePerGram = $latestPrice ? ($is22k ? $latestPrice->price_22k : $latestPrice->price_24k) : 0.00;
             
-            $offer = $offerId ? \App\Models\Offer::find($offerId) : null;
+            $offer = ($offerId && $offerId !== 'none' && $offerId !== 'null') ? \App\Models\Offer::find($offerId) : null;
             $calculations = $this->emiService->calculate($plan, $productPrice, $offer);
 
             $bookingData = [

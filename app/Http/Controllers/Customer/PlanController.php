@@ -252,6 +252,10 @@ class PlanController extends CustomerBaseController
             'applied_offer_id' => $selectedOffer ? $selectedOffer->id : null,
             'applied_offer_name' => $selectedOffer ? $selectedOffer->offer_name : null,
             'eligible_offers' => $offersList,
+            'discount_amount' => $selectedOffer ? ($calculations['discount_amount'] ?? 0.00) : 0.00,
+            'savings_amount' => $selectedOffer ? ($calculations['savings_amount'] ?? 0.00) : 0.00,
+            'original_amount' => $selectedOffer ? ($calculations['original_amount'] ?? $calculations['total_payable'] ?? 0.00) : 0.00,
+            'original_total' => $selectedOffer ? ($calculations['original_total'] ?? $calculations['total_payable'] ?? 0.00) : 0.00,
         ], $calculations));
     }
 
@@ -316,7 +320,7 @@ class PlanController extends CustomerBaseController
             $eligibleOffers = app(\App\Services\OfferEligibilityService::class)->getEligibleOffersForPlan($plan);
             
             $selectedOffer = null;
-            if ($request->filled('offer_id') && $request->offer_id !== 'none') {
+            if ($request->filled('offer_id') && $request->offer_id !== 'none' && $request->offer_id !== 'null') {
                 $selectedOffer = $eligibleOffers->firstWhere('id', $request->offer_id);
             }
             
