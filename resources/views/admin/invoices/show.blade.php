@@ -143,7 +143,7 @@
                 </div>
                 <div class="col-4 mb-3">
                     <label class="small text-muted d-block mb-1">Gold Purity</label>
-                    <span class="font-weight-bold text-dark">{{ number_format($invoice->gold_purity, 2) }}%</span>
+                    <span class="font-weight-bold text-dark">{{ (float)$invoice->gold_purity }} fine gold</span>
                 </div>
                 <div class="col-4 mb-3">
                     <label class="small text-muted d-block mb-1">Price Lock / Gram</label>

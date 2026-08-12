@@ -434,7 +434,7 @@
                                         <th>Product Name</th>
                                         <th>SKU</th>
                                         <th>Weight (g)</th>
-                                        <th>Purity (%)</th>
+                                        <th>Purity</th>
                                         <th>Gold Type</th>
                                         <th>Status</th>
                                     </tr>
@@ -445,7 +445,7 @@
                                         <td class="font-weight-bold">{{ $row->name }}</td>
                                         <td>{{ $row->sku }}</td>
                                         <td>{{ number_format($row->weight_in_grams, 2) }}g</td>
-                                        <td>{{ number_format($row->purity, 2) }}%</td>
+                                        <td>{{ (float)$row->purity }} fine gold</td>
                                         <td>{{ $row->gold_type }}</td>
                                         <td><span class="badge badge-secondary">{{ $row->status }}</span></td>
                                     </tr>

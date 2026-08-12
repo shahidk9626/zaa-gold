@@ -193,7 +193,7 @@
                         Gold type: {{ $product->gold_type }} (Purity Guarantee Certificate Ref: {{ $booking->certificate->certificate_number ?? 'N/A' }})
                     </td>
                     <td style="text-align: right;">{{ number_format($booking->gold_weight, 2) }}g</td>
-                    <td style="text-align: right;">{{ number_format($booking->gold_purity, 2) }}%</td>
+                    <td style="text-align: right;">{{ (float)$booking->gold_purity }} fine gold</td>
                     <td>{{ $delivery->delivery_status }}</td>
                 </tr>
             </tbody>

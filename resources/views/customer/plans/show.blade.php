@@ -59,7 +59,7 @@
                                     </div>
                                     <div class="col-4 border-left border-right">
                                         <span class="text-muted small d-block">Purity</span>
-                                        <span class="font-weight-bold text-dark">{{ number_format($product->purity, 1) }}%</span>
+                                        <span class="font-weight-bold text-dark">{{ (float)$product->purity }} fine gold</span>
                                     </div>
                                     <div class="col-4">
                                         <span class="text-muted small d-block">Today's Price</span>

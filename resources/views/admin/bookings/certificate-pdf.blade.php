@@ -690,7 +690,7 @@
                                                 <tr>
                                                     <td class="kv-label">Gold Purity</td>
                                                     <td class="kv-separator">:</td>
-                                                    <td class="kv-value">{{ number_format($booking->gold_purity, 2) }}% ({{ $product->gold_type ?? '24K' }}) Fine Gold</td>
+                                                    <td class="kv-value">{{ (float)$booking->gold_purity }} fine gold ({{ $product->gold_type ?? '24K' }})</td>
                                                 </tr>
                                                 <tr>
                                                     <td class="kv-label">Weight</td>

@@ -307,7 +307,7 @@
                 $('#prodSku').text(response.sku);
                 $('#prodGoldType').text(response.gold_type);
                 $('#prodWeight').text(`${parseFloat(response.weight_in_grams).toFixed(2)}g`);
-                $('#prodPurity').text(`${parseFloat(response.purity).toFixed(2)}% Purity`);
+                $('#prodPurity').text(`${parseFloat(response.purity)} fine gold`);
                 $('#prodGoldRate').text(`₹${parseFloat(response.gold_price_per_gram).toLocaleString()}/g`);
                 $('#prodPrice').text(`₹${parseFloat(response.product_price).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
                 $('#prodDesc').html(response.description || 'No description available.');

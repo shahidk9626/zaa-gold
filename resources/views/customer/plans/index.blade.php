@@ -121,8 +121,8 @@
                     <label class="font-weight-medium small text-muted">Purity / Karat</label>
                     <select name="purity" class="form-control">
                         <option value="">All Purities</option>
-                        <option value="22K" {{ request('purity') == '22K' ? 'selected' : '' }}>22K Gold (91.6%)</option>
-                        <option value="24K" {{ request('purity') == '24K' ? 'selected' : '' }}>24K Gold (99.9%)</option>
+                        <option value="22K" {{ request('purity') == '22K' ? 'selected' : '' }}>22K Gold (916 fine gold)</option>
+                        <option value="24K" {{ request('purity') == '24K' ? 'selected' : '' }}>24K Gold (999.99 fine gold)</option>
                     </select>
                 </div>
 
@@ -193,7 +193,7 @@
                             </div>
                             <div class="card-body d-flex flex-column p-3">
                                 <h6 class="font-weight-bold mb-1 text-truncate" title="{{ $product->name }}">{{ $product->name }}</h6>
-                                <p class="text-muted small mb-2">{{ number_format($product->weight_in_grams, 2) }}g · {{ number_format($product->purity, 1) }}% Purity</p>
+                                <p class="text-muted small mb-2">{{ number_format($product->weight_in_grams, 2) }}g · {{ (float)$product->purity }} fine gold</p>
                                 
                                 <div class="mt-auto">
                                     <div class="d-flex justify-content-between align-items-baseline mb-2">
@@ -242,7 +242,7 @@
                             </div>
                             <div class="card-body p-3 d-flex flex-column">
                                 <h6 class="font-weight-bold mb-1 text-truncate">{{ $product->name }}</h6>
-                                <p class="text-muted small mb-2">{{ number_format($product->weight_in_grams, 2) }}g · {{ number_format($product->purity, 1) }}% Purity</p>
+                                <p class="text-muted small mb-2">{{ number_format($product->weight_in_grams, 2) }}g · {{ (float)$product->purity }} fine gold</p>
                                 
                                 <div class="mt-auto">
                                     <div class="mb-2">

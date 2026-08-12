@@ -242,7 +242,7 @@
             </td>
             <td>
                 <div class="info-label">Gold Purity</div>
-                <div class="info-value">{{ number_format($product->purity, 2) }}% Purity</div>
+                <div class="info-value">{{ (float)$product->purity }} fine gold</div>
             </td>
             <td>
                 <div class="info-label">Live Gold Price</div>

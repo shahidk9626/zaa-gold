@@ -67,7 +67,7 @@
                 </div>
                 <div class="col-md-2 mb-4">
                     <label class="small text-muted d-block uppercase">Purity</label>
-                    <span class="font-weight-bold text-dark" style="font-size: 1.1rem;">{{ number_format($product->purity, 2) }}%</span>
+                    <span class="font-weight-bold text-dark" style="font-size: 1.1rem;">{{ (float)$product->purity }} fine gold</span>
                 </div>
                 <div class="col-md-3 mb-4">
                     <label class="small text-muted d-block uppercase">Live Calculated Price</label>

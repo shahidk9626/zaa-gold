@@ -318,7 +318,7 @@
                                 </div>
                                 <div class="col-6 mb-3">
                                     <label class="small text-muted d-block mb-1">Purity</label>
-                                    <span class="font-weight-bold text-dark">{{ number_format($booking->gold_purity, 2) }}%</span>
+                                    <span class="font-weight-bold text-dark">{{ (float)$booking->gold_purity }} fine gold</span>
                                 </div>
                             </div>
                         </div>

@@ -107,7 +107,7 @@
                 </div>
                 <div class="col-6 mb-3">
                     <label class="small text-muted d-block mb-1">Weight & Purity</label>
-                    <span class="font-weight-bold text-dark">{{ number_format($payment->booking->gold_weight, 2) }}g ({{ $payment->booking->product->gold_type ?? 'N/A' }}, {{ number_format($payment->booking->gold_purity, 2) }}%)</span>
+                    <span class="font-weight-bold text-dark">{{ number_format($payment->booking->gold_weight, 2) }}g ({{ $payment->booking->product->gold_type ?? 'N/A' }}, {{ (float)$payment->booking->gold_purity }} fine gold)</span>
                 </div>
                 <div class="col-6 mb-3">
                     <label class="small text-muted d-block mb-1">EMI Installment Number</label>

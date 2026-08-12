@@ -505,7 +505,7 @@
                             <tr>
                                 <td><strong>Gold Purity</strong></td>
                                 <td>:</td>
-                                <td>{{ $product->gold_purity ?? '24KT (999.9) Fine Gold' }}</td>
+                                <td>{{ (float)$invoice->gold_purity }} fine gold</td>
                             </tr>
                             <tr>
                                 <td><strong>Gold Weight Purchased</strong></td>
@@ -515,7 +515,7 @@
                             <tr>
                                 <td><strong>Locked Gold Price</strong></td>
                                 <td>:</td>
-                                <td>₹{{ number_format($invoice->locked_gold_price, 2) }} per gram (Purity: 999.9%)</td>
+                                <td>₹{{ number_format($invoice->locked_gold_price, 2) }} per gram ({{ (float)$invoice->gold_purity }} fine gold)</td>
                             </tr>
                             <tr>
                                 <td><strong>Plan Completion Date</strong></td>
