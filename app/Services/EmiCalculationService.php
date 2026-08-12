@@ -370,7 +370,13 @@ class EmiCalculationService
         $duration = (int)$plan->duration_months;
         $calc = $this->calculate($plan, $amount, $offer);
         $grandTotal = $calc['total_payable'];
-        $scheduleAmounts = $this->financialService->scheduleAmounts((float) $grandTotal, $duration);
+        
+        $totalForSchedule = $grandTotal;
+        if (isset($calc['offer_type']) && $calc['offer_type'] === 'emi') {
+            $totalForSchedule = $calc['original_amount'] ?? $grandTotal;
+        }
+        
+        $scheduleAmounts = $this->financialService->scheduleAmounts((float) $totalForSchedule, $duration);
         $monthlyEmi = $scheduleAmounts[0] ?? 0.00;
         $useFinancialEngine = $calc['use_financial_engine'];
         
@@ -418,6 +424,8 @@ class EmiCalculationService
             for ($k = $totalRecords - 1; $k >= $totalRecords - $freeEmiCount; $k--) {
                 if (isset($schedule[$k])) {
                     $schedule[$k]['monthly_emi'] = 0.00;
+                    $schedule[$k]['principal_amount'] = 0.00;
+                    $schedule[$k]['interest_amount'] = 0.00;
                     $schedule[$k]['status'] = 'Waived';
                     $schedule[$k]['remarks'] = 'Offer Benefit';
                 }
@@ -495,7 +503,13 @@ class EmiCalculationService
         $duration = (int)$plan->duration_months;
         $calc = $this->calculate($plan, $amount, $offer);
         $grandTotal = $calc['total_payable'];
-        $scheduleAmounts = $this->financialService->scheduleAmounts((float) $grandTotal, $duration);
+        
+        $totalForSchedule = $grandTotal;
+        if (isset($calc['offer_type']) && $calc['offer_type'] === 'emi') {
+            $totalForSchedule = $calc['original_amount'] ?? $grandTotal;
+        }
+        
+        $scheduleAmounts = $this->financialService->scheduleAmounts((float) $totalForSchedule, $duration);
         $monthlyEmi = $scheduleAmounts[0] ?? 0.00;
         $useFinancialEngine = $calc['use_financial_engine'];
         
@@ -546,6 +560,8 @@ class EmiCalculationService
             for ($k = $totalRecords - 1; $k >= $totalRecords - $freeEmiCount; $k--) {
                 if (isset($schedule[$k])) {
                     $schedule[$k]['emi_amount'] = 0.00;
+                    $schedule[$k]['principal_amount'] = 0.00;
+                    $schedule[$k]['interest_amount'] = 0.00;
                     $schedule[$k]['status'] = 'Waived';
                     $schedule[$k]['remarks'] = 'Offer Benefit';
                 }

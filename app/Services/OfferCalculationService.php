@@ -78,11 +78,11 @@ class OfferCalculationService
             $calculations['total_payable'] = $res['final_amount'];
             $calculations['installment'] = round($res['final_amount'] / $duration, 2);
         } else {
-            // For EMI Discounts: Grand total/installment are NOT reduced (waived EMIs are generated as 0 later)
-            // But final amount represents the discounted sum they will pay in total.
-            $calculations['grand_total'] = $grandTotal;
-            $calculations['total_payable'] = $grandTotal;
-            // Monthly EMI remains normal
+            // For EMI Discounts: set grand_total and total_payable to the discounted final amount.
+            // Installment (monthly EMI) remains normal (unreduced).
+            $calculations['grand_total'] = $res['final_amount'];
+            $calculations['total_payable'] = $res['final_amount'];
+            $calculations['installment'] = $monthlyEmi;
         }
 
         return $calculations;
