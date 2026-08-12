@@ -456,7 +456,9 @@
                 spinner.classList.remove('d-none');
                 output.classList.add('d-none');
 
-                const url = '{{ route('customer.plans.calculate', ['productId' => $product->id, 'planId' => ':planId']) }}'.replace(':planId', planId) + (offerId !== null ? '?offer_id=' + offerId : '');
+                let url = '{{ route('customer.plans.calculate', ['productId' => $product->id, 'planId' => ':planId']) }}'.replace(':planId', planId);
+                url += (offerId !== null ? '?offer_id=' + offerId : '');
+                url += (url.includes('?') ? '&' : '?') + '_t=' + new Date().getTime();
 
                 fetch(url)
                     .then(response => {
