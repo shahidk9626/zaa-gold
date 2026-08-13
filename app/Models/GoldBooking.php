@@ -174,4 +174,34 @@ class GoldBooking extends Model
     {
         return $this->hasMany(BookingDelivery::class, 'booking_id');
     }
+
+    public function getDisplayStatusAttribute(): string
+    {
+        $latest = $this->latestCancellationRequest;
+        if ($latest) {
+            if (in_array($latest->status, ['Requested', 'Under Review'])) {
+                return 'Cancellation Under Review';
+            }
+            if (in_array($latest->status, ['Approved', 'Refund Initiated', 'Refund Completed'])) {
+                return 'Cancelled';
+            }
+        }
+        if (in_array($this->status, ['Cancelled', 'Refund Initiated', 'Refunded'])) {
+            return 'Cancelled';
+        }
+        return $this->status;
+    }
+
+    public function getDisplayStatusBadgeClassAttribute(): string
+    {
+        return match($this->display_status) {
+            'Active' => 'badge-primary',
+            'Booked' => 'badge-warning',
+            'Completed' => 'badge-success',
+            'Cancelled' => 'badge-danger',
+            'Cancellation Under Review' => 'badge-warning text-dark',
+            'Draft' => 'badge-secondary',
+            default => 'badge-secondary',
+        };
+    }
 }

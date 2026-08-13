@@ -3,14 +3,7 @@
 @php
     $booking = $plan['booking'];
     $product = $booking->product;
-    $statusClass = match($booking->status) {
-        'Active' => 'badge-primary',
-        'Booked' => 'badge-warning',
-        'Completed' => 'badge-success',
-        'Cancelled', 'Refund Initiated', 'Refunded' => 'badge-danger',
-        'Draft' => 'badge-secondary',
-        default => 'badge-secondary',
-    };
+    $statusClass = $booking->display_status_badge_class;
     $thumb = $product ? $product->getThumbnailUrl() : asset('assets/images/dashboard/img_1.jpg');
 @endphp
 
@@ -21,7 +14,7 @@
             <div class="flex-grow-1">
                 <h6 class="font-weight-bold mb-1">{{ $product?->name ?? 'Gold Plan' }}</h6>
                 <p class="text-muted small mb-1">{{ number_format($booking->gold_weight, 2) }}g · {{ $booking->emiPlan?->name ?? 'EMI Plan' }}</p>
-                <span class="badge {{ $statusClass }}">{{ in_array($booking->status, ['Cancelled', 'Refund Initiated', 'Refunded']) ? 'Cancelled' : $booking->status }}</span>
+                <span class="badge {{ $statusClass }}">{{ $booking->display_status }}</span>
             </div>
         </div>
 
@@ -36,7 +29,7 @@
             </div>
         </div>
 
-        @if(in_array($booking->status, ['Cancelled', 'Refund Initiated', 'Refunded']))
+        @if($booking->display_status === 'Cancelled')
             @php
                 $latestCancel = $booking->latestCancellationRequest;
             @endphp
@@ -68,6 +61,23 @@
                         </div>
                     </div>
                 @endif
+            </div>
+        @elseif($booking->display_status === 'Cancellation Under Review')
+            @php
+                $latestCancel = $booking->latestCancellationRequest;
+            @endphp
+            <div class="mb-3">
+                @if($latestCancel)
+                    <div class="bg-light p-3 rounded small text-dark">
+                        <p class="mb-1 text-danger font-weight-bold"><i class="mdi mdi-alert-circle"></i> Cancellation application under review</p>
+                        <p class="mb-0 text-muted">{{ $latestCancel->admin_remark ?? 'Your cancellation application is currently under review.' }}</p>
+                    </div>
+                @endif
+            </div>
+
+            <div class="d-flex justify-content-between small text-muted mb-2">
+                <span>Paid: {{ $plan['paid_emi'] }}/{{ $plan['total_emi'] }} EMI</span>
+                <span>Remaining: {{ $plan['remaining_emi'] }}</span>
             </div>
         @else
             <div class="d-flex justify-content-between small text-muted mb-2">

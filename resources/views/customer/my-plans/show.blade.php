@@ -41,16 +41,9 @@
         </div>
         <h5 class="font-weight-bold">#{{ $booking->booking_number }}</h5>
         @php
-            $statusClass = match($booking->status) {
-                'Active' => 'badge-primary',
-                'Booked' => 'badge-warning',
-                'Completed' => 'badge-success',
-                'Cancelled', 'Refund Initiated', 'Refunded' => 'badge-danger',
-                'Draft' => 'badge-secondary',
-                default => 'badge-secondary',
-            };
+            $statusClass = $booking->display_status_badge_class;
         @endphp
-        <span class="badge {{ $statusClass }}">{{ in_array($booking->status, ['Cancelled', 'Refund Initiated', 'Refunded']) ? 'Cancelled' : $booking->status }}</span>
+        <span class="badge {{ $statusClass }}">{{ $booking->display_status }}</span>
     </div>
 
     <ul class="nav nav-tabs border-0 bg-light rounded p-1 mb-4" role="tablist">

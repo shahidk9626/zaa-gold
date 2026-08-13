@@ -40,16 +40,9 @@
                                     <td>{{ $plan['remaining_emi'] }}</td>
                                     <td class="text-danger font-weight-bold">₹{{ number_format($plan['outstanding'], 0) }}</td>
                                     @php
-                                        $statusClass = match($b->status) {
-                                            'Active' => 'badge-primary',
-                                            'Booked' => 'badge-warning',
-                                            'Completed' => 'badge-success',
-                                            'Cancelled', 'Refund Initiated', 'Refunded' => 'badge-danger',
-                                            'Draft' => 'badge-secondary',
-                                            default => 'badge-secondary',
-                                        };
+                                        $statusClass = $b->display_status_badge_class;
                                     @endphp
-                                    <td><span class="badge {{ $statusClass }}">{{ in_array($b->status, ['Cancelled', 'Refund Initiated', 'Refunded']) ? 'Cancelled' : $b->status }}</span></td>
+                                    <td><span class="badge {{ $statusClass }}">{{ $b->display_status }}</span></td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <a href="{{ route('customer.my-plans.show', $b->id) }}" class="btn btn-sm btn-primary mr-2">View</a>

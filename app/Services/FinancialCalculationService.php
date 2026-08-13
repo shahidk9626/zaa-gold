@@ -141,6 +141,14 @@ class FinancialCalculationService
             return false;
         }
 
+        // Do not complete if there is an active cancellation request pending review
+        $hasPendingCancellation = $booking->cancellationRequests()
+            ->whereIn('status', ['Requested', 'Under Review'])
+            ->exists();
+        if ($hasPendingCancellation) {
+            return false;
+        }
+
         // Check if outstanding balance is within tolerance (i.e., zero after normalization)
         $outstanding = $this->outstanding($booking);
         if ($outstanding > 0) {

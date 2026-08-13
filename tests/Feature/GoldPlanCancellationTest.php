@@ -269,4 +269,119 @@ class GoldPlanCancellationTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->cancellationService->updateStatus($request, 'Approved', 'Try approving now.');
     }
+
+    /**
+     * Test plan display status and lifecycle precedence rules
+     */
+    public function test_plan_lifecycle_display_status_precedence()
+    {
+        $setup = $this->setupBooking(5.00);
+        $booking = $setup['booking'];
+        $customer = $setup['customer'];
+
+        // TEST 1: 12/12 EMI paid, No cancellation request -> Completed
+        for ($i = 1; $i <= 10; $i++) {
+            $schedule = BookingEmiSchedule::where('booking_id', $booking->id)
+                ->where('installment_number', $i)
+                ->first();
+            $schedule->update(['status' => 'Paid', 'paid_at' => now()]);
+            BookingPayment::create([
+                'booking_id' => $booking->id,
+                'customer_id' => $booking->customer_id,
+                'emi_schedule_id' => $schedule->id,
+                'receipt_number' => 'REC-TEST-' . $i,
+                'amount_paid' => 3090.00,
+                'payment_date' => now(),
+                'payment_mode' => 'Online',
+                'status' => 'Paid',
+            ]);
+        }
+
+        // Trigger completion check
+        $financialService = app(\App\Services\FinancialCalculationService::class);
+        $financialService->completeIfEligible($booking);
+
+        $booking->refresh();
+        $this->assertEquals('Completed', $booking->status);
+        $this->assertEquals('Completed', $booking->display_status);
+
+        // TEST 2: 12/12 EMI, Cancellation request Pending -> Cancellation Under Review, NOT Completed
+        $request = $this->cancellationService->createRequest($booking, 'Reason');
+        $this->assertEquals('Cancellation Under Review', $booking->display_status);
+
+        // TEST 3: 5/12 EMI, Cancellation request Pending -> Cancellation Under Review, NOT Active
+        $setup2 = $this->setupBooking(5.00);
+        $booking2 = $setup2['booking'];
+        for ($i = 1; $i <= 5; $i++) {
+            $schedule = BookingEmiSchedule::where('booking_id', $booking2->id)
+                ->where('installment_number', $i)
+                ->first();
+            $schedule->update(['status' => 'Paid', 'paid_at' => now()]);
+            BookingPayment::create([
+                'booking_id' => $booking2->id,
+                'customer_id' => $booking2->customer_id,
+                'emi_schedule_id' => $schedule->id,
+                'receipt_number' => 'REC-TEST2-' . $i,
+                'amount_paid' => 3090.00,
+                'payment_date' => now(),
+                'payment_mode' => 'Online',
+                'status' => 'Paid',
+            ]);
+        }
+        $financialService->completeIfEligible($booking2);
+        $booking2->refresh();
+        $this->assertEquals('Active', $booking2->status);
+
+        $request2 = $this->cancellationService->createRequest($booking2, 'Reason 2');
+        $this->assertEquals('Cancellation Under Review', $booking2->display_status);
+
+        // TEST 4: 12/12 EMI, Cancellation Approved -> Cancelled, NOT Completed
+        $admin = User::create(['name' => 'Admin Staff', 'email' => 'admin_test@test.com', 'password' => 'pass', 'role' => 'admin']);
+        $this->actingAs($admin);
+        $this->cancellationService->updateStatus($request, 'Approved', 'Approved cancellation request.');
+
+        $booking->refresh();
+        $this->assertEquals('Cancelled', $booking->status);
+        $this->assertEquals('Cancelled', $booking->display_status);
+
+        // TEST 5: 12/12 EMI, Cancellation Rejected -> Completed
+        $setup3 = $this->setupBooking(5.00);
+        $booking3 = $setup3['booking'];
+        for ($i = 1; $i <= 10; $i++) {
+            $schedule = BookingEmiSchedule::where('booking_id', $booking3->id)
+                ->where('installment_number', $i)
+                ->first();
+            $schedule->update(['status' => 'Paid', 'paid_at' => now()]);
+            BookingPayment::create([
+                'booking_id' => $booking3->id,
+                'customer_id' => $booking3->customer_id,
+                'emi_schedule_id' => $schedule->id,
+                'receipt_number' => 'REC-TEST3-' . $i,
+                'amount_paid' => 3090.00,
+                'payment_date' => now(),
+                'payment_mode' => 'Online',
+                'status' => 'Paid',
+            ]);
+        }
+        $financialService->completeIfEligible($booking3);
+        $booking3->refresh();
+        $this->assertEquals('Completed', $booking3->status);
+
+        $request3 = $this->cancellationService->createRequest($booking3, 'Reason 3');
+        $this->assertEquals('Cancellation Under Review', $booking3->display_status);
+
+        $this->cancellationService->updateStatus($request3, 'Rejected', 'Rejected cancellation request.');
+        $booking3->refresh();
+        $this->assertEquals('Completed', $booking3->display_status);
+
+        // TEST 6: 5/12 EMI, Cancellation Rejected -> Active
+        $this->cancellationService->updateStatus($request2, 'Rejected', 'Rejected cancellation request.');
+        $booking2->refresh();
+        $this->assertEquals('Active', $booking2->display_status);
+
+        // TEST 7: Cancelled plan -> Historical payment/EMI records remain intact
+        $this->assertEquals('Cancelled', $booking->display_status);
+        $this->assertEquals(10, BookingEmiSchedule::where('booking_id', $booking->id)->where('status', 'Paid')->count());
+        $this->assertEquals(10, BookingPayment::where('booking_id', $booking->id)->where('status', 'Paid')->count());
+    }
 }
