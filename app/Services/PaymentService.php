@@ -41,8 +41,8 @@ class PaymentService
      */
     public function initiateBookingGatewayPayment(GoldBooking $booking, bool $isAdminSession = false): array
     {
-        if ($booking->status === 'Cancelled') {
-            throw new \RuntimeException('Cannot initiate payment. This gold plan booking is Cancelled.');
+        if (in_array($booking->status, ['Cancelled', 'Refund Initiated', 'Refunded'])) {
+            throw new \RuntimeException('This plan has been cancelled and no further EMI payments can be made.');
         }
         $customer = User::with('customerDetail')->findOrFail($booking->customer_id);
         $transaction = DB::transaction(function () use ($booking) {
@@ -110,8 +110,8 @@ class PaymentService
         $booking = $schedule->booking;
         $customer = $booking->customer;
 
-        if ($booking->status === 'Cancelled') {
-            throw new \RuntimeException('Cannot initiate payment. This gold plan booking is Cancelled.');
+        if (in_array($booking->status, ['Cancelled', 'Refund Initiated', 'Refunded'])) {
+            throw new \RuntimeException('This plan has been cancelled and no further EMI payments can be made.');
         }
 
         if ($schedule->status === 'Paid') {
@@ -231,8 +231,8 @@ class PaymentService
      */
     public function collectPayment(GoldBooking $booking, BookingEmiSchedule $schedule, array $data, $isFirstEmi = false)
     {
-        if ($booking->status === 'Cancelled') {
-            throw new \RuntimeException('Cannot process payment. This gold plan booking is Cancelled.');
+        if (in_array($booking->status, ['Cancelled', 'Refund Initiated', 'Refunded'])) {
+            throw new \RuntimeException('This plan has been cancelled and no further EMI payments can be made.');
         }
         return DB::transaction(function () use ($booking, $schedule, $data, $isFirstEmi) {
             $paymentDate = isset($data['payment_date']) ? Carbon::parse($data['payment_date']) : now();
@@ -503,8 +503,8 @@ class PaymentService
      */
     public function processCashBookingPayment(GoldBooking $booking, array $data)
     {
-        if ($booking->status === 'Cancelled') {
-            throw new \RuntimeException('Cannot process cash booking. This gold plan booking is Cancelled.');
+        if (in_array($booking->status, ['Cancelled', 'Refund Initiated', 'Refunded'])) {
+            throw new \RuntimeException('This plan has been cancelled and no further EMI payments can be made.');
         }
         return DB::transaction(function () use ($booking, $data) {
             $bookingService = app(BookingService::class);

@@ -120,16 +120,16 @@
                         @php
                             $badgeClass = 'badge-secondary';
                             switch($booking->status) {
-                                case 'Draft': $badgeClass = 'badge-secondary'; break;
-                                case 'Booked': $badgeClass = 'badge-warning'; break;
-                                case 'Active': $badgeClass = 'badge-primary'; break;
-                                case 'Completed': $badgeClass = 'badge-success'; break;
-                                case 'Cancelled': $badgeClass = 'badge-danger'; break;
-                                case 'Refund Initiated': $badgeClass = 'badge-info'; break;
-                                case 'Refunded': $badgeClass = 'badge-dark'; break;
+                                case 'Draft': $badgeClass = 'badge-secondary text-dark'; break;
+                                case 'Booked': $badgeClass = 'badge-warning text-dark'; break;
+                                case 'Active': $badgeClass = 'badge-primary text-white'; break;
+                                case 'Completed': $badgeClass = 'badge-success text-white'; break;
+                                case 'Cancelled': $badgeClass = 'badge-danger text-white'; break;
+                                case 'Refund Initiated': $badgeClass = 'badge-info text-white'; break;
+                                case 'Refunded': $badgeClass = 'badge-dark text-white'; break;
                             }
                         @endphp
-                        <span class="badge {{ $badgeClass }} text-dark font-weight-bold px-3 py-2">{{ $booking->status }}</span>
+                        <span class="badge {{ $badgeClass }} font-weight-bold px-3 py-2">{{ in_array($booking->status, ['Cancelled', 'Refund Initiated', 'Refunded']) ? 'Cancelled' : $booking->status }}</span>
                     </div>
                     <p class="text-muted mb-0 mt-2">Locked Gold Price: <strong>₹{{ number_format($booking->locked_price_per_gram, 2) }} / g</strong> | Booked on {{ $booking->booking_date->format('d M Y, h:i A') }}</p>
                 </div>
@@ -399,15 +399,22 @@
                     <!-- Progress Section -->
                     @php
                         $percentagePaid = $totalBooked > 0 ? ($totalPaid / $totalBooked) * 100 : 0;
+                        $isCancelled = in_array($booking->status, ['Cancelled', 'Refund Initiated', 'Refunded']);
                     @endphp
                     <div class="mb-4">
-                        <div class="d-flex justify-content-between mb-2">
+                        <div class="d-flex justify-content-between mb-2 align-items-center">
                             <span class="font-weight-bold text-dark">Plan Payment Progress</span>
-                            <span class="font-weight-bold text-success">{{ number_format($percentagePaid, 1) }}% Paid</span>
+                            @if($isCancelled)
+                                <span class="badge badge-danger font-weight-bold px-3 py-2">Cancelled</span>
+                            @else
+                                <span class="font-weight-bold text-success">{{ number_format($percentagePaid, 1) }}% Paid</span>
+                            @endif
                         </div>
-                        <div class="progress" style="height: 12px; border-radius: 6px;">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ $percentagePaid }}%;" aria-valuenow="{{ $percentagePaid }}" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
+                        @if(!$isCancelled)
+                            <div class="progress" style="height: 12px; border-radius: 6px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ $percentagePaid }}%;" aria-valuenow="{{ $percentagePaid }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        @endif
                     </div>
 
                     <!-- Statistics Grid -->
@@ -521,7 +528,9 @@
                                         </td>
                                         <td>{{ $row->paid_at ? $row->paid_at->format('d M Y, H:i') : '—' }}</td>
                                         <td>
-                                            @if($row->status !== 'Paid' && hasPermission('payment.collect'))
+                                            @if($row->status !== 'Paid' && in_array($booking->status, ['Cancelled', 'Refund Initiated', 'Refunded']))
+                                                <span class="text-muted">Cancelled</span>
+                                            @elseif($row->status !== 'Paid' && hasPermission('payment.collect'))
                                                 <a href="{{ route('payments.collect_form', [$booking->id, $row->id]) }}" class="btn btn-sm btn-primary px-3 py-1">
                                                     Collect Payment
                                                 </a>

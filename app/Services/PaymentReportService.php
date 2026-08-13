@@ -127,7 +127,7 @@ class PaymentReportService
     {
         $bookings = GoldBooking::query()
             ->when($customerId, fn ($q) => $q->where('customer_id', $customerId))
-            ->whereNotIn('status', ['Cancelled', 'Refunded'])
+            ->whereNotIn('status', ['Cancelled', 'Refund Initiated', 'Refunded'])
             ->get();
 
         return $this->financialService->roundMoney((float) $bookings->sum(

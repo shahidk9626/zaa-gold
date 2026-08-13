@@ -130,6 +130,11 @@ class CancellationService
             } elseif ($newStatus === 'Refund Initiated') {
                 $request->refund_initiated_at = now();
 
+                // Direct parent Booking update
+                $booking->status = 'Refund Initiated';
+                $booking->status_change_remarks = "Refund initiated via Request #{$request->request_number}. Remark: {$remark}";
+                $booking->save();
+
                 $this->logActivity('refund_initiated', "Refund initiated for Cancellation Request #{$request->request_number}.", $booking->id);
                 event(new RefundInitiated($request));
 
@@ -138,6 +143,11 @@ class CancellationService
                 $request->refund_transaction_number = $additionalData['refund_transaction_number'] ?? null;
                 $request->refund_date = $additionalData['refund_date'] ?? now();
                 $request->refund_mode = $additionalData['refund_mode'] ?? 'Online';
+
+                // Direct parent Booking update
+                $booking->status = 'Refunded';
+                $booking->status_change_remarks = "Refund completed via Request #{$request->request_number}. Txn: {$request->refund_transaction_number}. Remark: {$remark}";
+                $booking->save();
 
                 $this->logActivity(
                     'refund_completed',

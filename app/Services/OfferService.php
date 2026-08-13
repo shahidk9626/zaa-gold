@@ -99,25 +99,25 @@ class OfferService
             ->selectSub(function ($q) {
                 $q->from('gold_bookings')
                     ->whereColumn('gold_bookings.offer_id', 'offers.id')
-                    ->whereNotIn('gold_bookings.status', ['Cancelled', 'Refunded'])
+                    ->whereNotIn('gold_bookings.status', ['Cancelled', 'Refund Initiated', 'Refunded'])
                     ->selectRaw('COUNT(*)');
             }, 'total_usage')
             ->selectSub(function ($q) {
                 $q->from('gold_bookings')
                     ->whereColumn('gold_bookings.offer_id', 'offers.id')
-                    ->whereNotIn('gold_bookings.status', ['Cancelled', 'Refunded'])
+                    ->whereNotIn('gold_bookings.status', ['Cancelled', 'Refund Initiated', 'Refunded'])
                     ->selectRaw('COALESCE(SUM(gold_bookings.savings_amount), 0)');
             }, 'total_savings')
             ->selectSub(function ($q) {
                 $q->from('gold_bookings')
                     ->whereColumn('gold_bookings.offer_id', 'offers.id')
-                    ->whereNotIn('gold_bookings.status', ['Cancelled', 'Refunded'])
+                    ->whereNotIn('gold_bookings.status', ['Cancelled', 'Refund Initiated', 'Refunded'])
                     ->selectRaw('COUNT(DISTINCT gold_bookings.customer_id)');
             }, 'active_customers')
             ->selectSub(function ($q) {
                 $q->from('gold_bookings')
                     ->whereColumn('gold_bookings.offer_id', 'offers.id')
-                    ->whereNotIn('gold_bookings.status', ['Cancelled', 'Refunded'])
+                    ->whereNotIn('gold_bookings.status', ['Cancelled', 'Refund Initiated', 'Refunded'])
                     ->selectRaw('COALESCE(SUM(gold_bookings.grand_total), 0)');
             }, 'revenue_impact');
 

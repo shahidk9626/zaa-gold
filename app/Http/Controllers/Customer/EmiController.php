@@ -25,11 +25,16 @@ class EmiController extends CustomerBaseController
         return view('customer.emi.repay', compact('upcomingEmis'));
     }
 
-    public function payForm(int $scheduleId): View
+    public function payForm(int $scheduleId): \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse|\Illuminate\View\View
     {
         $schedule = BookingEmiSchedule::with(['booking.product'])
             ->whereHas('booking', fn ($q) => $q->where('customer_id', $this->customerId()))
             ->findOrFail($scheduleId);
+
+        if (in_array($schedule->booking->status, ['Cancelled', 'Refund Initiated', 'Refunded'])) {
+            return redirect()->route('customer.my-plans.show', $schedule->booking_id)
+                ->with('error', 'This plan has been cancelled and no further EMI payments can be made.');
+        }
 
         return view('customer.emi.pay', compact('schedule'));
     }
@@ -39,6 +44,11 @@ class EmiController extends CustomerBaseController
         $schedule = BookingEmiSchedule::with('booking')
             ->whereHas('booking', fn ($q) => $q->where('customer_id', $this->customerId()))
             ->findOrFail($scheduleId);
+
+        if (in_array($schedule->booking->status, ['Cancelled', 'Refund Initiated', 'Refunded'])) {
+            return redirect()->route('customer.my-plans.show', $schedule->booking_id)
+                ->with('error', 'This plan has been cancelled and no further EMI payments can be made.');
+        }
 
         if ($schedule->status === 'Paid') {
             return redirect()->route('customer.emi.history')->with('error', 'This EMI is already paid.');

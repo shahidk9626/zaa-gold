@@ -24,7 +24,7 @@ class DashboardController extends CustomerBaseController
         $customerId = $this->customerId();
         $user = Auth::user();
 
-        $plans = $this->customerService->getCustomerBookings($customerId, ['Booked', 'Active', 'Completed']);
+        $plans = $this->customerService->getCustomerBookings($customerId, ['Booked', 'Active', 'Completed', 'Cancelled', 'Refund Initiated', 'Refunded']);
         $goldPrice = $this->customerService->getGoldPriceWithTrend();
         $recentActivity = $this->customerService->getRecentActivity($customerId);
 

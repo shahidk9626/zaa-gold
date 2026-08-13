@@ -7,7 +7,7 @@
         'Active' => 'badge-primary',
         'Booked' => 'badge-warning',
         'Completed' => 'badge-success',
-        'Cancelled' => 'badge-danger',
+        'Cancelled', 'Refund Initiated', 'Refunded' => 'badge-danger',
         'Draft' => 'badge-secondary',
         default => 'badge-secondary',
     };
@@ -21,7 +21,7 @@
             <div class="flex-grow-1">
                 <h6 class="font-weight-bold mb-1">{{ $product?->name ?? 'Gold Plan' }}</h6>
                 <p class="text-muted small mb-1">{{ number_format($booking->gold_weight, 2) }}g · {{ $booking->emiPlan?->name ?? 'EMI Plan' }}</p>
-                <span class="badge {{ $statusClass }}">{{ $booking->status }}</span>
+                <span class="badge {{ $statusClass }}">{{ in_array($booking->status, ['Cancelled', 'Refund Initiated', 'Refunded']) ? 'Cancelled' : $booking->status }}</span>
             </div>
         </div>
 
@@ -36,14 +36,49 @@
             </div>
         </div>
 
-        <div class="d-flex justify-content-between small text-muted mb-2">
-            <span>Paid: {{ $plan['paid_emi'] }}/{{ $plan['total_emi'] }} EMI</span>
-            <span>Remaining: {{ $plan['remaining_emi'] }}</span>
-        </div>
+        @if(in_array($booking->status, ['Cancelled', 'Refund Initiated', 'Refunded']))
+            @php
+                $latestCancel = $booking->latestCancellationRequest;
+            @endphp
+            <div class="mb-3">
+                <div class="text-center mb-2">
+                    <span class="badge badge-danger px-4 py-2 font-weight-bold" style="font-size: 0.9rem;">Cancelled</span>
+                </div>
+                @if($latestCancel)
+                    <div class="bg-light p-2 rounded small text-dark">
+                        <div class="mb-1 d-flex justify-content-between">
+                            <span class="text-muted">Cancellation Date:</span>
+                            <span class="font-weight-medium">{{ $latestCancel->approved_at?->format('d M Y') ?? $latestCancel->created_at?->format('d M Y') }}</span>
+                        </div>
+                        @if($latestCancel->cancellation_reason)
+                            <div class="mb-1">
+                                <span class="text-muted">Reason:</span>
+                                <span class="d-block font-italic text-truncate mt-1 px-1 border-left text-muted" title="{{ $latestCancel->cancellation_reason }}" style="border-width: 2px !important; border-color: #dc3545 !important;">"{{ $latestCancel->cancellation_reason }}"</span>
+                            </div>
+                        @endif
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Refund Status:</span>
+                            @if($latestCancel->status === 'Refund Completed')
+                                <span class="text-success font-weight-bold">Completed</span>
+                            @elseif($latestCancel->status === 'Refund Initiated')
+                                <span class="text-warning font-weight-bold">Refund Initiated</span>
+                            @else
+                                <span class="text-secondary font-weight-bold">Pending</span>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+            </div>
+        @else
+            <div class="d-flex justify-content-between small text-muted mb-2">
+                <span>Paid: {{ $plan['paid_emi'] }}/{{ $plan['total_emi'] }} EMI</span>
+                <span>Remaining: {{ $plan['remaining_emi'] }}</span>
+            </div>
 
-        <div class="progress mb-3" style="height: 6px;">
-            <div class="progress-bar bg-success" style="width: {{ $plan['progress'] }}%"></div>
-        </div>
+            <div class="progress mb-3" style="height: 6px;">
+                <div class="progress-bar bg-success" style="width: {{ $plan['progress'] }}%"></div>
+            </div>
+        @endif
 
         <div class="d-flex align-items-center">
             <a href="{{ route('customer.my-plans.show', $booking->id) }}" class="btn btn-sm btn-primary flex-grow-1 mr-2 {{ $compact ? 'btn-mobile-lg' : '' }}">

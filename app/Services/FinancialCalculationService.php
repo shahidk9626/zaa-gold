@@ -51,7 +51,7 @@ class FinancialCalculationService
 
     public function outstanding(GoldBooking $booking, ?float $paid = null): float
     {
-        if ($booking->status === 'Cancelled') {
+        if (in_array($booking->status, ['Cancelled', 'Refund Initiated', 'Refunded'])) {
             return 0.00;
         }
 
@@ -136,8 +136,8 @@ class FinancialCalculationService
     {
         $booking->refresh();
 
-        // If already completed, nothing to do
-        if ($booking->status === 'Completed') {
+        // If already completed or cancelled/refunded, nothing to do
+        if (in_array($booking->status, ['Completed', 'Cancelled', 'Refund Initiated', 'Refunded'])) {
             return false;
         }
 

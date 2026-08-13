@@ -21,7 +21,7 @@ class CustomerService
 
     public function getCustomerBookings(int $customerId, array $statuses = []): Collection
     {
-        $query = GoldBooking::with(['product', 'emiPlan', 'certificate'])
+        $query = GoldBooking::with(['product', 'emiPlan', 'certificate', 'latestCancellationRequest'])
             ->where('customer_id', $customerId)
             ->latest('booking_date');
 
@@ -62,7 +62,7 @@ class CustomerService
 
     public function getBookingDetails(int $bookingId, int $customerId): array
     {
-        $booking = GoldBooking::with(['customer', 'product', 'emiPlan', 'certificate', 'statusHistory'])
+        $booking = GoldBooking::with(['customer', 'product', 'emiPlan', 'certificate', 'statusHistory', 'latestCancellationRequest'])
             ->where('customer_id', $customerId)
             ->findOrFail($bookingId);
         $this->financialService->completeIfEligible($booking);

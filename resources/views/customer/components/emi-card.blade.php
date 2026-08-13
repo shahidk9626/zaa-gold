@@ -27,7 +27,7 @@
                 <p class="font-weight-bold mb-0">₹{{ number_format($schedule->emi_amount, 2) }}</p>
             </div>
         </div>
-        @if($showPayButton && in_array($schedule->status, ['Pending', 'Overdue']))
+        @if($showPayButton && in_array($schedule->status, ['Pending', 'Overdue']) && !in_array($schedule->booking?->status, ['Cancelled', 'Refund Initiated', 'Refunded']))
         <a href="{{ route('customer.emi.pay_form', $schedule->id) }}" class="btn btn-primary btn-block btn-mobile-lg mt-3">
             Pay Now
         </a>

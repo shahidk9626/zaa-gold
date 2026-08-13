@@ -51,7 +51,7 @@ class ReportService
             ->sum('amount_paid');
 
         // Outstanding Amount
-        $outstandingAmount = GoldBooking::whereNotIn('status', ['Cancelled', 'Refunded'])
+        $outstandingAmount = GoldBooking::whereNotIn('status', ['Cancelled', 'Refund Initiated', 'Refunded'])
             ->get()
             ->sum(fn (GoldBooking $booking) => $this->financialService->outstanding($booking));
 
@@ -74,7 +74,7 @@ class ReportService
         $averageDeliveryHours = $completedDeliveryDurations->isNotEmpty() ? $completedDeliveryDurations->avg() : 0;
 
         // Gold Sold
-        $goldSold = GoldBooking::whereNotIn('status', ['Cancelled', 'Refunded'])->sum('gold_weight');
+        $goldSold = GoldBooking::whereNotIn('status', ['Cancelled', 'Refund Initiated', 'Refunded'])->sum('gold_weight');
 
         // Pending EMI
         $pendingEmi = BookingEmiSchedule::where('status', 'Pending')->count();
@@ -143,7 +143,7 @@ class ReportService
             $bookingsCount[] = GoldBooking::whereBetween('booking_date', [$start, $end])->count();
 
             // Gold Sales
-            $goldSales[] = (float) GoldBooking::whereNotIn('status', ['Cancelled', 'Refunded'])
+            $goldSales[] = (float) GoldBooking::whereNotIn('status', ['Cancelled', 'Refund Initiated', 'Refunded'])
                 ->whereBetween('booking_date', [$start, $end])
                 ->sum('gold_weight');
 
@@ -273,7 +273,7 @@ class ReportService
             case 'outstanding':
                 // Bookings that are Active or Booked with their paid calculation
                 $query = GoldBooking::with(['customer', 'product'])
-                    ->whereNotIn('status', ['Cancelled', 'Refunded']);
+                    ->whereNotIn('status', ['Cancelled', 'Refund Initiated', 'Refunded']);
                 $this->applyFilters($query, $filters, 'gold_bookings');
                 return $query;
 
