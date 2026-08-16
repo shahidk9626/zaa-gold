@@ -41,11 +41,14 @@ class CustomerService
         $payments = BookingPayment::where('booking_id', $booking->id)->where('status', 'Paid')->get();
 
         $paidEmi = $schedule->where('status', 'Paid')->count();
+        $waivedEmi = $schedule->where('status', 'Waived')->count();
         $totalEmi = $schedule->count() ?: (int) $booking->duration_months;
-        $remainingEmi = max($totalEmi - $paidEmi, 0);
+        $remainingEmi = $schedule->isNotEmpty()
+            ? $schedule->whereIn('status', ['Pending', 'Overdue'])->count()
+            : $totalEmi;
         $totalPaid = $this->financialService->displayPaidTotal($booking, (float) $payments->sum('amount_paid'));
         $outstanding = $this->financialService->outstanding($booking, (float) $payments->sum('amount_paid'));
-        $progress = $totalEmi > 0 ? round(($paidEmi / $totalEmi) * 100) : 0;
+        $progress = $totalEmi > 0 ? round((($paidEmi + $waivedEmi) / $totalEmi) * 100) : 0;
 
         return [
             'booking' => $booking,
