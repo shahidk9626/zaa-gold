@@ -497,7 +497,7 @@
                         // Populate eligible offers dropdown
                         const offerContainer = document.getElementById('calc-offer-container');
                         const offerSelect = document.getElementById('calc-offer-select');
-                        console.log('sdfsd',offerSelect);
+                        console.log('sdfsd',offerSelect,offerContainer);
                         if (data.eligible_offers && data.eligible_offers.length > 0) {
                             offerSelect.innerHTML = '';
                             
