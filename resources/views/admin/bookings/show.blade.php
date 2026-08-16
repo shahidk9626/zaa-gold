@@ -506,7 +506,7 @@
                             <tbody>
                                 @forelse($schedule as $row)
                                     <tr>
-                                        <td class="font-weight-bold text-center">#{{ $row->installment_number }}</td>
+                                        <td class="font-weight-bold text-center" data-order="{{ $row->installment_number }}">#{{ $row->installment_number }}</td>
                                         <td>{{ $row->due_date->format('d M Y') }}</td>
                                         <td>₹{{ number_format($row->opening_principal, 2) }}</td>
                                         <td class="font-weight-bold text-primary">₹{{ number_format($row->emi_amount, 2) }}</td>
@@ -650,7 +650,7 @@
                                     <tr>
                                         <td class="font-weight-bold text-primary">{{ $payment->payment_number }}</td>
                                         <td class="font-weight-bold text-dark">{{ $payment->receipt_number }}</td>
-                                        <td class="text-center">#{{ $payment->emiSchedule->installment_number ?? 'N/A' }}</td>
+                                        <td class="text-center" data-order="{{ $payment->emiSchedule->installment_number ?? 0 }}">#{{ $payment->emiSchedule->installment_number ?? 'N/A' }}</td>
                                         <td><span class="badge badge-outline-dark text-dark">{{ $payment->payment_mode }}</span></td>
                                         <td>{{ $payment->transaction_reference ?? 'N/A' }}</td>
                                         <td class="font-weight-bold text-success">₹{{ number_format($payment->amount_paid, 2) }}</td>
@@ -707,7 +707,7 @@
                                     <tr>
                                         <td class="font-weight-bold text-success">{{ $payment->receipt_number }}</td>
                                         <td class="font-weight-bold text-primary">{{ $payment->payment_number }}</td>
-                                        <td>Installment #{{ $payment->emiSchedule->installment_number ?? 'N/A' }}</td>
+                                        <td data-order="{{ $payment->emiSchedule->installment_number ?? 0 }}">Installment #{{ $payment->emiSchedule->installment_number ?? 'N/A' }}</td>
                                         <td class="font-weight-bold text-success">₹{{ number_format($payment->amount_paid, 2) }}</td>
                                         <td>{{ $payment->payment_date->format('d M Y, h:i A') }}</td>
                                         <td>

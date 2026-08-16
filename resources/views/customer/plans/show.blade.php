@@ -344,9 +344,9 @@
                 </div>
                 <div class="modal-body p-4" style="max-height: 60vh; overflow-y: auto; font-size: 0.9rem; line-height: 1.6; color: #334155;">
                     <h6 class="font-weight-bold text-primary mb-3">IMPORTANT TERMS & CONDITIONS – GOLD BOOKING</h6>
-                    <p class="text-muted small mb-3">Please read the following important terms before proceeding with your booking.</p>
+                    <p class="text-dark small mb-3">Please read the following important terms before proceeding with your booking.</p>
                     
-                    <ol class="pl-3 mb-4 text-secondary" style="list-style-type: decimal;">
+                    <ol class="pl-3 mb-4 text-dark" style="list-style-type: decimal;">
                         <li class="mb-2"><strong>Price Lock:</strong> The gold price will be locked on the Booking Date after receipt of the first EMAP payment.</li>
                         <li class="mb-2"><strong>EMAP Plan:</strong> AurOnGold offers 12-month and 24-month Easy Monthly Advance Payment (EMAP) plans.</li>
                         <li class="mb-2"><strong>Monthly Payments:</strong> Up to two missed monthly payments may be cleared before plan completion. More than two missed payments may result in cancellation of the plan.</li>
@@ -358,7 +358,7 @@
                         <li class="mb-2"><strong>Customer Confirmation:</strong> By proceeding with the booking, you confirm that you have read, understood and agreed to these important terms and the applicable policies.</li>
                     </ol>
                     
-                    <p class="text-muted small border-top pt-3 mb-0">
+                    <p class="text-dark small border-top pt-3 mb-0">
                         For complete Terms & Conditions, please visit the <a href="/terms-and-conditions" target="_blank" class="font-weight-medium text-primary">Terms & Conditions</a> page available in the footer of our website.
                     </p>
                 </div>
