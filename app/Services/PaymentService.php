@@ -235,7 +235,13 @@ class PaymentService
             throw new \RuntimeException('This plan has been cancelled and no further EMI payments can be made.');
         }
         return DB::transaction(function () use ($booking, $schedule, $data, $isFirstEmi) {
-            $paymentDate = isset($data['payment_date']) ? Carbon::parse($data['payment_date']) : now();
+            $paymentDate = isset($data['payment_date'])
+                ? (is_string($data['payment_date']) ? Carbon::parse($data['payment_date']) : clone $data['payment_date'])
+                : now();
+
+            if ($paymentDate->format('H:i:s') === '00:00:00') {
+                $paymentDate->setTimeFrom(now());
+            }
             
             // Calculate Late Fee if payment is past the due date (excluding first EMI)
             $lateFee = 0.00;
