@@ -255,7 +255,7 @@ class PlanController extends CustomerBaseController
             'discount_amount' => $selectedOffer ? ($calculations['discount_amount'] ?? 0.00) : 0.00,
             'savings_amount' => $selectedOffer ? ($calculations['savings_amount'] ?? 0.00) : 0.00,
             'original_amount' => $selectedOffer ? ($calculations['original_amount'] ?? $calculations['total_payable'] ?? 0.00) : 0.00,
-            'original_total' => $selectedOffer ? ($calculations['original_total'] ?? $calculations['total_payable'] ?? 0.00) : 0.00,
+            'original_total' => $selectedOffer ? ($calculations['original_amount'] ?? $calculations['total_payable'] ?? 0.00) : 0.00,
         ], $calculations));
     }
 

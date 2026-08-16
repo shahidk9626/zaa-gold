@@ -175,6 +175,16 @@ class GoldBooking extends Model
         return $this->hasMany(BookingDelivery::class, 'booking_id');
     }
 
+    public function getOriginalAmountAttribute($value): float
+    {
+        $val = (float) $value;
+        $savings = (float) $this->savings_amount;
+        if ($savings > 0 && $val <= (float) $this->grand_total) {
+            return (float) $this->grand_total + $savings;
+        }
+        return $val;
+    }
+
     public function getDisplayStatusAttribute(): string
     {
         $latest = $this->latestCancellationRequest;

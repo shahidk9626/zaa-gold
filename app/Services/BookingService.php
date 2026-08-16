@@ -88,7 +88,7 @@ class BookingService
                 $booking->offer_name = $offer->offer_name;
                 $booking->offer_type = $offer->offer_type;
                 $booking->offer_value = $offer->offer_type === 'percentage' ? $offer->percentage : ($offer->offer_type === 'fixed' ? $offer->fixed_amount : $offer->free_emi_count);
-                $booking->original_amount = $calculations['original_total'] ?? $calculations['total_payable'];
+                $booking->original_amount = $calculations['original_amount'] ?? $calculations['total_payable'];
                 $booking->discount_amount = $calculations['discount_amount'] ?? 0.00;
                 $booking->final_amount = $calculations['total_payable'];
                 $booking->savings_amount = $calculations['discount_amount'] ?? 0.00;
@@ -182,7 +182,7 @@ class BookingService
                 $bookingData['offer_name'] = $offer->offer_name;
                 $bookingData['offer_type'] = $offer->offer_type;
                 $bookingData['offer_value'] = $offer->offer_type === 'percentage' ? $offer->percentage : ($offer->offer_type === 'fixed' ? $offer->fixed_amount : $offer->free_emi_count);
-                $bookingData['original_amount'] = $calculations['original_total'] ?? $calculations['total_payable'];
+                $bookingData['original_amount'] = $calculations['original_amount'] ?? $calculations['total_payable'];
                 $bookingData['discount_amount'] = $calculations['discount_amount'] ?? 0.00;
                 $bookingData['final_amount'] = $calculations['total_payable'];
                 $bookingData['savings_amount'] = $calculations['discount_amount'] ?? 0.00;
