@@ -245,7 +245,7 @@ class PaymentService
             
             // Calculate Late Fee if payment is past the due date (excluding first EMI)
             $lateFee = 0.00;
-            if (!$isFirstEmi && $paymentDate->startOfDay()->gt(Carbon::parse($schedule->due_date)->startOfDay())) {
+            if (!$isFirstEmi && (clone $paymentDate)->startOfDay()->gt(Carbon::parse($schedule->due_date)->startOfDay())) {
                 $lateFee = (float)$this->emiService->calculateLateFee($booking->emiPlan, $schedule->emi_amount);
                 
                 if ($lateFee > 0) {
