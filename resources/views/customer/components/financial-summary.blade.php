@@ -7,10 +7,42 @@
             <table class="table table-borderless">
                 <tbody>
                     <tr><td class="text-muted">Gold Value</td><td class="text-right font-weight-bold">₹{{ number_format($financials['gold_value'], 2) }}</td></tr>
-                    <tr><td class="text-muted">GST on Gold</td><td class="text-right">₹{{ number_format($financials['gst_on_gold'], 2) }}</td></tr>
-                    <tr><td class="text-muted">Finance Charge</td><td class="text-right">₹{{ number_format($financials['finance_charge'], 2) }}</td></tr>
-                    <tr><td class="text-muted">Storage Charge</td><td class="text-right">₹{{ number_format($financials['storage_charge'], 2) }}</td></tr>
-                    <tr><td class="text-muted">GST on Charges</td><td class="text-right">₹{{ number_format($financials['gst_on_charges'], 2) }}</td></tr>
+                    <tr>
+                        <td class="text-muted">
+                            GST on Gold
+                            @if(isset($financials['gst_on_gold_percent']) && $financials['gst_on_gold_percent'] > 0)
+                                ({{ number_format($financials['gst_on_gold_percent'], 2) }}%)
+                            @endif
+                        </td>
+                        <td class="text-right">₹{{ number_format($financials['gst_on_gold'], 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">
+                            Finance Charge
+                            @if(isset($financials['finance_charge_percent']) && $financials['finance_charge_percent'] > 0)
+                                ({{ number_format($financials['finance_charge_percent'], 2) }}%)
+                            @endif
+                        </td>
+                        <td class="text-right">₹{{ number_format($financials['finance_charge'], 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">
+                            Storage Charge
+                            @if(isset($financials['storage_charge_percent']) && $financials['storage_charge_percent'] > 0)
+                                ({{ number_format($financials['storage_charge_percent'], 2) }}%)
+                            @endif
+                        </td>
+                        <td class="text-right">₹{{ number_format($financials['storage_charge'], 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">
+                            GST on Charges
+                            @if(isset($financials['gst_on_charges_percent']) && $financials['gst_on_charges_percent'] > 0)
+                                ({{ number_format($financials['gst_on_charges_percent'], 2) }}%)
+                            @endif
+                        </td>
+                        <td class="text-right">₹{{ number_format($financials['gst_on_charges'], 2) }}</td>
+                    </tr>
                     @if(isset($financials['savings_amount']) && $financials['savings_amount'] > 0)
                     <tr><td class="text-muted font-weight-bold">Original Plan Value</td><td class="text-right font-weight-bold">₹{{ number_format($financials['original_amount'], 2) }}</td></tr>
                     <tr class="text-danger">

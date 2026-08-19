@@ -544,6 +544,11 @@
             if (response.gst_on_gold_enabled) {
                 $('#sumGstGoldBlock').attr('style', 'display: block !important;');
                 $('#sumGstGold').text(`₹${parseFloat(response.gst_on_gold).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+                if (response.gst_on_gold_percent > 0) {
+                    $('#sumGstGoldPercent').text(`(${parseFloat(response.gst_on_gold_percent).toFixed(2)}%)`);
+                } else {
+                    $('#sumGstGoldPercent').text('');
+                }
             } else {
                 $('#sumGstGoldBlock').attr('style', 'display: none !important;');
             }
@@ -551,6 +556,11 @@
             if (response.finance_charge_enabled) {
                 $('#sumFinanceBlock').attr('style', 'display: block !important;');
                 $('#sumFinance').text(`₹${parseFloat(response.finance_charge).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+                if (response.finance_charge_percent > 0) {
+                    $('#sumFinancePercent').text(`(${parseFloat(response.finance_charge_percent).toFixed(2)}%)`);
+                } else {
+                    $('#sumFinancePercent').text('');
+                }
             } else {
                 $('#sumFinanceBlock').attr('style', 'display: none !important;');
             }
@@ -558,6 +568,11 @@
             if (response.storage_charge_enabled) {
                 $('#sumStorageBlock').attr('style', 'display: block !important;');
                 $('#sumStorage').text(`₹${parseFloat(response.storage_charge).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+                if (response.storage_charge_percent > 0) {
+                    $('#sumStoragePercent').text(`(${parseFloat(response.storage_charge_percent).toFixed(2)}%)`);
+                } else {
+                    $('#sumStoragePercent').text('');
+                }
             } else {
                 $('#sumStorageBlock').attr('style', 'display: none !important;');
             }
@@ -565,6 +580,11 @@
             if (response.gst_on_charges_enabled) {
                 $('#sumGstChargesBlock').attr('style', 'display: block !important;');
                 $('#sumGstCharges').text(`₹${parseFloat(response.gst_on_charges).toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+                if (response.gst_on_charges_percent > 0) {
+                    $('#sumGstChargesPercent').text(`(${parseFloat(response.gst_on_charges_percent).toFixed(2)}%)`);
+                } else {
+                    $('#sumGstChargesPercent').text('');
+                }
             } else {
                 $('#sumGstChargesBlock').attr('style', 'display: none !important;');
             }

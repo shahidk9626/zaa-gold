@@ -56,19 +56,19 @@
                 </div>
 
                 <div class="col-md-3 col-sm-6 mb-3" id="sumGstGoldBlock" style="display:none !important;">
-                    <label class="small text-muted d-block mb-1">GST on Gold</label>
+                    <label class="small text-muted d-block mb-1">GST on Gold <span id="sumGstGoldPercent" class="text-primary small font-weight-bold"></span></label>
                     <span class="font-weight-bold text-dark" id="sumGstGold">-</span>
                 </div>
                 <div class="col-md-3 col-sm-6 mb-3" id="sumFinanceBlock" style="display:none !important;">
-                    <label class="small text-muted d-block mb-1">Finance Charge</label>
+                    <label class="small text-muted d-block mb-1">Finance Charge <span id="sumFinancePercent" class="text-primary small font-weight-bold"></span></label>
                     <span class="font-weight-bold text-dark" id="sumFinance">-</span>
                 </div>
                 <div class="col-md-3 col-sm-6 mb-3" id="sumStorageBlock" style="display:none !important;">
-                    <label class="small text-muted d-block mb-1">Storage / Insurance / Price Lock</label>
+                    <label class="small text-muted d-block mb-1">Storage / Insurance / Price Lock <span id="sumStoragePercent" class="text-primary small font-weight-bold"></span></label>
                     <span class="font-weight-bold text-dark" id="sumStorage">-</span>
                 </div>
                 <div class="col-md-3 col-sm-6 mb-3" id="sumGstChargesBlock" style="display:none !important;">
-                    <label class="small text-muted d-block mb-1">GST on Charges</label>
+                    <label class="small text-muted d-block mb-1">GST on Charges <span id="sumGstChargesPercent" class="text-primary small font-weight-bold"></span></label>
                     <span class="font-weight-bold text-dark" id="sumGstCharges">-</span>
                 </div>
                 <div class="col-md-3 col-sm-6 mb-3" id="sumOriginalAmountBlock" style="display:none !important;">

@@ -347,6 +347,10 @@ class EmiCalculationService
             'finance_charge_enabled' => (bool)$plan->finance_charge_enabled,
             'storage_charge_enabled' => (bool)$plan->storage_charge_enabled,
             'gst_on_charges_enabled' => (bool)$plan->gst_on_charges_enabled,
+            'gst_on_gold_percent' => $plan->gst_on_gold_enabled ? (float)($plan->gst_on_gold_percent ?? 3.00) : 0.00,
+            'finance_charge_percent' => ($plan->finance_charge_enabled && (strtolower($plan->finance_charge_type) === 'percentage' || strtolower($plan->finance_charge_type) === 'percent')) ? (float)$plan->finance_charge_value : 0.00,
+            'storage_charge_percent' => ($plan->storage_charge_enabled && (strtolower($plan->storage_charge_type) === 'percentage' || strtolower($plan->storage_charge_type) === 'percent')) ? (float)$plan->storage_charge_value : 0.00,
+            'gst_on_charges_percent' => $plan->gst_on_charges_enabled ? (float)($plan->gst_on_charges_percent ?? 18.00) : 0.00,
         ];
 
         // Resolve and apply offer if present

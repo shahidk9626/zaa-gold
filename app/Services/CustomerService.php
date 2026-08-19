@@ -114,6 +114,10 @@ class CustomerService
             'storage_charge' => (float) $booking->storage_charge_amount,
             'gst_on_gold' => (float) $booking->gst_on_gold_amount,
             'gst_on_charges' => (float) $booking->gst_on_charges_amount,
+            'gst_on_gold_percent' => (float) $booking->gst_on_gold_percent,
+            'finance_charge_percent' => (float) $booking->finance_charge_percent,
+            'storage_charge_percent' => (float) $booking->storage_charge_percent,
+            'gst_on_charges_percent' => (float) $booking->gst_on_charges_percent,
         ];
     }
 

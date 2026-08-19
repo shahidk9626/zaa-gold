@@ -1073,21 +1073,41 @@
             @if($booking->gst_on_gold_amount > 0)
                 $('#sumGstGoldBlock').attr('style', 'display: block !important;');
                 $('#sumGstGold').text("₹" + parseFloat("{{ $booking->gst_on_gold_amount }}").toLocaleString(undefined, {minimumFractionDigits: 2}));
+                @if($booking->gst_on_gold_percent > 0)
+                    $('#sumGstGoldPercent').text("(" + parseFloat("{{ $booking->gst_on_gold_percent }}").toFixed(2) + "%)");
+                @else
+                    $('#sumGstGoldPercent').text("");
+                @endif
             @endif
 
             @if($booking->finance_charge_amount > 0)
                 $('#sumFinanceBlock').attr('style', 'display: block !important;');
                 $('#sumFinance').text("₹" + parseFloat("{{ $booking->finance_charge_amount }}").toLocaleString(undefined, {minimumFractionDigits: 2}));
+                @if($booking->finance_charge_percent > 0)
+                    $('#sumFinancePercent').text("(" + parseFloat("{{ $booking->finance_charge_percent }}").toFixed(2) + "%)");
+                @else
+                    $('#sumFinancePercent').text("");
+                @endif
             @endif
 
             @if($booking->storage_charge_amount > 0)
                 $('#sumStorageBlock').attr('style', 'display: block !important;');
                 $('#sumStorage').text("₹" + parseFloat("{{ $booking->storage_charge_amount }}").toLocaleString(undefined, {minimumFractionDigits: 2}));
+                @if($booking->storage_charge_percent > 0)
+                    $('#sumStoragePercent').text("(" + parseFloat("{{ $booking->storage_charge_percent }}").toFixed(2) + "%)");
+                @else
+                    $('#sumStoragePercent').text("");
+                @endif
             @endif
 
             @if($booking->gst_on_charges_amount > 0)
                 $('#sumGstChargesBlock').attr('style', 'display: block !important;');
                 $('#sumGstCharges').text("₹" + parseFloat("{{ $booking->gst_on_charges_amount }}").toLocaleString(undefined, {minimumFractionDigits: 2}));
+                @if($booking->gst_on_charges_percent > 0)
+                    $('#sumGstChargesPercent').text("(" + parseFloat("{{ $booking->gst_on_charges_percent }}").toFixed(2) + "%)");
+                @else
+                    $('#sumGstChargesPercent').text("");
+                @endif
             @endif
         @else
             $('#sumProcessingFeeBlock').attr('style', 'display: block !important;');
