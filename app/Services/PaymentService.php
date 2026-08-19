@@ -229,6 +229,7 @@ class PaymentService
     /**
      * Collect payment for an EMI installment (or partial payment)
      */
+    
     public function collectPayment(GoldBooking $booking, BookingEmiSchedule $schedule, array $data, $isFirstEmi = false)
     {
         if (in_array($booking->status, ['Cancelled', 'Refund Initiated', 'Refunded'])) {
