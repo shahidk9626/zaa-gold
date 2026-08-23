@@ -7,8 +7,8 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <h4 class="card-title text-dark">Create EMI Plan Master</h4>
-                        <p class="card-description text-muted">Configure corporate EMI templates and calculations constraints</p>
+                        <h4 class="card-title text-dark">Create EMAP Plan Master</h4>
+                        <p class="card-description text-muted">Configure corporate EMAP templates and calculations constraints</p>
                     </div>
                     <a href="{{ route('emi-plans.index') }}" class="btn btn-secondary btn-sm">
                         <i class="mdi mdi-arrow-left mr-1"></i> Back to List
@@ -27,7 +27,7 @@
 
                         <div class="col-md-4 form-group">
                             <label class="text-dark">Plan Code <span class="text-danger">*</span></label>
-                            <input type="text" name="plan_code" required class="form-control bg-white text-dark" placeholder="e.g. GOLD-EMI-12M">
+                            <input type="text" name="plan_code" required class="form-control bg-white text-dark" placeholder="e.g. GOLD-EMAP-12M">
                         </div>
 
                         <div class="col-md-4 form-group">
@@ -214,7 +214,7 @@
 
                         <!-- MISSED EMIS TERMINATION LIMIT -->
                         <div class="col-md-4 form-group mb-4">
-                            <label class="text-dark font-weight-bold">Missed EMIs Termination Limit <span class="text-danger">*</span></label>
+                            <label class="text-dark font-weight-bold">Missed EMAPs Termination Limit <span class="text-danger">*</span></label>
                             <input type="number" name="auto_terminate_after_missed_emi" required min="0" value="3" class="form-control bg-white text-dark" placeholder="e.g. 3">
                         </div>
 
@@ -318,7 +318,7 @@
                 success: function (response) {
                     Swal.fire({
                         icon: 'success',
-                        title: 'EMI Plan Saved',
+                        title: 'EMAP Plan Saved',
                         text: response.success,
                         confirmButtonColor: '#3f50f6'
                     }).then(() => {

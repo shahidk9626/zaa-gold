@@ -1,0 +1,97 @@
+
+   FAIL  Tests\Feature\GstInvoiceEngineTest
+  ⨯ booking creation automatically generates invoice                     5.77s  
+  ⨯ intra state billing splits cgst and sgst                             5.01s  
+  ⨯ inter state billing assigns to igst                                  4.44s  
+  ⨯ invoice is immutable regardless of customer updates                  4.48s  
+  ⨯ prevents duplicate invoices for same payment                         4.44s  
+  ⨯ invoice cancellation                                                 4.45s  
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\GstInvoiceEngineTest > booking creation automatical…   
+  Failed asserting that null is not null.
+
+  at tests/Feature/GstInvoiceEngineTest.php:125
+    121▕         $this->assertNotNull($payment);
+    122▕ 
+    123▕         // Verify GST Invoice was generated automatically
+    124▕         $invoice = GstInvoice::where('payment_id', $payment->id)->first();
+  ➜ 125▕         $this->assertNotNull($invoice);
+    126▕         $this->assertEquals('Generated', $invoice->invoice_status);
+    127▕         $this->assertMatchesRegularExpression('/^INV\d{9}$/', $invoice->invoice_number);
+    128▕ 
+    129▕         // Verify snapshot values
+
+  1   tests/Feature/GstInvoiceEngineTest.php:125
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\GstInvoiceEngineTest > intra state billing splits c…   
+  Failed asserting that null is not null.
+
+  at tests/Feature/GstInvoiceEngineTest.php:160
+    156▕             $this->plan->id
+    157▕         );
+    158▕ 
+    159▕         $invoice = GstInvoice::where('booking_id', $booking->id)->first();
+  ➜ 160▕         $this->assertNotNull($invoice);
+    161▕ 
+    162▕         // Tax should be split between CGST and SGST
+    163▕         $this->assertGreaterThan(0.00, $invoice->cgst_amount);
+    164▕         $this->assertGreaterThan(0.00, $invoice->sgst_amount);
+
+  1   tests/Feature/GstInvoiceEngineTest.php:160
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\GstInvoiceEngineTest > inter state billing assigns…    
+  Failed asserting that null is not null.
+
+  at tests/Feature/GstInvoiceEngineTest.php:187
+    183▕             $this->plan->id
+    184▕         );
+    185▕ 
+    186▕         $invoice = GstInvoice::where('booking_id', $booking->id)->first();
+  ➜ 187▕         $this->assertNotNull($invoice);
+    188▕ 
+    189▕         // Tax should go to IGST only
+    190▕         $this->assertEquals(0.00, $invoice->cgst_amount);
+    191▕         $this->assertEquals(0.00, $invoice->sgst_amount);
+
+  1   tests/Feature/GstInvoiceEngineTest.php:187
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\GstInvoiceEngineTest > invoice is i…  ErrorException   
+  Attempt to read property "customer_name" on null
+
+  at tests/Feature/GstInvoiceEngineTest.php:210
+    206▕             $this->plan->id
+    207▕         );
+    208▕ 
+    209▕         $invoice = GstInvoice::where('booking_id', $booking->id)->first();
+  ➜ 210▕         $originalName = $invoice->customer_name;
+    211▕ 
+    212▕         // Change customer name and email
+    213▕         $this->customer->name = 'Jane Doe Modified';
+    214▕         $this->customer->email = 'jane.modified@example.com';
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\GstInvoiceEngineTest > prevents duplicate invoices…    
+  Failed asserting that exception of type "Exception" is thrown.
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\GstInvoiceEngineTest > invoice canc…  ErrorException   
+  Attempt to read property "invoice_status" on null
+
+  at tests/Feature/GstInvoiceEngineTest.php:253
+    249▕             $this->plan->id
+    250▕         );
+    251▕ 
+    252▕         $invoice = GstInvoice::where('booking_id', $booking->id)->first();
+  ➜ 253▕         $this->assertEquals('Generated', $invoice->invoice_status);
+    254▕ 
+    255▕         // Cancel
+    256▕         $this->invoiceService->cancelInvoice($invoice, 'Customer returned gold');
+    257▕
+
+
+  Tests:    6 failed (5 assertions)
+  Duration: 28.75s
+

@@ -20,7 +20,7 @@
 
         <div class="row mb-2">
             <div class="col-6">
-                <p class="text-muted small mb-0">Monthly EMI</p>
+                <p class="text-muted small mb-0">Monthly EMAP</p>
                 <p class="font-weight-bold mb-0">₹{{ number_format($plan['monthly_emi'], 0) }}</p>
             </div>
             <div class="col-6 text-right">
@@ -76,12 +76,12 @@
             </div>
 
             <div class="d-flex justify-content-between small text-muted mb-2">
-                <span>Paid: {{ $plan['paid_emi'] }}/{{ $plan['total_emi'] }} EMI</span>
+                <span>Paid: {{ $plan['paid_emi'] }}/{{ $plan['total_emi'] }} EMAP</span>
                 <span>Remaining: {{ $plan['remaining_emi'] }}</span>
             </div>
         @else
             <div class="d-flex justify-content-between small text-muted mb-2">
-                <span>Paid: {{ $plan['paid_emi'] }}/{{ $plan['total_emi'] }} EMI</span>
+                <span>Paid: {{ $plan['paid_emi'] }}/{{ $plan['total_emi'] }} EMAP</span>
                 <span>Remaining: {{ $plan['remaining_emi'] }}</span>
             </div>
 

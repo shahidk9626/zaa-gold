@@ -2,11 +2,11 @@
     {{-- Header --}}
     <div class="page-header flex-wrap d-none d-md-flex">
         <h3 class="mb-0">Buy Gold Plans</h3>
-        <p class="text-muted mb-0">Select a physical gold product and choose a customized flexible EMI plan.</p>
+        <p class="text-muted mb-0">Select a physical gold product and choose a customized flexible EMAP plan.</p>
     </div>
     <div class="d-block d-md-none mb-3">
         <h5 class="font-weight-bold mb-1">Buy Gold Plans</h5>
-        <p class="text-muted small">Select a product and choose a flexible EMI plan.</p>
+        <p class="text-muted small">Select a product and choose a flexible EMAP plan.</p>
     </div>
 
     {{-- Live Price Banner --}}
@@ -137,7 +137,7 @@
                 </div>
 
                 <div class="col-md-2 col-sm-6 mb-3">
-                    <label class="font-weight-medium small text-muted">EMI Duration</label>
+                    <label class="font-weight-medium small text-muted">EMAP Duration</label>
                     <select name="duration" class="form-control">
                         <option value="">All Durations</option>
                         <option value="6" {{ request('duration') == '6' ? 'selected' : '' }}>6 Months</option>
@@ -204,12 +204,12 @@
                                     </div>
                                     @if($product->starting_emi)
                                         <div class="bg-light rounded p-2 mb-3">
-                                            <span class="text-muted small d-block" style="font-size: 0.7rem;">Monthly EMI starts from</span>
+                                            <span class="text-muted small d-block" style="font-size: 0.7rem;">Monthly EMAP starts from</span>
                                             <span class="font-weight-bold text-success">₹{{ number_format($product->starting_emi, 0) }}<span class="small font-weight-normal text-muted">/month</span></span>
                                         </div>
                                     @else
                                         <div class="bg-light rounded p-2 mb-3 text-center">
-                                            <span class="text-muted small" style="font-size: 0.75rem;">No active EMI plans</span>
+                                            <span class="text-muted small" style="font-size: 0.75rem;">No active EMAP plans</span>
                                         </div>
                                     @endif
                                     
@@ -251,12 +251,12 @@
                                     </div>
                                     @if($product->starting_emi)
                                         <div class="bg-light rounded p-2 mb-3">
-                                            <span class="text-muted small d-block" style="font-size: 0.65rem;">EMI Starting From</span>
+                                            <span class="text-muted small d-block" style="font-size: 0.65rem;">EMAP Starting From</span>
                                             <span class="font-weight-bold text-success small">₹{{ number_format($product->starting_emi, 0) }}/mo</span>
                                         </div>
                                     @else
                                         <div class="bg-light rounded p-2 mb-3 text-center">
-                                            <span class="text-muted small" style="font-size: 0.7rem;">No EMI Available</span>
+                                            <span class="text-muted small" style="font-size: 0.7rem;">No EMAP Available</span>
                                         </div>
                                     @endif
                                     

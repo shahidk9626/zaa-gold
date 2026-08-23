@@ -10,5 +10,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware('permission:report.export')->group(function () {
         Route::get('/admin/reports/export/{type}', [ReportController::class, 'export'])->name('reports.export');
+        Route::get('/admin/reports/export-excel', [ReportController::class, 'exportExcel'])->name('reports.export_excel');
     });
 });

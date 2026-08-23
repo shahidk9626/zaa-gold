@@ -88,8 +88,8 @@
         <div class="row">
             @foreach([
                 ['icon' => 'mdi-wallet', 'label' => 'My Plans', 'route' => route('customer.my-plans.index')],
-                ['icon' => 'mdi-history', 'label' => 'EMI History', 'route' => route('customer.emi.history')],
-                ['icon' => 'mdi-cash-refund', 'label' => 'Repay EMI', 'route' => route('customer.emi.repay')],
+                ['icon' => 'mdi-history', 'label' => 'EMAP History', 'route' => route('customer.emi.history')],
+                ['icon' => 'mdi-cash-refund', 'label' => 'Repay EMAP', 'route' => route('customer.emi.repay')],
                 ['icon' => 'mdi-scale-balance', 'label' => 'Outstanding', 'route' => route('customer.outstanding.index')],
                 ['icon' => 'mdi-cash-multiple', 'label' => 'Payments', 'route' => route('customer.payments.index')],
                 ['icon' => 'mdi-file-document', 'label' => 'Receipts', 'route' => route('customer.certificates.index')],
@@ -192,8 +192,8 @@
                         <div class="row">
                             @foreach([
                                 ['icon' => 'mdi-wallet', 'label' => 'My Plans', 'route' => route('customer.my-plans.index')],
-                                ['icon' => 'mdi-history', 'label' => 'EMI History', 'route' => route('customer.emi.history')],
-                                ['icon' => 'mdi-cash-refund', 'label' => 'Repay EMI', 'route' => route('customer.emi.repay')],
+                                ['icon' => 'mdi-history', 'label' => 'EMAP History', 'route' => route('customer.emi.history')],
+                                ['icon' => 'mdi-cash-refund', 'label' => 'Repay EMAP', 'route' => route('customer.emi.repay')],
                                 ['icon' => 'mdi-scale-balance', 'label' => 'Outstanding', 'route' => route('customer.outstanding.index')],
                                 ['icon' => 'mdi-cash-multiple', 'label' => 'Payment History', 'route' => route('customer.payments.index')],
                                 ['icon' => 'mdi-file-document', 'label' => 'Receipts', 'route' => route('customer.certificates.index')],

@@ -8,7 +8,7 @@
             <div class="d-flex justify-content-between align-items-center flex-wrap">
                 <div>
                     <h4 class="card-title text-dark font-weight-bold mb-1">GST Invoices Directory</h4>
-                    <p class="card-description text-muted mb-0">Browse and audit official tax invoices generated automatically upon client EMI payments.</p>
+                    <p class="card-description text-muted mb-0">Browse and audit official tax invoices generated automatically upon client EMAP payments.</p>
                 </div>
                 <div>
                     @if(hasPermission('invoice.export'))

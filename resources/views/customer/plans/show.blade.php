@@ -25,12 +25,12 @@
 
     @if(empty($eligiblePlans))
         <div class="alert alert-warning">
-            <h5>No Eligible EMI Plans</h5>
-            <p>This product weight or price is outside the limits of all active EMI plans. Please choose another product or contact support.</p>
+            <h5>No Eligible EMAP Plans</h5>
+            <p>This product weight or price is outside the limits of all active EMAP plans. Please choose another product or contact support.</p>
         </div>
     @else
         <div class="row">
-            {{-- Left column: Product info and EMI plans --}}
+            {{-- Left column: Product info and EMAP plans --}}
             <div class="col-lg-8 grid-margin">
                 {{-- Product Info Card --}}
                 <div class="card mb-4 border-0 shadow-sm" style="border-radius: 12px;">
@@ -71,8 +71,8 @@
                     </div>
                 </div>
 
-                {{-- EMI Plan List --}}
-                <h5 class="font-weight-bold mb-3 text-dark">Select an EMI Plan</h5>
+                {{-- EMAP Plan List --}}
+                <h5 class="font-weight-bold mb-3 text-dark">Select an EMAP Plan</h5>
                 <div class="row">
                     @foreach($eligiblePlans as $pData)
                         @php 
@@ -91,7 +91,7 @@
                                                 @elseif($pData['best_offer']->offer_type === 'fixed')
                                                     🎁 ₹{{ number_format($pData['best_offer']->fixed_amount, 0) }} OFF
                                                 @else
-                                                    ⭐ Waive {{ $pData['best_offer']->free_emi_count }} EMI
+                                                    ⭐ Waive {{ $pData['best_offer']->free_emi_count }} EMAP
                                                 @endif
                                             </span>
                                         </div>
@@ -152,12 +152,12 @@
                 {{-- Compare Plans Card --}}
                 <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px;">
                     <div class="card-body p-4">
-                        <h5 class="font-weight-bold mb-3 text-dark">Compare EMI Plans</h5>
+                        <h5 class="font-weight-bold mb-3 text-dark">Compare EMAP Plans</h5>
                         <div class="table-responsive">
                             <table class="table table-hover table-bordered mb-0 text-center">
                                 <thead class="bg-light text-muted small font-weight-bold">
                                     <tr>
-                                        <th>EMI Plan</th>
+                                        <th>EMAP Plan</th>
                                         <th>Duration</th>
                                         <th>EMAP (Easy Monthly Advance Payment)</th>
                                         <th>Finance Charges</th>
@@ -219,7 +219,7 @@
                                     <span class="font-weight-bold text-dark" id="calc-product-name">{{ $product->name }}</span>
                                 </div>
                                 <div class="mb-3 border-bottom pb-2">
-                                    <span class="text-muted small d-block">Selected EMI Plan</span>
+                                    <span class="text-muted small d-block">Selected EMAP Plan</span>
                                     <span class="font-weight-bold text-dark" id="calc-plan-name">Loading...</span>
                                 </div>
                                 <div class="mb-3 border-bottom pb-2 d-none" id="calc-offer-container">

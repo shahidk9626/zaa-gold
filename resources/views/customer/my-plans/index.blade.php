@@ -19,9 +19,9 @@
                                 <tr>
                                     <th>Product</th>
                                     <th>Weight</th>
-                                    <th>EMI Plan</th>
-                                    <th>Monthly EMI</th>
-                                    <th>Paid EMI</th>
+                                    <th>EMAP Plan</th>
+                                    <th>Monthly EMAP</th>
+                                    <th>Paid EMAP</th>
                                     <th>Remaining</th>
                                     <th>Outstanding</th>
                                     <th>Status</th>

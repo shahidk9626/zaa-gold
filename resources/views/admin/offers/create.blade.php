@@ -8,7 +8,7 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <h4 class="card-title text-dark">Create Promotional Offer</h4>
-                        <p class="card-description text-muted">Create a new discount or EMI waiver scheme for Gold plans</p>
+                        <p class="card-description text-muted">Create a new discount or EMAP waiver scheme for Gold plans</p>
                     </div>
                     <a href="{{ route('offers.index') }}" class="btn btn-secondary btn-sm">
                         <i class="mdi mdi-arrow-left mr-1"></i> Back to List
@@ -84,7 +84,7 @@
                                 <option value="">Select Offer Type</option>
                                 <option value="percentage">Percentage Discount</option>
                                 <option value="fixed">Fixed Amount Discount</option>
-                                <option value="emi">EMI Discount (Waiver)</option>
+                                <option value="emi">EMAP Discount (Waiver)</option>
                             </select>
                         </div>
 
@@ -106,12 +106,12 @@
                         <div class="col-md-8 type-container" id="emi_container" style="display: none;">
                             <div class="row">
                                 <div class="col-md-6 form-group">
-                                    <label class="text-dark">Required Paid EMIs <span class="text-danger">*</span></label>
+                                    <label class="text-dark">Required Paid EMAPs <span class="text-danger">*</span></label>
                                     <input type="number" name="required_emi_count" id="required_emi_count" min="1" class="form-control bg-white text-dark" placeholder="e.g. 11">
                                     <small class="text-muted">Number of months customer pays.</small>
                                 </div>
                                 <div class="col-md-6 form-group">
-                                    <label class="text-dark">Free/Waived EMIs <span class="text-danger">*</span></label>
+                                    <label class="text-dark">Free/Waived EMAPs <span class="text-danger">*</span></label>
                                     <input type="number" name="free_emi_count" id="free_emi_count" min="1" class="form-control bg-white text-dark" placeholder="e.g. 1">
                                     <small class="text-muted">Number of waived months (complimentary).</small>
                                 </div>

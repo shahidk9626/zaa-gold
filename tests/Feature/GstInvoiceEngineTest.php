@@ -120,8 +120,11 @@ class GstInvoiceEngineTest extends TestCase
         $payment = BookingPayment::where('booking_id', $booking->id)->first();
         $this->assertNotNull($payment);
 
-        // Verify GST Invoice was generated automatically
-        $invoice = GstInvoice::where('payment_id', $payment->id)->first();
+        // Mark completed to generate invoice under new completed-only rule
+        $booking->update(['status' => 'Completed']);
+        $invoice = $this->invoiceService->generateInvoice($payment);
+
+        // Verify GST Invoice was generated
         $this->assertNotNull($invoice);
         $this->assertEquals('Generated', $invoice->invoice_status);
         $this->assertMatchesRegularExpression('/^INV\d{9}$/', $invoice->invoice_number);
@@ -156,6 +159,10 @@ class GstInvoiceEngineTest extends TestCase
             $this->plan->id
         );
 
+        $booking->update(['status' => 'Completed']);
+        $payment = BookingPayment::where('booking_id', $booking->id)->first();
+        $this->invoiceService->generateInvoice($payment);
+
         $invoice = GstInvoice::where('booking_id', $booking->id)->first();
         $this->assertNotNull($invoice);
 
@@ -183,6 +190,10 @@ class GstInvoiceEngineTest extends TestCase
             $this->plan->id
         );
 
+        $booking->update(['status' => 'Completed']);
+        $payment = BookingPayment::where('booking_id', $booking->id)->first();
+        $this->invoiceService->generateInvoice($payment);
+
         $invoice = GstInvoice::where('booking_id', $booking->id)->first();
         $this->assertNotNull($invoice);
 
@@ -205,6 +216,10 @@ class GstInvoiceEngineTest extends TestCase
             $this->product->id,
             $this->plan->id
         );
+
+        $booking->update(['status' => 'Completed']);
+        $payment = BookingPayment::where('booking_id', $booking->id)->first();
+        $this->invoiceService->generateInvoice($payment);
 
         $invoice = GstInvoice::where('booking_id', $booking->id)->first();
         $originalName = $invoice->customer_name;
@@ -231,11 +246,13 @@ class GstInvoiceEngineTest extends TestCase
             $this->plan->id
         );
 
+        $booking->update(['status' => 'Completed']);
         $payment = BookingPayment::where('booking_id', $booking->id)->first();
+        $firstInvoice = $this->invoiceService->generateInvoice($payment);
 
-        // Attempting to generate a second invoice should throw exception
-        $this->expectException(\Exception::class);
-        $this->invoiceService->generateInvoice($payment);
+        // Attempting to generate a second invoice should return the same invoice (idempotent)
+        $secondInvoice = $this->invoiceService->generateInvoice($payment);
+        $this->assertEquals($firstInvoice->id, $secondInvoice->id);
     }
 
     /**
@@ -248,6 +265,10 @@ class GstInvoiceEngineTest extends TestCase
             $this->product->id,
             $this->plan->id
         );
+
+        $booking->update(['status' => 'Completed']);
+        $payment = BookingPayment::where('booking_id', $booking->id)->first();
+        $this->invoiceService->generateInvoice($payment);
 
         $invoice = GstInvoice::where('booking_id', $booking->id)->first();
         $this->assertEquals('Generated', $invoice->invoice_status);

@@ -48,7 +48,7 @@
 
     <ul class="nav nav-tabs border-0 bg-light rounded p-1 mb-4" role="tablist">
         <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#financial">Financial</a></li>
-        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#schedule">EMI Schedule</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#schedule">EMAP Schedule</a></li>
         <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#payments">Payments</a></li>
         <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#documents">Documents</a></li>
         <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#delivery">Delivery</a></li>
@@ -130,8 +130,8 @@
                             <h5 class="card-title">Plan Overview</h5>
                             <p><strong>Product:</strong> {{ $booking->product?->name }}</p>
                             <p><strong>Weight:</strong> {{ number_format($booking->gold_weight, 2) }}g</p>
-                            <p><strong>EMI Plan:</strong> {{ $booking->emiPlan?->name }}</p>
-                            <p><strong>Monthly EMI:</strong> ₹{{ number_format($booking->monthly_emi, 2) }}</p>
+                            <p><strong>EMAP Plan:</strong> {{ $booking->emiPlan?->name }}</p>
+                            <p><strong>Monthly EMAP:</strong> ₹{{ number_format($booking->monthly_emi, 2) }}</p>
                             <p><strong>Duration:</strong> {{ $booking->duration_months }} months</p>
                             <p><strong>Locked Price:</strong> ₹{{ number_format($booking->locked_price_per_gram, 2) }}/g</p>
                         </div>
@@ -146,7 +146,7 @@
                     <div class="d-none d-md-block table-responsive">
                         <table class="table table-hover">
                             <thead class="bg-light">
-                                <tr><th>#</th><th>Due Date</th><th>EMI Amount</th><th>Status</th><th>Paid At</th></tr>
+                                <tr><th>#</th><th>Due Date</th><th>EMAP Amount</th><th>Status</th><th>Paid At</th></tr>
                             </thead>
                             <tbody>
                                 @foreach($schedule as $emi)
@@ -211,7 +211,7 @@
                 @php
                     $desc = 'Downpayment / Booking';
                     if ($invoice->payment && $invoice->payment->emiSchedule) {
-                        $desc = 'EMI #' . $invoice->payment->emiSchedule->installment_number;
+                        $desc = 'EMAP #' . $invoice->payment->emiSchedule->installment_number;
                     }
                 @endphp
                 <div class="col-md-4 grid-margin">

@@ -7,7 +7,7 @@
         <div class="card bg-white border shadow-sm p-4">
             <div>
                 <h4 class="card-title text-dark font-weight-bold mb-1">Tax Invoices & Receipts</h4>
-                <p class="card-description text-muted mb-0">Browse through, audit, and download PDF receipts generated for booking EMI repayments.</p>
+                <p class="card-description text-muted mb-0">Browse through, audit, and download PDF receipts generated for booking EMAP repayments.</p>
             </div>
         </div>
     </div>
@@ -45,7 +45,7 @@
                             <th>Booking Number</th>
                             <th>Customer Name</th>
                             <th>Contact Number</th>
-                            <th>EMI Number</th>
+                            <th>EMAP Number</th>
                             <th>Total Amount Paid</th>
                             <th>Payment Date</th>
                             <th>Actions</th>

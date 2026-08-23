@@ -5,7 +5,7 @@
     <!-- Configuration Selector Step -->
     <div class="col-12 mb-4">
         <div class="card bg-white border shadow-sm p-4">
-            <h4 class="card-title text-dark">EMI Calculator Tool</h4>
+            <h4 class="card-title text-dark">EMAP Calculator Tool</h4>
             <p class="card-description text-muted">A public simulation tool for evaluating dynamic product valuations and repayment structures. No database writes or customer bindings will be committed.</p>
 
             <form id="calculatorSelectForm" class="row">
@@ -76,14 +76,14 @@
     <!-- Available EMI Plans List -->
     <div class="col-md-7 mb-4">
         <div class="card bg-white border shadow-sm h-100 p-4">
-            <h5 class="text-primary font-weight-bold mb-3 border-bottom pb-2">Available Eligible EMI Plans</h5>
+            <h5 class="text-primary font-weight-bold mb-3 border-bottom pb-2">Available Eligible EMAP Plans</h5>
             <p class="text-muted small mb-3">Select one of the compliant plans configured in the database templates below:</p>
 
             <div id="emiPlanList" class="row" style="max-height: 480px; overflow-y: auto; padding-right: 5px;">
                 <!-- Cards injected by JS -->
             </div>
             <div id="noPlansMsg" style="display: none;" class="alert alert-warning mt-2">
-                <i class="mdi mdi-alert mr-1"></i> No eligible EMI plans match this product's dynamic valuation and weight limits.
+                <i class="mdi mdi-alert mr-1"></i> No eligible EMAP plans match this product's dynamic valuation and weight limits.
             </div>
         </div>
     </div>
@@ -244,7 +244,7 @@
                                     <div class="small text-muted mb-2">Duration: <strong class="text-dark">${plan.duration_months} Months</strong></div>
                                     ${chargesInfo}
                                     <div class="border-top pt-2 mt-2">
-                                        <div class="small text-muted">Monthly EMI</div>
+                                        <div class="small text-muted">Monthly EMAP</div>
                                         <div class="h5 font-weight-bold text-primary mb-1">₹${parseFloat(plan.installment).toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
                                         <div class="small text-muted">Total: <strong>₹${parseFloat(plan.total_payable).toLocaleString(undefined, {minimumFractionDigits: 2})}</strong></div>
                                     </div>

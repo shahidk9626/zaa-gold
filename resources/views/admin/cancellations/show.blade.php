@@ -114,13 +114,13 @@
             </div>
         </div>
 
-        <!-- Payments and EMI Repayments Card -->
+        <!-- Payments and EMAP Repayments Card -->
         <div class="card bg-white border shadow-sm mb-4">
             <div class="card-body">
-                <h5 class="card-title text-dark font-weight-bold mb-3"><i class="mdi mdi-calendar-text text-info"></i> Repayments & EMI Schedule</h5>
+                <h5 class="card-title text-dark font-weight-bold mb-3"><i class="mdi mdi-calendar-text text-info"></i> Repayments & EMAP Schedule</h5>
                 
                 <ul class="nav nav-tabs border-0 bg-light rounded p-1 mb-3" role="tablist">
-                    <li class="nav-item"><a class="nav-link active py-2" data-toggle="tab" href="#emi-schedule">EMI Installments</a></li>
+                    <li class="nav-item"><a class="nav-link active py-2" data-toggle="tab" href="#emi-schedule">EMAP Installments</a></li>
                     <li class="nav-item"><a class="nav-link py-2" data-toggle="tab" href="#payment-receipts">Receipts History</a></li>
                 </ul>
 
@@ -132,7 +132,7 @@
                                     <tr>
                                         <th>#</th>
                                         <th>Due Date</th>
-                                        <th>EMI Amount</th>
+                                        <th>EMAP Amount</th>
                                         <th>Status</th>
                                         <th>Paid At</th>
                                     </tr>
@@ -299,7 +299,7 @@
             <div class="modal-body">
                 <p>Are you sure you want to approve this plan cancellation? This action is irreversible.</p>
                 <div class="alert alert-warning small text-dark">
-                    <strong>Warning:</strong> The Booking will be marked as <strong>Cancelled</strong>. Future EMI repayments will freeze and cannot be collected.
+                    <strong>Warning:</strong> The Booking will be marked as <strong>Cancelled</strong>. Future EMAP repayments will freeze and cannot be collected.
                 </div>
                 <div class="form-group mb-0">
                     <label class="font-weight-bold">Remark <span class="text-danger">*</span></label>

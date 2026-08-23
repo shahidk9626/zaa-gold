@@ -13,13 +13,17 @@ use App\Models\SellOldGoldEnquiry;
 use App\Models\FranchiseEnquiry;
 use App\Models\Role;
 use App\Models\CancellationRequest;
+use App\Models\GstInvoice;
+use App\Services\EmiCalculationService;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class ReportService
 {
-    public function __construct(protected FinancialCalculationService $financialService)
-    {
+    public function __construct(
+        protected FinancialCalculationService $financialService,
+        protected EmiCalculationService $emiService
+    ) {
     }
 
     /**
@@ -171,6 +175,91 @@ class ReportService
     }
 
     /**
+     * Compute the 14 financial KPI aggregates for the selected date range.
+     */
+    public function getFinancialSummaryStats(array $filters)
+    {
+        $startDate = $filters['start_date'] ?? Carbon::now('Asia/Kolkata')->startOfMonth()->toDateString();
+        $endDate = $filters['end_date'] ?? Carbon::now('Asia/Kolkata')->toDateString();
+
+        $startDateTime = $startDate . ' 00:00:00';
+        $endDateTime = $endDate . ' 23:59:59';
+
+        // 1. Bookings in date range
+        $bookings = GoldBooking::whereNotIn('status', ['Cancelled', 'Refund Initiated', 'Refunded'])
+            ->whereBetween('booking_date', [$startDateTime, $endDateTime])
+            ->get();
+
+        // Total Gold Value
+        $totalGoldValue = (float) $bookings->sum('locked_gold_value');
+
+        // Total GST on Gold
+        $totalGstOnGold = (float) $bookings->sum('gst_on_gold_amount');
+
+        // Processing Fees
+        $totalProcessingFees = (float) $bookings->sum(fn ($b) => $b->emiPlan ? $this->emiService->calculateProcessingFee($b->emiPlan, $b->locked_gold_value) : 0.00);
+
+        // Platform Convenience Fees & Delivery Charges (hardcoded to 0.00 as per project spec)
+        $totalPlatformConvenienceFees = 0.00;
+        $totalDeliveryCharges = 0.00;
+
+        // Total Service Charges (Processing + Platform + Delivery)
+        $totalServiceCharges = $totalProcessingFees + $totalPlatformConvenienceFees + $totalDeliveryCharges;
+
+        // Total Storage Charges
+        $totalStorageCharges = (float) $bookings->sum('storage_charge_amount');
+
+        // Total Insurance Charges
+        $totalInsuranceCharges = 0.00;
+
+        // Total Price Lock Charges
+        $totalPriceLockCharges = (float) $bookings->sum('finance_charge_amount');
+
+        // Total GST on Charges
+        $totalGstOnCharges = (float) $bookings->sum('gst_on_charges_amount');
+
+        // 2. Successful payments received in date range
+        $totalPaymentsReceived = (float) BookingPayment::where('status', 'Paid')
+            ->whereBetween('payment_date', [$startDateTime, $endDateTime])
+            ->sum('amount_paid');
+
+        // 3. Outstanding for bookings in date range
+        $totalOutstanding = (float) $bookings->sum(fn ($b) => $this->financialService->outstanding($b));
+
+        // 4. Refunds in date range
+        // Filter by refund_date if present, else fallback to refund_completed_at / created_at
+        $totalRefunds = (float) CancellationRequest::whereIn('status', ['Approved', 'Refund Initiated', 'Refund Completed'])
+            ->where(function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('refund_date', [$startDate, $endDate])
+                  ->orWhere(function ($sq) use ($startDate, $endDate) {
+                      $sq->whereNull('refund_date')
+                         ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+                  });
+            })
+            ->sum('refund_amount');
+
+        // Net Collection
+        $netCollection = $this->financialService->roundMoney($totalPaymentsReceived - $totalRefunds);
+
+        return [
+            'total_gold_value' => $this->financialService->roundMoney($totalGoldValue),
+            'total_gst_on_gold' => $this->financialService->roundMoney($totalGstOnGold),
+            'total_service_charges' => $this->financialService->roundMoney($totalServiceCharges),
+            'total_gst_on_charges' => $this->financialService->roundMoney($totalGstOnCharges),
+            'total_storage_charges' => $this->financialService->roundMoney($totalStorageCharges),
+            'total_insurance_charges' => $this->financialService->roundMoney($totalInsuranceCharges),
+            'total_price_lock_charges' => $this->financialService->roundMoney($totalPriceLockCharges),
+            'total_processing_fees' => $this->financialService->roundMoney($totalProcessingFees),
+            'total_platform_convenience_fees' => $this->financialService->roundMoney($totalPlatformConvenienceFees),
+            'total_delivery_charges' => $this->financialService->roundMoney($totalDeliveryCharges),
+            'total_payments_received' => $this->financialService->roundMoney($totalPaymentsReceived),
+            'total_outstanding' => $this->financialService->roundMoney($totalOutstanding),
+            'total_refunds' => $this->financialService->roundMoney($totalRefunds),
+            'net_collection' => $netCollection,
+        ];
+    }
+
+    /**
      * Apply common filters (date range, customer, product, status, booking, payment mode) to queries
      */
     public function applyFilters($query, array $filters, $tablePrefix = '')
@@ -223,6 +312,9 @@ class ReportService
     public function getReportQuery(string $reportType, array $filters)
     {
         switch ($reportType) {
+            case 'financial_summary':
+                return GoldBooking::query();
+
             case 'booking':
                 $query = GoldBooking::with(['customer', 'product', 'emiPlan']);
                 $this->applyFilters($query, $filters, 'gold_bookings');
@@ -344,8 +436,79 @@ class ReportService
                 }
                 return $query;
 
+            case 'charge_breakdown':
+                $query = GoldBooking::with(['customer', 'product', 'emiPlan']);
+                $this->applyFilters($query, $filters, 'gold_bookings');
+                if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
+                    $query->whereBetween('booking_date', [$filters['start_date'] . ' 00:00:00', $filters['end_date'] . ' 23:59:59']);
+                }
+                return $query;
+
+            case 'service_charge':
+                $query = GoldBooking::with(['customer', 'product', 'emiPlan']);
+                $this->applyFilters($query, $filters, 'gold_bookings');
+                if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
+                    $query->whereBetween('booking_date', [$filters['start_date'] . ' 00:00:00', $filters['end_date'] . ' 23:59:59']);
+                }
+                return $query;
+
+            case 'gst_report':
+                $query = GstInvoice::with(['booking.product', 'customer']);
+                if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
+                    $query->whereBetween('invoice_date', [$filters['start_date'] . ' 00:00:00', $filters['end_date'] . ' 23:59:59']);
+                }
+                if (!empty($filters['customer_id'])) {
+                    $query->where('customer_id', $filters['customer_id']);
+                }
+                if (!empty($filters['booking_id'])) {
+                    $query->where('booking_id', $filters['booking_id']);
+                }
+                return $query;
+
+            case 'payment_collection':
+                $query = BookingPayment::with(['booking.product', 'customer', 'emiSchedule'])
+                    ->leftJoin('payment_transactions', function ($join) {
+                        $join->on('booking_payments.transaction_reference', '=', 'payment_transactions.gateway_payment_id')
+                             ->orOn('booking_payments.transaction_reference', '=', 'payment_transactions.gateway_order_id');
+                    })
+                    ->select('booking_payments.*', 'payment_transactions.gateway as gateway_name', 'payment_transactions.gateway_payment_id as gateway_txn_id', 'payment_transactions.payment_type as pt_type');
+
+                if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
+                    $query->whereBetween('booking_payments.payment_date', [$filters['start_date'] . ' 00:00:00', $filters['end_date'] . ' 23:59:59']);
+                }
+                if (!empty($filters['customer_id'])) {
+                    $query->where('booking_payments.customer_id', $filters['customer_id']);
+                }
+                if (!empty($filters['booking_id'])) {
+                    $query->where('booking_payments.booking_id', $filters['booking_id']);
+                }
+                if (!empty($filters['payment_mode'])) {
+                    $query->where('booking_payments.payment_mode', $filters['payment_mode']);
+                }
+                if (!empty($filters['status'])) {
+                    $query->where('booking_payments.status', $filters['status']);
+                }
+                
+                // Add filter for payment type if passed
+                if (!empty($filters['payment_type'])) {
+                    if ($filters['payment_type'] === 'Initial EMAP') {
+                        $query->whereNotNull('booking_payments.emi_schedule_id')
+                              ->whereHas('emiSchedule', function($q) {
+                                  $q->where('installment_number', 1);
+                              });
+                    } elseif ($filters['payment_type'] === 'EMI') {
+                        $query->whereNotNull('booking_payments.emi_schedule_id')
+                              ->whereHas('emiSchedule', function($q) {
+                                  $q->where('installment_number', '>', 1);
+                              });
+                    } elseif ($filters['payment_type'] === 'Product Purchase') {
+                        $query->whereNull('booking_payments.emi_schedule_id');
+                    }
+                }
+                return $query;
+
             default:
-                throw new \Exception("Invalid report type");
+                throw new \Exception("Invalid report type: " . $reportType);
         }
     }
 }

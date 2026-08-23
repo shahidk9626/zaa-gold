@@ -7,7 +7,7 @@
     <li class="nav-item nav-profile">
       <a href="#" class="nav-link">
         <div class="nav-profile-image">
-          <img src="{{ asset('assets/images/faces/face1.jpg') }}" alt="profile" />
+          <img src="{{ Auth::check() ? Auth::user()->profile_image_url : asset('assets/images/faces/face1.jpg') }}" alt="profile" />
           <span class="login-status online"></span>
           <!--change to offline or busy as needed-->
         </div>
@@ -80,7 +80,7 @@
           @endif
           @if(hasPermission('payment.view'))
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('payments.index') }}">EMI payments</a>
+            <a class="nav-link" href="{{ route('payments.index') }}">EMAP Payments</a>
           </li>
           @endif
           @if(hasPermission('cash-collection.view'))

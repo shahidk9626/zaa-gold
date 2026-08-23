@@ -1,7 +1,7 @@
-<x-customer-layout title="Pay EMI">
+<x-customer-layout title="Pay EMAP">
     <div class="mb-3">
         <a href="{{ route('customer.emi.repay') }}" class="text-muted small"><i class="mdi mdi-arrow-left"></i> Back</a>
-        <h5 class="font-weight-bold mt-2">Pay EMI #{{ $schedule->installment_number }}</h5>
+        <h5 class="font-weight-bold mt-2">Pay EMAP #{{ $schedule->installment_number }}</h5>
     </div>
 
     <div class="card mobile-card">
@@ -12,7 +12,7 @@
 
             <form action="{{ route('customer.emi.process_pay', $schedule->id) }}" method="POST">
                 @csrf
-                <p class="text-muted small mb-3">You will be redirected to Cashfree hosted checkout. Your EMI will be marked paid only after gateway verification.</p>
+                <p class="text-muted small mb-3">You will be redirected to Cashfree hosted checkout. Your EMAP will be marked paid only after gateway verification.</p>
                 <button type="submit" class="btn btn-primary btn-block btn-mobile-lg">
                     <i class="mdi mdi-shield-check mr-1"></i> Pay Securely
                 </button>

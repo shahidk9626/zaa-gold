@@ -16,7 +16,7 @@
                     <span class="font-weight-bold text-dark" id="sumProductSpecs">-</span>
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label class="small text-muted d-block uppercase mb-1">Selected EMI Plan</label>
+                    <label class="small text-muted d-block uppercase mb-1">Selected EMAP Plan</label>
                     <span class="font-weight-bold text-dark" id="sumPlanName">-</span>
                 </div>
             </div>
@@ -81,7 +81,7 @@
                 </div>
 
                 <div class="col-md-3 col-sm-6 mb-3">
-                    <label class="small text-muted d-block mb-1 text-primary font-weight-bold">Monthly Installment (EMI)</label>
+                    <label class="small text-muted d-block mb-1 text-primary font-weight-bold">Monthly Installment (EMAP)</label>
                     <span class="font-weight-bold text-primary" id="sumEmiAmount" style="font-size: 1.25rem;">-</span>
                 </div>
                 <div class="col-md-3 col-sm-6 mb-3">
@@ -118,7 +118,7 @@
         <div class="modal-content bg-white text-dark">
             <div class="modal-header border-bottom">
                 <h5 class="modal-title text-primary font-weight-bold" id="outstandingModalLabel">
-                    <i class="mdi mdi-file-document-box mr-1"></i> EMI Outstanding Statement (Preview)
+                    <i class="mdi mdi-file-document-box mr-1"></i> EMAP Outstanding Statement (Preview)
                 </h5>
                 <button type="button" class="close text-dark" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -146,7 +146,7 @@
                             <span class="font-weight-bold text-dark" id="modalGoldPrice">-</span>
                         </div>
                         <div class="col-md-3 col-sm-6 mb-3">
-                            <label class="small text-muted d-block uppercase mb-1">Selected EMI Plan</label>
+                            <label class="small text-muted d-block uppercase mb-1">Selected EMAP Plan</label>
                             <span class="font-weight-bold text-dark" id="modalPlan">-</span>
                         </div>
                         <div class="col-md-3 col-sm-6 mb-3">
@@ -182,14 +182,14 @@
                             <span class="font-weight-bold text-success" id="modalGrandTotal" style="font-size: 1.1rem;">-</span>
                         </div>
                         <div class="col-md-3 col-sm-6 mb-3">
-                            <label class="small text-muted d-block uppercase mb-1 text-primary font-weight-bold">Monthly EMI</label>
+                            <label class="small text-muted d-block uppercase mb-1 text-primary font-weight-bold">Monthly EMAP</label>
                             <span class="font-weight-bold text-primary" id="modalMonthlyEmi" style="font-size: 1.1rem;">-</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Repayment Schedule Table -->
-                <h6 class="font-weight-bold text-dark mb-3 text-uppercase">EMI Repayment Schedule</h6>
+                <h6 class="font-weight-bold text-dark mb-3 text-uppercase">EMAP Repayment Schedule</h6>
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped text-dark no-datatable">
                         <thead class="bg-primary text-white">
@@ -199,7 +199,7 @@
                                 <th>Opening Principal</th>
                                 <th>Principal Amount</th>
                                 <th>Interest Amount</th>
-                                <th>Monthly EMI</th>
+                                <th>Monthly EMAP</th>
                                 <th>Closing Principal</th>
                                 <th>Running Balance</th>
                                 <th>Status</th>
@@ -236,7 +236,7 @@
                 Swal.fire({
                     icon: 'warning',
                     title: 'Selection Required',
-                    text: 'Please select a product and an EMI plan first.',
+                    text: 'Please select a product and an EMAP plan first.',
                     confirmButtonColor: '#3f50f6'
                 });
                 return;

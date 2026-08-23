@@ -8,7 +8,7 @@
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
                     <div>
                         <h4 class="card-title text-dark">Promotional Offers & Discounts</h4>
-                        <p class="card-description text-muted">Manage promotional codes, percentage discounts, fixed cuts, and EMI waivers.</p>
+                        <p class="card-description text-muted">Manage promotional codes, percentage discounts, fixed cuts, and EMAP waivers.</p>
                     </div>
                     @if(hasPermission('offers.create'))
                         <a href="{{ route('offers.create') }}" class="btn btn-primary btn-sm">
@@ -60,7 +60,7 @@
                     data: 'offer_type', 
                     className: 'align-middle text-capitalize',
                     render: function (data) {
-                        if (data === 'emi') return 'EMI Discount';
+                        if (data === 'emi') return 'EMAP Discount';
                         return data;
                     }
                 },
@@ -73,7 +73,7 @@
                         } else if (data.offer_type === 'fixed') {
                             return `₹${parseFloat(data.fixed_amount).toLocaleString()} OFF`;
                         } else {
-                            return `Pay ${data.required_emi_count} Get ${data.required_emi_count + data.free_emi_count} EMIs`;
+                            return `Pay ${data.required_emi_count} Get ${data.required_emi_count + data.free_emi_count} EMAPs`;
                         }
                     }
                 },

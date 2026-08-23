@@ -56,6 +56,8 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/image', [ProfileController::class, 'uploadImage'])->name('profile.image.upload');
+    Route::delete('/profile/image', [ProfileController::class, 'removeImage'])->name('profile.image.remove');
     Route::post('/profile/kyc', [ProfileController::class, 'submitKyc'])->name('profile.submit_kyc');
 
     Route::post('/dashboard/dismiss-reminder', [DashboardController::class, 'dismissReminder'])->name('dashboard.dismiss_reminder');

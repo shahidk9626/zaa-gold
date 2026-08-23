@@ -184,7 +184,7 @@
             </li>
             <li class="nav-item flex-fill text-center">
                 <a class="nav-link" id="schedule-tab" data-toggle="tab" href="#schedule" role="tab" aria-controls="schedule" aria-selected="false">
-                    <i class="mdi mdi-calendar-clock mr-1"></i> EMI Schedule
+                    <i class="mdi mdi-calendar-clock mr-1"></i> EMAP Schedule
                 </a>
             </li>
             <li class="nav-item flex-fill text-center">
@@ -482,7 +482,7 @@
                 </div>
             </div>
 
-            <!-- 4. EMI Schedule Tab -->
+            <!-- 4. EMAP Schedule Tab -->
             <div class="tab-pane fade" id="schedule" role="tabpanel" aria-labelledby="schedule-tab">
                 <div class="card bg-white border shadow-sm p-4">
                     <h5 class="text-primary font-weight-bold mb-3 border-bottom pb-2">Booking Repayment Schedule</h5>
@@ -493,7 +493,7 @@
                                     <th>Installment #</th>
                                     <th>Due Date</th>
                                     <th>Opening Principal</th>
-                                    <th>Monthly EMI</th>
+                                    <th>Monthly EMAP</th>
                                     <th>Principal Component</th>
                                     <th>Interest/Charges</th>
                                     <th>Late Fee</th>
@@ -573,8 +573,8 @@
                     <h5 class="text-primary font-weight-bold mb-3 border-bottom pb-2">Payment Summary</h5>
                     <div class="row mb-4">
                         <div class="col-md-3 mb-3"><div class="bg-light border rounded p-3 h-100"><small class="text-muted font-weight-bold text-uppercase">Booking Payment</small><div class="font-weight-bold text-dark mt-2">{{ $paymentSummary['booking_payment']->transaction_number ?? 'N/A' }}</div><div class="small text-muted">{{ $paymentSummary['booking_payment']->payment_status ?? '' }}</div></div></div>
-                        <div class="col-md-3 mb-3"><div class="bg-light border rounded p-3 h-100"><small class="text-muted font-weight-bold text-uppercase">EMI Payments</small><div class="font-weight-bold text-dark mt-2">{{ $paymentSummary['emi_payments']->count() }}</div></div></div>
-                        <div class="col-md-3 mb-3"><div class="bg-light border rounded p-3 h-100"><small class="text-muted font-weight-bold text-uppercase">Pending EMI</small><div class="font-weight-bold text-dark mt-2">{{ $paymentSummary['pending_emi'] }}</div></div></div>
+                        <div class="col-md-3 mb-3"><div class="bg-light border rounded p-3 h-100"><small class="text-muted font-weight-bold text-uppercase">EMAP Payments</small><div class="font-weight-bold text-dark mt-2">{{ $paymentSummary['emi_payments']->count() }}</div></div></div>
+                        <div class="col-md-3 mb-3"><div class="bg-light border rounded p-3 h-100"><small class="text-muted font-weight-bold text-uppercase">Pending EMAP</small><div class="font-weight-bold text-dark mt-2">{{ $paymentSummary['pending_emi'] }}</div></div></div>
                         <div class="col-md-3 mb-3"><div class="bg-light border rounded p-3 h-100"><small class="text-muted font-weight-bold text-uppercase">Payment Links</small><div class="font-weight-bold text-dark mt-2">{{ $paymentSummary['payment_links']->count() }}</div></div></div>
                     </div>
 
@@ -626,14 +626,14 @@
                         </table>
                     </div>
 
-                    <h5 class="text-primary font-weight-bold mb-3 border-bottom pb-2">EMI Payments History</h5>
+                    <h5 class="text-primary font-weight-bold mb-3 border-bottom pb-2">EMAP Payments History</h5>
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped text-dark small">
                             <thead class="bg-light">
                                 <tr>
                                     <th>Payment No.</th>
                                     <th>Receipt No.</th>
-                                    <th>EMI #</th>
+                                    <th>EMAP #</th>
                                     <th>Mode</th>
                                     <th>Reference</th>
                                     <th>Amount Paid</th>
@@ -1041,7 +1041,7 @@
                                     <li>Booking Status must be <strong>Completed</strong> (Current: <span class="badge badge-outline-dark text-dark">{{ $booking->status }}</span>)</li>
                                     <li>Outstanding Plan Balance must be <strong>₹0.00</strong> (Current Outstanding: <strong class="text-danger">₹{{ number_format($outstandingBalance, 2) }}</strong>)</li>
                                 </ul>
-                                <p class="mb-0 small text-muted">Please process all overdue schedules in the <strong>EMI Schedule</strong> tab before submitting delivery requests.</p>
+                                <p class="mb-0 small text-muted">Please process all overdue schedules in the <strong>EMAP Schedule</strong> tab before submitting delivery requests.</p>
                             </div>
                         @endif
                     @endif

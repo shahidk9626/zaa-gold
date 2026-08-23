@@ -134,7 +134,7 @@
                         <span class="font-weight-bold text-dark">{{ $ccr->booking->product->name ?? 'N/A' }} ({{ $ccr->booking->product->sku ?? 'N/A' }})</span>
                     </div>
                     <div class="mb-3">
-                        <label class="small text-muted d-block mb-0">EMI Plan</label>
+                        <label class="small text-muted d-block mb-0">EMAP Plan</label>
                         <span class="font-weight-bold text-dark">{{ $ccr->booking->emiPlan->name ?? 'N/A' }} ({{ $ccr->booking->duration_months }} Months)</span>
                     </div>
                 </div>

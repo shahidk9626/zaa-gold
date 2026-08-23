@@ -202,8 +202,8 @@ class CashCollectionPaymentFlowTest extends TestCase
         $booking = GoldBooking::find($ccr->booking_id);
         $this->assertEquals('Paid', $booking->status);
 
-        // Verify invoice was created
-        $this->assertTrue(\App\Models\GstInvoice::where('booking_id', $booking->id)->exists());
+        // Verify invoice was not created (plan not completed)
+        $this->assertFalse(\App\Models\GstInvoice::where('booking_id', $booking->id)->exists());
     }
 
     public function test_admin_can_reject_cash_collection_request(): void

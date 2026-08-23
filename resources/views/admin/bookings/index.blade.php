@@ -42,8 +42,19 @@
                     <label class="text-dark font-weight-bold">Status</label>
                     <select name="status" class="form-control bg-white text-dark">
                         <option value="">All Statuses</option>
-                        @foreach(['Draft', 'Pending First EMI', 'Active', 'Completed', 'Cancelled', 'Refund Initiated', 'Refunded'] as $st)
-                            <option value="{{ $st }}" {{ request('status') === $st ? 'selected' : '' }}>{{ $st }}</option>
+                        @php
+                            $bookingStatuses = [
+                                'Draft'             => 'Draft',
+                                'Pending First EMI' => 'Pending First EMAP',
+                                'Active'            => 'Active',
+                                'Completed'         => 'Completed',
+                                'Cancelled'         => 'Cancelled',
+                                'Refund Initiated'  => 'Refund Initiated',
+                                'Refunded'          => 'Refunded',
+                            ];
+                        @endphp
+                        @foreach($bookingStatuses as $val => $label)
+                            <option value="{{ $val }}" {{ request('status') === $val ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -92,7 +103,7 @@
                             <th>Product Name</th>
                             <th>Gold Weight</th>
                             <th>Locked Gold Price</th>
-                            <th>Monthly EMI</th>
+                            <th>Monthly EMAP</th>
                             <th>Grand Total</th>
                             <th>Booking Date</th>
                             <th>Status</th>

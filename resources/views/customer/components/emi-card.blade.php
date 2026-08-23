@@ -13,7 +13,7 @@
 <div class="card mb-3 mobile-card">
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6 class="font-weight-bold mb-0">EMI #{{ $schedule->installment_number }}</h6>
+            <h6 class="font-weight-bold mb-0">EMAP #{{ $schedule->installment_number }}</h6>
             <span class="badge {{ $statusClass }}">{{ $schedule->status }}</span>
         </div>
         <p class="text-muted small mb-1">{{ $schedule->booking?->product?->name ?? 'Gold Plan' }}</p>
@@ -32,7 +32,7 @@
             Pay Now
         </a>
         @elseif($isFuture && $schedule->status === 'Pending')
-        <span class="badge badge-light mt-2">Future EMI</span>
+        <span class="badge badge-light mt-2">Upcoming EMAP</span>
         @endif
     </div>
 </div>

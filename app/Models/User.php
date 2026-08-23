@@ -114,4 +114,12 @@ class User extends Authenticatable
     {
         return $this->profile_completed ? 'Complete' : 'Incomplete';
     }
+
+    public function getProfileImageUrlAttribute(): string
+    {
+        if ($this->profile_image && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->profile_image)) {
+            return asset('storage/' . $this->profile_image);
+        }
+        return asset('assets/images/faces/face1.jpg');
+    }
 }

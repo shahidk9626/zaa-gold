@@ -22,7 +22,7 @@
             <div class="row mb-3">
                 <div class="col-md-6 mb-2"><strong>Customer:</strong> {{ $paymentLog->booking->customer->name ?? 'N/A' }}</div>
                 <div class="col-md-6 mb-2"><strong>Booking:</strong> {{ $paymentLog->booking->booking_number ?? 'N/A' }}</div>
-                <div class="col-md-6 mb-2"><strong>EMI:</strong> {{ $paymentLog->emiSchedule ? '#' . $paymentLog->emiSchedule->installment_number : 'Booking Payment' }}</div>
+                <div class="col-md-6 mb-2"><strong>EMAP:</strong> {{ $paymentLog->emiSchedule ? '#' . $paymentLog->emiSchedule->installment_number : 'Booking Payment' }}</div>
                 <div class="col-md-6 mb-2"><strong>Receipt:</strong> {{ $receipt->receipt_number ?? 'N/A' }}</div>
                 <div class="col-md-6 mb-2"><strong>GST Invoice:</strong> {{ $invoice->invoice_number ?? 'N/A' }}</div>
                 <div class="col-md-6 mb-2"><strong>Internal Status:</strong> {{ $paymentLog->payment_status }}</div>

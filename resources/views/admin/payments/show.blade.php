@@ -110,7 +110,7 @@
                     <span class="font-weight-bold text-dark">{{ number_format($payment->booking->gold_weight, 2) }}g ({{ $payment->booking->product->gold_type ?? 'N/A' }}, {{ (float)$payment->booking->gold_purity }} fine gold)</span>
                 </div>
                 <div class="col-6 mb-3">
-                    <label class="small text-muted d-block mb-1">EMI Installment Number</label>
+                    <label class="small text-muted d-block mb-1">EMAP Installment Number</label>
                     <span class="badge badge-primary text-dark font-weight-bold px-3 py-2">
                         EMI #{{ $payment->emiSchedule->installment_number ?? 'N/A' }}
                     </span>

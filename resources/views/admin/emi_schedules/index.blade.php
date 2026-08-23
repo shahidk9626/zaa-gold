@@ -7,7 +7,7 @@
         <div class="card bg-white border shadow-sm p-4">
             <div class="d-flex justify-content-between align-items-center flex-wrap">
                 <div>
-                    <h4 class="card-title text-dark font-weight-bold mb-1">EMI Repayment Schedules</h4>
+                    <h4 class="card-title text-dark font-weight-bold mb-1">EMAP Repayment Schedules</h4>
                     <p class="card-description text-muted mb-0">Track and manage upcoming, due, and paid installments across all active gold bookings.</p>
                 </div>
                 <div>
@@ -34,7 +34,7 @@
 
                 <!-- Status Filter -->
                 <div class="col-md-2 form-group">
-                    <label class="text-dark font-weight-bold">EMI Status</label>
+                    <label class="text-dark font-weight-bold">EMAP Status</label>
                     <select name="status" class="form-control bg-white text-dark">
                         <option value="">All Statuses</option>
                         @foreach(['Pending', 'Paid', 'Partial', 'Overdue'] as $st)
@@ -98,7 +98,7 @@
                             <th>Installment #</th>
                             <th>Due Date</th>
                             <th>Opening Principal</th>
-                            <th>EMI Amount</th>
+                            <th>EMAP Amount</th>
                             <th>Principal Paid</th>
                             <th>Interest Paid</th>
                             <th>Late Fee</th>
@@ -165,7 +165,7 @@
                         @empty
                             <tr>
                                 <td colspan="12" class="text-center py-4 text-muted">
-                                    <i class="mdi mdi-alert mr-1"></i> No EMI schedules found matching your search.
+                                    <i class="mdi mdi-alert mr-1"></i> No EMAP schedules found matching your search.
                                 </td>
                             </tr>
                         @endforelse

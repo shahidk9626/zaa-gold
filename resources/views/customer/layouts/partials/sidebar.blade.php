@@ -7,7 +7,7 @@
     <li class="nav-item nav-profile">
       <a href="{{ route('customer.profile.index') }}" class="nav-link">
         <div class="nav-profile-image">
-          <img src="{{ asset('assets/images/faces/face1.jpg') }}" alt="profile" />
+          <img src="{{ Auth::check() ? Auth::user()->profile_image_url : asset('assets/images/faces/face1.jpg') }}" alt="profile" />
           <span class="login-status online"></span>
         </div>
         <div class="nav-profile-text d-flex flex-column pr-3">
@@ -40,8 +40,8 @@
       <div class="collapse {{ request()->routeIs('customer.my-plans.*', 'customer.emi.*', 'customer.outstanding.*') ? 'show' : '' }}" id="customer-plans-menu">
         <ul class="nav flex-column sub-menu">
           <li class="nav-item"><a class="nav-link" href="{{ route('customer.my-plans.index') }}">All Plans</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ route('customer.emi.history') }}">EMI History</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ route('customer.emi.repay') }}">Repay EMI</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ route('customer.emi.history') }}">EMAP History</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ route('customer.emi.repay') }}">Repay EMAP</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ route('customer.outstanding.index') }}">Outstanding</a></li>
         </ul>
       </div>

@@ -7,12 +7,12 @@
             <div class="card-body">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
                     <div>
-                        <h4 class="card-title text-dark">EMI Plan Master Configuration</h4>
-                        <p class="card-description text-muted">Configure corporate EMI templates, limits, interest, and penalties</p>
+                        <h4 class="card-title text-dark">EMAP Plan Master Configuration</h4>
+                        <p class="card-description text-muted">Configure corporate EMAP templates, limits, interest, and penalties</p>
                     </div>
                     @if(hasPermission('emi-plan.create'))
                         <a href="{{ route('emi-plans.create') }}" class="btn btn-primary btn-sm">
-                            <i class="mdi mdi-plus mr-1"></i> Add EMI Plan
+                            <i class="mdi mdi-plus mr-1"></i> Add EMAP Plan
                         </a>
                     @endif
                 </div>
@@ -191,7 +191,7 @@
 
     function confirmDelete(id) {
         Swal.fire({
-            title: 'Delete EMI Plan?',
+            title: 'Delete EMAP Plan?',
             text: 'Are you sure you want to delete this plan? This action is soft deleted and reversible.',
             icon: 'warning',
             showCancelButton: true,

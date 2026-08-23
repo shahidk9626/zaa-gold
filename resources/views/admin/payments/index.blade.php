@@ -7,8 +7,8 @@
         <div class="card bg-white border shadow-sm p-4">
             <div class="d-flex justify-content-between align-items-center flex-wrap">
                 <div>
-                    <h4 class="card-title text-dark font-weight-bold mb-1">EMI Payments History</h4>
-                    <p class="card-description text-muted mb-0">Browse through all collected EMI installments, payment modes, and download tax receipts.</p>
+                    <h4 class="card-title text-dark font-weight-bold mb-1">EMAP Payments History</h4>
+                    <p class="card-description text-muted mb-0">Browse through all collected EMAP installments, payment modes, and download tax receipts.</p>
                 </div>
                 <div>
                     @if(hasPermission('payment.export'))

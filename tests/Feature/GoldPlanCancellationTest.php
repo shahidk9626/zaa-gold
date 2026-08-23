@@ -42,16 +42,18 @@ class GoldPlanCancellationTest extends TestCase
     {
         $customer = User::create([
             'name' => 'John Customer',
-            'email' => 'john@test.com',
+            'email' => 'john.' . uniqid() . '@test.com',
             'password' => bcrypt('password123'),
             'role' => 'customer',
         ]);
 
         $product = Product::create([
             'name' => '10g Gold Coin',
-            'sku' => 'G-COIN-10G',
+            'slug' => '10g-gold-coin-' . uniqid(),
+            'sku' => 'G-COIN-10G_' . uniqid(),
             'weight_in_grams' => 10.00,
             'purity' => 99.9,
+            'category' => 'coins',
             'gold_type' => '24K',
             'making_charge_type' => 'fixed',
             'making_charge_value' => 350.00,
@@ -60,7 +62,7 @@ class GoldPlanCancellationTest extends TestCase
 
         $plan = EmiPlan::create([
             'plan_name' => '10 Months Gold Accumulator',
-            'plan_code' => 'GOLD10M',
+            'plan_code' => 'GOLD10M_' . uniqid(),
             'duration_months' => 10,
             'interest_rate' => 0.00,
             'interest_type' => 'flat',
@@ -82,11 +84,13 @@ class GoldPlanCancellationTest extends TestCase
         ]);
 
         $booking = GoldBooking::create([
-            'booking_number' => 'ZG2600001',
+            'booking_number' => 'ZG' . rand(10000000, 99999999),
             'customer_id' => $customer->id,
             'product_id' => $product->id,
             'emi_plan_id' => $plan->id,
             'gold_weight' => 5.00,
+            'gold_purity' => 99.9,
+            'gold_type' => '24K',
             'locked_price_per_gram' => 6000.00,
             'locked_gold_value' => 30000.00,
             'gst_on_gold_percent' => 3.00,
@@ -96,6 +100,7 @@ class GoldPlanCancellationTest extends TestCase
             'duration_months' => 10,
             'status' => 'Active',
             'booking_date' => now(),
+            'estimated_completion_date' => now()->addMonths(10),
         ]);
 
         // Generate EMI schedules
@@ -105,11 +110,35 @@ class GoldPlanCancellationTest extends TestCase
                 'installment_number' => $i,
                 'due_date' => now()->addMonths($i),
                 'emi_amount' => 3090.00,
+                'opening_principal' => 30000.00 - ($i - 1) * 3000.00,
+                'principal_amount' => 3000.00,
+                'interest_amount' => 90.00,
+                'closing_principal' => 30000.00 - $i * 3000.00,
+                'outstanding_balance' => 30900.00 - $i * 3090.00,
                 'status' => 'Pending',
             ]);
         }
 
         return compact('customer', 'product', 'plan', 'booking');
+    }
+
+    protected function createPayment($booking, $schedule, $receiptNumber): BookingPayment
+    {
+        return BookingPayment::create([
+            'payment_number' => 'PAY' . uniqid(),
+            'booking_id' => $booking->id,
+            'customer_id' => $booking->customer_id,
+            'emi_schedule_id' => $schedule->id,
+            'receipt_number' => $receiptNumber,
+            'amount_paid' => 3090.00,
+            'principal_paid' => 3000.00,
+            'interest_paid' => 90.00,
+            'late_fee_paid' => 0.00,
+            'gst_paid' => 90.00,
+            'payment_date' => now(),
+            'payment_mode' => 'Online',
+            'status' => 'Paid',
+        ]);
     }
 
     /**
@@ -128,16 +157,7 @@ class GoldPlanCancellationTest extends TestCase
             
             $schedule->update(['status' => 'Paid', 'paid_at' => now()]);
 
-            BookingPayment::create([
-                'booking_id' => $booking->id,
-                'customer_id' => $booking->customer_id,
-                'emi_schedule_id' => $schedule->id,
-                'receipt_number' => 'REC-26-00000' . $i,
-                'amount_paid' => 3090.00,
-                'payment_date' => now(),
-                'payment_mode' => 'Online',
-                'status' => 'Paid',
-            ]);
+            $this->createPayment($booking, $schedule, 'REC-26-00000' . $i);
         }
 
         $calc = $this->calcService->calculateRefund($booking);
@@ -285,16 +305,7 @@ class GoldPlanCancellationTest extends TestCase
                 ->where('installment_number', $i)
                 ->first();
             $schedule->update(['status' => 'Paid', 'paid_at' => now()]);
-            BookingPayment::create([
-                'booking_id' => $booking->id,
-                'customer_id' => $booking->customer_id,
-                'emi_schedule_id' => $schedule->id,
-                'receipt_number' => 'REC-TEST-' . $i,
-                'amount_paid' => 3090.00,
-                'payment_date' => now(),
-                'payment_mode' => 'Online',
-                'status' => 'Paid',
-            ]);
+            $this->createPayment($booking, $schedule, 'REC-TEST-' . $i);
         }
 
         // Trigger completion check
@@ -307,6 +318,7 @@ class GoldPlanCancellationTest extends TestCase
 
         // TEST 2: 12/12 EMI, Cancellation request Pending -> Cancellation Under Review, NOT Completed
         $request = $this->cancellationService->createRequest($booking, 'Reason');
+        $booking->refresh();
         $this->assertEquals('Cancellation Under Review', $booking->display_status);
 
         // TEST 3: 5/12 EMI, Cancellation request Pending -> Cancellation Under Review, NOT Active
@@ -317,22 +329,14 @@ class GoldPlanCancellationTest extends TestCase
                 ->where('installment_number', $i)
                 ->first();
             $schedule->update(['status' => 'Paid', 'paid_at' => now()]);
-            BookingPayment::create([
-                'booking_id' => $booking2->id,
-                'customer_id' => $booking2->customer_id,
-                'emi_schedule_id' => $schedule->id,
-                'receipt_number' => 'REC-TEST2-' . $i,
-                'amount_paid' => 3090.00,
-                'payment_date' => now(),
-                'payment_mode' => 'Online',
-                'status' => 'Paid',
-            ]);
+            $this->createPayment($booking2, $schedule, 'REC-TEST2-' . $i);
         }
         $financialService->completeIfEligible($booking2);
         $booking2->refresh();
         $this->assertEquals('Active', $booking2->status);
 
         $request2 = $this->cancellationService->createRequest($booking2, 'Reason 2');
+        $booking2->refresh();
         $this->assertEquals('Cancellation Under Review', $booking2->display_status);
 
         // TEST 4: 12/12 EMI, Cancellation Approved -> Cancelled, NOT Completed
@@ -352,22 +356,14 @@ class GoldPlanCancellationTest extends TestCase
                 ->where('installment_number', $i)
                 ->first();
             $schedule->update(['status' => 'Paid', 'paid_at' => now()]);
-            BookingPayment::create([
-                'booking_id' => $booking3->id,
-                'customer_id' => $booking3->customer_id,
-                'emi_schedule_id' => $schedule->id,
-                'receipt_number' => 'REC-TEST3-' . $i,
-                'amount_paid' => 3090.00,
-                'payment_date' => now(),
-                'payment_mode' => 'Online',
-                'status' => 'Paid',
-            ]);
+            $this->createPayment($booking3, $schedule, 'REC-TEST3-' . $i);
         }
         $financialService->completeIfEligible($booking3);
         $booking3->refresh();
         $this->assertEquals('Completed', $booking3->status);
 
         $request3 = $this->cancellationService->createRequest($booking3, 'Reason 3');
+        $booking3->refresh();
         $this->assertEquals('Cancellation Under Review', $booking3->display_status);
 
         $this->cancellationService->updateStatus($request3, 'Rejected', 'Rejected cancellation request.');

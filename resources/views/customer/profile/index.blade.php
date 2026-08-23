@@ -63,12 +63,11 @@
     </ul>
 
     <div class="tab-content pt-2">
-        {{-- Profile Tab --}}
         <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-            <form action="{{ route('customer.profile.update') }}" method="POST">
-                @csrf
-                <div class="row">
-                    <div class="col-lg-8">
+            <div class="row">
+                <div class="col-lg-8">
+                    <form action="{{ route('customer.profile.update') }}" method="POST">
+                        @csrf
                         {{-- 1. Identity & Contact --}}
                         <div class="card mb-4 bg-white border">
                             <div class="card-body">
@@ -229,10 +228,63 @@
                                 <i class="mdi mdi-content-save mr-1"></i> Save Profile Details
                             </button>
                         </div>
+                    </form>
+                </div>
+                
+                {{-- Profile Image Card --}}
+                <div class="col-lg-4">
+                    <div class="card mb-4 bg-white border">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary font-weight-bold mb-3">
+                                <i class="mdi mdi-account-circle mr-1"></i> Profile Photo
+                            </h5>
+                            
+                            <div class="d-flex flex-column align-items-center">
+                                <!-- Photo Container -->
+                                <div class="position-relative mb-3 border rounded bg-light d-flex justify-content-center align-items-center" style="width: 150px; height: 150px; overflow: hidden; border-radius: 8px;">
+                                    <img id="customer-avatar-preview" src="{{ $user->profile_image_url }}" alt="avatar" class="w-100 h-100 object-cover">
+                                </div>
+
+                                <!-- Actions -->
+                                @if($user->profile_image)
+                                    <form method="POST" action="{{ route('customer.profile.image.remove') }}" class="mb-3 w-100">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-outline-danger btn-sm btn-block font-weight-bold">
+                                            <i class="mdi mdi-delete-forever mr-1"></i> Remove Photo
+                                        </button>
+                                    </form>
+                                @endif
+
+                                <!-- Upload Form -->
+                                <form method="POST" action="{{ route('customer.profile.image.upload') }}" enctype="multipart/form-data" class="w-100">
+                                    @csrf
+                                    <div class="form-group mb-3">
+                                        <label class="text-muted small">Select new photo (Max 2MB)</label>
+                                        <input type="file" name="profile_image" accept="image/*" class="form-control-file border p-2 rounded w-100" required onchange="previewCustomerAvatar(this)">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-sm btn-block font-weight-bold">
+                                        <i class="mdi mdi-cloud-upload mr-1"></i> Upload Photo
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
+
+        <script>
+            function previewCustomerAvatar(input) {
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('customer-avatar-preview').src = e.target.result;
+                    }
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+        </script>
 
         {{-- KYC Tab --}}
         <div class="tab-pane fade" id="kyc" role="tabpanel" aria-labelledby="kyc-tab">

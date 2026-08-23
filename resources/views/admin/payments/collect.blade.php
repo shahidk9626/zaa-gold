@@ -7,7 +7,7 @@
         <div class="card bg-white border shadow-sm p-4">
             <div class="d-flex justify-content-between align-items-center flex-wrap">
                 <div>
-                    <h4 class="card-title text-dark font-weight-bold mb-1">Collect EMI Payment</h4>
+                    <h4 class="card-title text-dark font-weight-bold mb-1">Collect EMAP Payment</h4>
                     <p class="card-description text-muted mb-0">Record manual repayment for installment #{{ $schedule->installment_number }} of Gold Booking #{{ $booking->booking_number }}.</p>
                 </div>
                 <div>
@@ -49,7 +49,7 @@
                     <span class="font-weight-bold text-dark">{{ $booking->product->name ?? 'N/A' }}</span>
                 </div>
                 <div class="col-6 mb-3">
-                    <label class="small text-muted d-block mb-1">EMI Plan Duration</label>
+                    <label class="small text-muted d-block mb-1">EMAP Plan Duration</label>
                     <span class="font-weight-bold text-dark">{{ $booking->duration_months }} Months</span>
                 </div>
                 
@@ -75,7 +75,7 @@
                 <div class="col-12 my-2"><hr style="border-color: rgba(0,0,0,0.1);"></div>
 
                 <div class="col-6 mb-3">
-                    <label class="small text-muted d-block mb-1">EMI Installment Amount</label>
+                    <label class="small text-muted d-block mb-1">EMAP Installment Amount</label>
                     <span class="h5 font-weight-bold text-dark mb-0">₹{{ number_format($schedule->emi_amount, 2) }}</span>
                     <small class="d-block text-muted">(Principal: ₹{{ number_format($schedule->principal_amount, 2) }} + Interest/Charges: ₹{{ number_format($schedule->interest_amount, 2) }})</small>
                 </div>

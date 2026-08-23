@@ -91,7 +91,7 @@
                                 <option value="">Select Offer Type</option>
                                 <option value="percentage" {{ $offer->offer_type === 'percentage' ? 'selected' : '' }}>Percentage Discount</option>
                                 <option value="fixed" {{ $offer->offer_type === 'fixed' ? 'selected' : '' }}>Fixed Amount Discount</option>
-                                <option value="emi" {{ $offer->offer_type === 'emi' ? 'selected' : '' }}>EMI Discount (Waiver)</option>
+                                <option value="emi" {{ $offer->offer_type === 'emi' ? 'selected' : '' }}>EMAP Discount (Waiver)</option>
                             </select>
                         </div>
 
@@ -113,12 +113,12 @@
                         <div class="col-md-8 type-container" id="emi_container" style="display: {{ $offer->offer_type === 'emi' ? 'block' : 'none' }};">
                             <div class="row">
                                 <div class="col-md-6 form-group">
-                                    <label class="text-dark">Required Paid EMIs <span class="text-danger">*</span></label>
+                                    <label class="text-dark">Required Paid EMAPs <span class="text-danger">*</span></label>
                                     <input type="number" name="required_emi_count" id="required_emi_count" value="{{ $offer->required_emi_count }}" min="1" class="form-control bg-white text-dark" placeholder="e.g. 11">
                                     <small class="text-muted">Number of months customer pays.</small>
                                 </div>
                                 <div class="col-md-6 form-group">
-                                    <label class="text-dark">Free/Waived EMIs <span class="text-danger">*</span></label>
+                                    <label class="text-dark">Free/Waived EMAPs <span class="text-danger">*</span></label>
                                     <input type="number" name="free_emi_count" id="free_emi_count" value="{{ $offer->free_emi_count }}" min="1" class="form-control bg-white text-dark" placeholder="e.g. 1">
                                     <small class="text-muted">Number of waived months (complimentary).</small>
                                 </div>

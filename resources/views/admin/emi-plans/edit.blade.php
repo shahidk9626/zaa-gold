@@ -7,8 +7,8 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <h4 class="card-title text-dark">Edit EMI Plan</h4>
-                        <p class="card-description text-muted">Update EMI template configurations and parameters</p>
+                        <h4 class="card-title text-dark">Edit EMAP Plan</h4>
+                        <p class="card-description text-muted">Update EMAP template configurations and parameters</p>
                     </div>
                     <a href="{{ route('emi-plans.index') }}" class="btn btn-secondary btn-sm">
                         <i class="mdi mdi-arrow-left mr-1"></i> Back to List
@@ -214,7 +214,7 @@
 
                         <!-- MISSED EMIS TERMINATION LIMIT -->
                         <div class="col-md-4 form-group mb-4">
-                            <label class="text-dark font-weight-bold">Missed EMIs Termination Limit <span class="text-danger">*</span></label>
+                            <label class="text-dark font-weight-bold">Missed EMAPs Termination Limit <span class="text-danger">*</span></label>
                             <input type="number" name="auto_terminate_after_missed_emi" required min="0" value="{{ $plan->auto_terminate_after_missed_emi }}" class="form-control bg-white text-dark" placeholder="e.g. 3">
                         </div>
 
@@ -318,7 +318,7 @@
                 success: function (response) {
                     Swal.fire({
                         icon: 'success',
-                        title: 'EMI Plan Updated',
+                        title: 'EMAP Plan Updated',
                         text: response.success,
                         confirmButtonColor: '#3f50f6'
                     }).then(() => {

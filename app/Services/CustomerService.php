@@ -199,7 +199,8 @@ class CustomerService
             ->whereHas('certificate')
             ->get();
 
-        $invoices = GstInvoice::where('customer_id', $customerId)
+        $invoices = GstInvoice::with(['booking', 'payment.emiSchedule'])
+            ->where('customer_id', $customerId)
             ->where('invoice_status', '!=', 'Cancelled')
             ->latest('invoice_date')
             ->get();

@@ -12,7 +12,7 @@
                 <p class="text-muted mb-4">
                     Transaction {{ $transaction->transaction_number }} for ₹{{ number_format($transaction->amount, 2) }}
                     @if($transaction->emiSchedule)
-                        <br><span class="small">EMI #{{ $transaction->emiSchedule->installment_number }} · {{ $transaction->booking->booking_number ?? 'Booking' }}</span>
+                        <br><span class="small">EMAP #{{ $transaction->emiSchedule->installment_number }} · {{ $transaction->booking->booking_number ?? 'Booking' }}</span>
                     @endif
                 </p>
 

@@ -16,7 +16,7 @@
         <div class="card bg-white border shadow-sm p-4">
             <div class="table-responsive">
                 <table class="table table-hover">
-                    <thead><tr><th>Transaction Number</th><th>Gateway</th><th>Cashfree Order ID</th><th>Gateway Payment ID</th><th>Booking</th><th>Customer</th><th>Type</th><th>EMI</th><th>Amount</th><th>Gateway Status</th><th>Internal Status</th><th>Failure Reason</th><th>Webhook Received</th><th>Created At</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Transaction Number</th><th>Gateway</th><th>Cashfree Order ID</th><th>Gateway Payment ID</th><th>Booking</th><th>Customer</th><th>Type</th><th>EMAP</th><th>Amount</th><th>Gateway Status</th><th>Internal Status</th><th>Failure Reason</th><th>Webhook Received</th><th>Created At</th><th>Actions</th></tr></thead>
                     <tbody>
                         @forelse($logs as $log)
                             <tr>

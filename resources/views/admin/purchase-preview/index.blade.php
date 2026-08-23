@@ -5,8 +5,8 @@
     <!-- Configuration Selector Step -->
     <div class="col-12 mb-4">
         <div class="card bg-white border shadow-sm p-4">
-            <h4 class="card-title text-dark">Product Purchase Preview & EMI Planner</h4>
-            <p class="card-description text-muted">Generate dynamic transaction previews and verify custom EMI interest parameters</p>
+            <h4 class="card-title text-dark">Product Purchase Preview & EMAP Planner</h4>
+            <p class="card-description text-muted">Generate dynamic transaction previews and verify custom EMAP interest parameters</p>
 
             <form id="previewSelectForm" class="row">
                 <div class="col-md-6 form-group">
@@ -88,14 +88,14 @@
     <!-- Available EMI Plans List -->
     <div class="col-md-7 mb-4">
         <div class="card bg-white border shadow-sm h-100 p-4">
-            <h5 class="text-primary font-weight-bold mb-3 border-bottom pb-2">Available Eligible EMI Plans</h5>
+            <h5 class="text-primary font-weight-bold mb-3 border-bottom pb-2">Available Eligible EMAP Plans</h5>
             <p class="text-muted small mb-3">Select one of the compliant plans configured in the database templates below:</p>
 
             <div id="emiPlanList" class="row" style="max-height: 480px; overflow-y: auto; padding-right: 5px;">
                 <!-- Cards injected by JS -->
             </div>
             <div id="noPlansMsg" style="display: none;" class="alert alert-warning mt-2">
-                <i class="mdi mdi-alert mr-1"></i> No eligible EMI plans match this product's dynamic valuation and weight limits.
+                <i class="mdi mdi-alert mr-1"></i> No eligible EMAP plans match this product's dynamic valuation and weight limits.
             </div>
         </div>
     </div>
@@ -168,7 +168,7 @@
                 Swal.fire({
                     icon: 'warning',
                     title: 'Selection Required',
-                    text: 'Please select a customer, product, and EMI plan first.',
+                    text: 'Please select a customer, product, and EMAP plan first.',
                     confirmButtonColor: '#3f50f6'
                 });
                 return;
@@ -399,7 +399,7 @@
                                     <div class="small text-muted mb-2">Duration: <strong class="text-dark">${plan.duration_months} Months</strong></div>
                                     ${chargesInfo}
                                     <div class="border-top pt-2 mt-2">
-                                        <div class="small text-muted">Monthly EMI</div>
+                                        <div class="small text-muted">Monthly EMAP</div>
                                         <div class="h5 font-weight-bold text-primary mb-1">₹${parseFloat(plan.installment).toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
                                         <div class="small text-muted">Total: <strong>₹${parseFloat(plan.total_payable).toLocaleString(undefined, {minimumFractionDigits: 2})}</strong></div>
                                     </div>
@@ -607,7 +607,7 @@
             // Benefit notice
             let offerNotice = `Applied Offer: <strong>${response.applied_offer_name || 'Promo Offer'}</strong>. Total Savings: <strong>₹${parseFloat(response.savings_amount || response.discount_amount).toLocaleString(undefined, {minimumFractionDigits: 2})}</strong>!`;
             if (response.waived_emi_count && parseInt(response.waived_emi_count) > 0) {
-                offerNotice += ` (${response.waived_emi_count} EMI installment(s) waived).`;
+                offerNotice += ` (${response.waived_emi_count} EMAP installment(s) waived).`;
             }
             $('#sumOfferBenefitNotice').html(offerNotice).removeClass('d-none');
         } else {

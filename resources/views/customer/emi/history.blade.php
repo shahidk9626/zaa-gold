@@ -1,11 +1,11 @@
-<x-customer-layout title="EMI History">
-    <div class="page-header flex-wrap d-none d-md-flex"><h3 class="mb-0">EMI History</h3></div>
-    <div class="d-block d-md-none mb-3"><h5 class="font-weight-bold">EMI History</h5></div>
+<x-customer-layout title="EMAP History">
+    <div class="page-header flex-wrap d-none d-md-flex"><h3 class="mb-0">EMAP History</h3></div>
+    <div class="d-block d-md-none mb-3"><h5 class="font-weight-bold">EMAP History</h5></div>
 
     <div class="row mb-4">
         @foreach([
-            ['label' => 'Paid EMI', 'value' => $paid_emi, 'color' => 'success'],
-            ['label' => 'Pending EMI', 'value' => $pending_emi, 'color' => 'warning'],
+            ['label' => 'Paid EMAP', 'value' => $paid_emi, 'color' => 'success'],
+            ['label' => 'Pending EMAP', 'value' => $pending_emi, 'color' => 'warning'],
             ['label' => 'Total Paid', 'value' => '₹' . number_format($total_paid, 0), 'color' => 'primary'],
             ['label' => 'Outstanding', 'value' => '₹' . number_format($outstanding, 0), 'color' => 'danger'],
         ] as $stat)
@@ -24,9 +24,9 @@
         <div class="col-md-7 grid-margin">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">EMI Schedule</h5>
+                    <h5 class="card-title">EMAP Schedule</h5>
                     @if($schedule->isEmpty())
-                        <p class="text-muted">No EMI schedules found.</p>
+                        <p class="text-muted">No EMAP schedules found.</p>
                     @else
                         @php
                             $groupedSchedule = $schedule->groupBy('booking_id');

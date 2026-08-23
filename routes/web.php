@@ -20,6 +20,8 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['au
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/image', [ProfileController::class, 'uploadImage'])->name('profile.image.upload');
+    Route::delete('/profile/image', [ProfileController::class, 'removeImage'])->name('profile.image.remove');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 

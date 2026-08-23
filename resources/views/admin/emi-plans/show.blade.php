@@ -165,7 +165,7 @@
     <!-- Simulator calculations card -->
     <div class="col-lg-5 mb-4">
         <div class="card bg-white border shadow-sm p-4 h-100">
-            <h5 class="text-primary font-weight-bold mb-4 border-bottom pb-2">EMI Simulator Panel</h5>
+            <h5 class="text-primary font-weight-bold mb-4 border-bottom pb-2">EMAP Simulator Panel</h5>
             <p class="text-muted small mb-4">Test validation ranges and check simulated payment schedule estimates</p>
 
             <form id="simulateForm">
@@ -186,7 +186,7 @@
                 <h6 class="font-weight-bold text-dark border-bottom pb-2 mb-3">Simulation Estimations Output</h6>
                 
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted small">Monthly Installment (EMI)</span>
+                    <span class="text-muted small">Monthly Installment (EMAP)</span>
                     <span class="font-weight-bold text-dark" id="resInstallment">₹0.00</span>
                 </div>
 
@@ -221,7 +221,7 @@
                 </div>
 
                 <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
-                    <span class="text-muted small">Late penalty fee (per missed EMI)</span>
+                    <span class="text-muted small">Late penalty fee (per missed EMAP)</span>
                     <span class="font-weight-bold text-dark" id="resLate">₹0.00</span>
                 </div>
 
@@ -305,7 +305,7 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'Calculation Error',
-                        text: xhr.responseJSON.message || 'Simulating EMI calculations failed.',
+                        text: xhr.responseJSON.message || 'Simulating EMAP calculations failed.',
                         confirmButtonColor: '#ff3ca6'
                     });
                 }

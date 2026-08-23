@@ -11,7 +11,7 @@
             <i class="mdi mdi-bell-outline" style="font-size: 1.3rem;"></i>
         </a>
         <a href="{{ route('customer.profile.index') }}" class="btn btn-link p-0">
-            <img src="{{ asset('assets/images/faces/face1.jpg') }}" alt="" class="rounded-circle" style="width: 36px; height: 36px; object-fit: cover;" />
+            <img src="{{ Auth::check() ? Auth::user()->profile_image_url : asset('assets/images/faces/face1.jpg') }}" alt="" class="rounded-circle" style="width: 36px; height: 36px; object-fit: cover;" />
         </a>
     </div>
 </div>

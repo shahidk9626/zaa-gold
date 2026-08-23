@@ -8,7 +8,7 @@
                 <div class="card-body text-center py-5">
                     <i class="mdi mdi-lifebuoy text-primary" style="font-size: 4rem;"></i>
                     <h4 class="mt-4">How can we help you?</h4>
-                    <p class="text-muted">Our support team is here to assist you with your gold plans, EMI payments, deliveries, and more.</p>
+                    <p class="text-muted">Our support team is here to assist you with your gold plans, EMAP payments, deliveries, and more.</p>
 
                     <div class="row mt-4">
                         <div class="col-md-4 mb-3">

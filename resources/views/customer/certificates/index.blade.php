@@ -9,7 +9,10 @@
             <div class="card text-center p-4 h-100">
                 <i class="mdi mdi-certificate text-primary" style="font-size: 3rem;"></i>
                 <h6 class="mt-3">{{ $booking->product?->name }}</h6>
-                <p class="text-muted small">{{ $booking->certificate?->certificate_number }}</p>
+                <div class="mb-2">
+                    <span class="badge badge-info font-weight-bold">Booking ID: {{ $booking->booking_number }}</span>
+                </div>
+                <p class="text-muted small mb-3">{{ $booking->certificate?->certificate_number }}</p>
                 <div class="mt-auto">
                     <!-- <a href="{{ route('customer.certificates.price_lock_preview', $booking->id) }}" target="_blank" class="btn btn-sm btn-outline-primary btn-block mb-2">View & Print</a> -->
                     <a href="{{ route('customer.certificates.price_lock', $booking->id) }}" class="btn btn-sm btn-primary btn-block">Download PDF</a>
@@ -28,7 +31,21 @@
             <div class="card text-center p-4 h-100">
                 <i class="mdi mdi-file-document text-success" style="font-size: 3rem;"></i>
                 <h6 class="mt-3">{{ $invoice->invoice_number }}</h6>
-                <p class="text-muted small">{{ $invoice->invoice_date?->format('d M Y') }}</p>
+                @if($invoice->booking)
+                <div class="mb-1">
+                    <span class="badge badge-info font-weight-bold">Booking: {{ $invoice->booking->booking_number }}</span>
+                </div>
+                @endif
+                @if($invoice->payment?->emiSchedule)
+                <div class="mb-2">
+                    <span class="badge badge-warning font-weight-bold">EMI #{{ $invoice->payment->emiSchedule->installment_number }}</span>
+                </div>
+                @else
+                <div class="mb-2">
+                    <span class="badge badge-secondary font-weight-bold">Booking Payment</span>
+                </div>
+                @endif
+                <p class="text-muted small mb-3">{{ $invoice->invoice_date?->format('d M Y') }}</p>
                 <a href="{{ route('customer.certificates.invoice', $invoice->id) }}" class="btn btn-sm btn-primary mt-auto">Download PDF</a>
             </div>
         </div>

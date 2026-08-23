@@ -98,4 +98,46 @@ class ProfileController extends CustomerBaseController
 
         return back()->with('success', 'KYC documents submitted successfully and are pending review.');
     }
+
+    /**
+     * Upload a new profile image.
+     */
+    public function uploadImage(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'profile_image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ]);
+
+        $user = Auth::user();
+
+        if ($request->hasFile('profile_image')) {
+            // Delete old file if exists
+            if ($user->profile_image) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->profile_image);
+            }
+
+            // Save new file
+            $path = $request->file('profile_image')->store('profile-images/customers', 'public');
+            $user->profile_image = $path;
+            $user->save();
+        }
+
+        return back()->with('success', 'Profile image updated successfully.');
+    }
+
+    /**
+     * Remove the current profile image.
+     */
+    public function removeImage(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+
+        if ($user->profile_image) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($user->profile_image);
+            $user->profile_image = null;
+            $user->save();
+        }
+
+        return back()->with('success', 'Profile image removed successfully.');
+    }
 }
