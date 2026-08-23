@@ -16,7 +16,7 @@
     {{-- Desktop Header --}}
     <div class="d-none d-md-block">
         <div class="page-header flex-wrap">
-            <h3 class="mb-0">Hi, {{ Auth::user()->name }}! <span class="pl-0 h6 pl-sm-2 text-muted d-inline-block">Welcome to your AurOnGold portal. Invest Smart. Grow Secure.</span></h3>
+            <h3 class="mb-0">Hi, {{ Auth::user()->name }}! <span class="pl-0 h6 pl-sm-2 text-muted d-inline-block">Welcome to your AurOnGold Pvt Ltd . Own Gold with Confidence.</span></h3>
             <div class="d-flex">
                 <a href="{{ route('customer.profile.index') }}" class="btn btn-sm bg-white btn-icon-text border">
                     <i class="mdi mdi-account btn-icon-prepend"></i> Profile
@@ -74,7 +74,7 @@
 
     {{-- Mobile: Gold Price --}}
     <div class="d-block d-md-none mb-4">
-        <h5 class="font-weight-bold mb-3">Live Gold Price</h5>
+        <h5 class="font-weight-bold mb-3">Gold Price</h5>
         @include('customer.components.gold-price-card-mobile', [
             'goldPrice' => $goldPrice['price'] ?? null,
             'trend22k' => $goldPrice['trend_22k'] ?? 'neutral',
@@ -131,7 +131,7 @@
             <div class="col-lg-4 grid-margin">
                 <div class="card mb-4">
                     <div class="card-body">
-                        <h4 class="card-title">Live Gold Price</h4>
+                        <h4 class="card-title">Gold Price</h4>
                         @include('customer.components.gold-price-card', [
                             'goldPrice' => $goldPrice['price'] ?? null,
                             'trend22k' => $goldPrice['trend_22k'] ?? 'neutral',

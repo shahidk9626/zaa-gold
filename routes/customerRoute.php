@@ -65,6 +65,7 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 
     Route::get('/support', [SupportController::class, 'index'])->name('support.index');
+    Route::post('/support/ticket', [SupportController::class, 'storeTicket'])->name('support.ticket.store');
 });
 
 Route::post('/payment/cashfree/webhook', \App\Http\Controllers\CashfreeWebhookController::class)
