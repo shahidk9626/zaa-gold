@@ -150,4 +150,47 @@ class EmiScheduleTest extends TestCase
         $this->assertEquals(0.00, $lastMonth['closing_principal']);
         $this->assertEquals(0.00, $lastMonth['running_balance']);
     }
+
+    /**
+     * Test Disabled Charges Configuration Handling
+     */
+    public function test_disabled_charges_configuration_handling(): void
+    {
+        $plan = new EmiPlan([
+            'plan_name' => 'Selective Charges Plan',
+            'duration_months' => 12,
+            'interest_type' => 'flat',
+            'interest_rate' => 0.00,
+            'gst_on_gold_enabled' => false,
+            'gst_on_gold_percent' => 3.00,
+            'finance_charge_enabled' => false,
+            'finance_charge_type' => 'percentage',
+            'finance_charge_value' => 10.00,
+            'storage_charge_enabled' => true,
+            'storage_charge_type' => 'percentage',
+            'storage_charge_value' => 5.00,
+            'gst_on_charges_enabled' => true,
+            'gst_on_charges_percent' => 18.00,
+            'rounding_type' => 'none',
+        ]);
+
+        $calc = $this->emiService->calculate($plan, 10000.00);
+
+        // Disabled charges must be 0.00 and flag must be false
+        $this->assertFalse($calc['gst_on_gold_enabled']);
+        $this->assertEquals(0.00, $calc['gst_on_gold']);
+
+        $this->assertFalse($calc['finance_charge_enabled']);
+        $this->assertEquals(0.00, $calc['finance_charge']);
+
+        // Enabled charges must be calculated correctly
+        $this->assertTrue($calc['storage_charge_enabled']);
+        $this->assertEquals(500.00, $calc['storage_charge']);
+
+        $this->assertTrue($calc['gst_on_charges_enabled']);
+        $this->assertEquals(90.00, $calc['gst_on_charges']);
+
+        // Grand total must only sum active enabled charges: 10000 + 500 + 90 = 10590
+        $this->assertEquals(10590.00, $calc['grand_total']);
+    }
 }

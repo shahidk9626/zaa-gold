@@ -48,7 +48,7 @@ class ReceiptController extends Controller
      */
     public function downloadReceiptPdf($payment_id)
     {
-        $payment = BookingPayment::with(['booking.customer', 'booking.product', 'booking.emiPlan', 'emiSchedule'])->findOrFail($payment_id);
+        $payment = BookingPayment::with(['booking.customer.customerDetail', 'booking.product', 'booking.emiPlan', 'emiSchedule'])->findOrFail($payment_id);
         
         $qrBase64 = $this->generateReceiptQrCode($payment);
 

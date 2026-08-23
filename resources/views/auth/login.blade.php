@@ -67,30 +67,8 @@
             Log In
         </button>
 
-        <!-- Social Login Separator -->
-        <div class="divider">Or continue with</div>
-
-        <!-- Social Logins (UI Only) -->
-        <div class="row mb-4">
-            <div class="col-4">
-                <a href="javascript:void(0)" class="btn btn-social btn-block">
-                    <i class="bi bi-google"></i> Google
-                </a>
-            </div>
-            <div class="col-4">
-                <a href="javascript:void(0)" class="btn btn-social btn-block">
-                    <i class="bi bi-facebook"></i> Facebook
-                </a>
-            </div>
-            <div class="col-4">
-                <a href="javascript:void(0)" class="btn btn-social btn-block">
-                    <i class="bi bi-github"></i> GitHub
-                </a>
-            </div>
-        </div>
-
         <!-- Register Link -->
-        <p class="text-center text-muted mb-0" style="font-size: 0.9rem;">
+        <p class="text-center text-muted mt-4 mb-0" style="font-size: 0.9rem;">
             Don't have an account? 
             <a href="{{ route('register') }}" class="text-link font-weight-bold">Register</a>
         </p>

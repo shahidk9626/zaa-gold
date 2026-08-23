@@ -44,7 +44,7 @@ class CustomerOnboardingTest extends TestCase
         $customerRole = Role::where('slug', 'customer')->first();
 
         $this->customer = User::create([
-            'name' => 'John Doe Onboarding',
+            'name' => 'customer Onboarding',
             'email' => 'john.onboarding@example.com',
             'password' => bcrypt('password'),
             'role_id' => $customerRole->id,

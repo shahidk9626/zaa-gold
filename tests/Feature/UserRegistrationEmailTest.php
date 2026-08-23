@@ -38,7 +38,7 @@ class UserRegistrationEmailTest extends TestCase
         $this->actingAs($this->admin);
 
         $customerData = [
-            'name' => 'John Doe',
+            'name' => 'customer',
             'email' => 'johndoe@example.com',
             'phone' => '1234567890',
             'whatsapp_number' => '1234567890',

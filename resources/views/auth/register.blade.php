@@ -13,7 +13,7 @@
             <input id="name" type="text" name="name" 
                    class="form-control @error('name') is-invalid @enderror" 
                    value="{{ old('name') }}" required autofocus autocomplete="name" 
-                   placeholder="John Doe" />
+                   placeholder="customer" />
             @error('name')
                 <span class="invalid-feedback" role="alert">
                     <strong>{{ $message }}</strong>
@@ -82,30 +82,8 @@
             Register Account
         </button>
 
-        <!-- Social Register Separator -->
-        <div class="divider">Or register with</div>
-
-        <!-- Social Logins (UI Only) -->
-        <div class="row mb-4">
-            <div class="col-4">
-                <a href="javascript:void(0)" class="btn btn-social btn-block">
-                    <i class="bi bi-google"></i> Google
-                </a>
-            </div>
-            <div class="col-4">
-                <a href="javascript:void(0)" class="btn btn-social btn-block">
-                    <i class="bi bi-facebook"></i> Facebook
-                </a>
-            </div>
-            <div class="col-4">
-                <a href="javascript:void(0)" class="btn btn-social btn-block">
-                    <i class="bi bi-github"></i> GitHub
-                </a>
-            </div>
-        </div>
-
         <!-- Login Link -->
-        <p class="text-center text-muted mb-0" style="font-size: 0.9rem;">
+        <p class="text-center text-muted mt-4 mb-0" style="font-size: 0.9rem;">
             Already have an account? 
             <a href="{{ route('login') }}" class="text-link font-weight-bold">Login</a>
         </p>

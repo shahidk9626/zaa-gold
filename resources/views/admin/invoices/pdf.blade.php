@@ -1,526 +1,346 @@
 @php
     $booking = $invoice->booking;
-    $customer = $invoice->customer;
-    $payment = $invoice->payment;
+    $customer = $invoice->customer ?? $booking->customer;
+    $payment = $invoice->payment ?? $booking->payments()->latest()->first();
     $product = $booking->product;
     $plan = $booking->emiPlan;
 
-    // Masked PAN & Aadhaar details safely
-    $panMasked = 'N/A';
-    if (!empty($customer->customerDetail->pan_number)) {
-        $pan = trim($customer->customerDetail->pan_number);
-        if (strlen($pan) >= 4) {
-            $panMasked = substr($pan, 0, 2) . '******' . substr($pan, -2);
-        } else {
-            $panMasked = $pan;
-        }
-    }
-    
-    $aadharMasked = 'N/A';
-    if (!empty($customer->customerDetail->aadhar_number)) {
-        $aadhar = trim($customer->customerDetail->aadhar_number);
-        if (strlen($aadhar) >= 4) {
-            $aadharMasked = '********' . substr($aadhar, -4);
-        } else {
-            $aadharMasked = $aadhar;
-        }
-    }
+    // Customer details
+    $customerName = $invoice->customer_name ?? $customer->name ?? 'N/A';
+    $customerCode = $customer->customerDetail->customer_code ?? ('AGCUST' . str_pad($customer->id ?? 0, 6, '0', STR_PAD_LEFT));
+    $customerPhone = $invoice->customer_phone ?? $customer->customerDetail->phone_number ?? $customer->phone ?? 'N/A';
+    $customerEmail = $invoice->customer_email ?? $customer->email ?? 'N/A';
 
+    // Billing address formatting
     $addressParts = [];
     if (!empty($customer->customerDetail->address)) $addressParts[] = $customer->customerDetail->address;
     if (!empty($customer->customerDetail->city)) $addressParts[] = $customer->customerDetail->city;
     if (!empty($customer->customerDetail->state)) $addressParts[] = $customer->customerDetail->state;
     if (!empty($customer->customerDetail->pincode)) $addressParts[] = $customer->customerDetail->pincode;
-    $fullAddress = !empty($addressParts) ? implode(', ', $addressParts) : 'N/A';
+    $fullAddress = !empty($addressParts) ? implode(', ', $addressParts) : ($invoice->billing_address ?? 'N/A');
 
-    $verificationCode = strtoupper(substr(md5($invoice->invoice_number . ($customer->email ?? '')), 0, 8));
+    // Customer state determination for GST (Karnataka vs Inter-state)
+    $customerState = trim($customer->customerDetail->state ?? '');
+    $isKarnataka = empty($customerState) || in_array(strtolower($customerState), ['karnataka', 'ka', '29', 'karnataka (29)']);
+    $placeOfSupply = $isKarnataka ? 'Karnataka (29)' : ($customerState . ' (Inter-state)');
 
-    // Calculate invoice breakups
+    // Page 1: Invoice Numbers & Amounts
     $goldValue = (float)$invoice->gold_value;
-    $gstOnGold = (float)$invoice->gst_on_gold_amount;
-    $storagePriceLockCharges = (float)($invoice->finance_charge + $invoice->storage_charge);
-    $subtotalB = $goldValue + $gstOnGold + $storagePriceLockCharges;
+    $goldWeight = (float)$invoice->gold_weight;
+    $lockedPrice = (float)$invoice->locked_gold_price;
+    $taxableValue = $goldValue;
+
+    $totalTax = (float)($invoice->cgst_amount + $invoice->sgst_amount + $invoice->igst_amount);
+    if ($totalTax <= 0) {
+        $totalTax = (float)($invoice->gst_on_gold_amount + $invoice->gst_on_charges_amount);
+    }
     
-    $processingFee = (float)($plan->processing_fee ?? 0.00);
-    $gstOnServiceCharges = (float)$invoice->gst_on_charges_amount;
-    $totalInvoiceAmount = $subtotalB + $processingFee + $gstOnServiceCharges;
+    if ($isKarnataka) {
+        $cgstAmount = round($totalTax / 2, 2);
+        $sgstAmount = $totalTax - $cgstAmount;
+        $igstAmount = 0.00;
+    } else {
+        $cgstAmount = 0.00;
+        $sgstAmount = 0.00;
+        $igstAmount = $totalTax;
+    }
+
+    $grandTotal = (float)$invoice->grand_total;
+
+    // Helper for Amount in Words
+    $invoiceService = app(\App\Services\InvoiceService::class);
+    $page1AmountInWords = $amountInWords ?? $invoiceService->convertAmountToWords($grandTotal);
+
+    // Page 2: Receipt Breakdown Charges
+    $financeCharge = (float)($invoice->finance_charge ?? $booking->finance_charge_amount ?? 0);
+    $storageCharge = (float)($invoice->storage_charge ?? $booking->storage_charge_amount ?? 0);
+    $otherCharges = (float)($invoice->gst_on_charges_amount ?? $booking->gst_on_charges_amount ?? 0);
+    $totalReceiptCharges = $financeCharge + $storageCharge + $otherCharges;
+    if ($totalReceiptCharges <= 0) {
+        $totalReceiptCharges = max(0, $grandTotal - $goldValue);
+    }
+    $page2AmountInWords = $invoiceService->convertAmountToWords($totalReceiptCharges);
+
+    $logoPath = public_path('assets/images/logo.png');
+    $logoExists = file_exists($logoPath);
 @endphp
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Invoice_{{ $invoice->invoice_number }}</title>
+    <title>Tax Invoice & Receipt - {{ $invoice->invoice_number }}</title>
     <style>
         @page {
             size: a4 portrait;
-            margin: 10mm 8mm;
+            margin: 4mm 5mm 4mm 5mm;
         }
         body {
             font-family: 'DejaVu Sans', sans-serif;
-            font-size: 8px;
-            color: #1e1b15;
+            font-size: 8.5px;
+            color: #111827;
             line-height: 1.3;
             margin: 0;
             padding: 0;
-            background-color: #ffffff;
+            background-color: #FFFFFF;
         }
-        .outer-frame {
-            border: 2px solid #b4831b;
-            border-radius: 8px;
-            padding: 12px;
-            background-color: #ffffff;
+        .page-container {
+            border: 2px solid #C59B27;
+            padding: 10px 12px;
+            background-color: #FFFFFF;
             position: relative;
+            box-sizing: border-box;
         }
-        
-        /* Print header bar style */
-        .no-print-bar {
-            background-color: #fcfaf5;
-            border: 1px solid #e8e2d2;
-            padding: 8px 15px;
-            margin-bottom: 10px;
-            border-radius: 4px;
-            text-align: right;
+        .page-break {
+            page-break-before: always;
         }
-        .btn {
-            display: inline-block;
-            padding: 4px 8px;
-            margin-left: 5px;
-            font-size: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            border: 1px solid #b4831b;
-            border-radius: 3px;
-            text-decoration: none;
-            background-color: #ffffff;
-            color: #b4831b;
-        }
-        .btn-primary {
-            background-color: #b4831b;
-            color: #ffffff;
-        }
-        
         table {
+            width: 100%;
             border-collapse: collapse;
         }
-        .header-table {
-            width: 100%;
-            margin-bottom: 8px;
-        }
-        .logo-img {
-            height: 42px;
-            width: auto;
-        }
-        .company-details-header {
-            font-size: 8px;
-            color: #555555;
-            line-height: 1.25;
-            margin-top: 3px;
-        }
-        .invoice-title-banner {
-            background-color: #b4831b;
-            color: #ffffff;
-            font-size: 12px;
+        .company-title {
+            font-size: 18px;
             font-weight: bold;
-            padding: 3px 10px;
-            text-align: right;
-            border-radius: 2px;
+            color: #A66E14;
+            letter-spacing: 0.5px;
+            line-height: 1.1;
+        }
+        .company-subtitle {
+            font-size: 8.5px;
+            font-weight: bold;
+            color: #0B1E36;
+            letter-spacing: 2px;
+            line-height: 1.1;
+            margin-top: 2px;
+        }
+        .company-tagline {
+            font-size: 7.5px;
+            font-weight: bold;
+            color: #A66E14;
+            letter-spacing: 1.5px;
+            margin-top: 2px;
+        }
+        .contact-info-block {
+            font-size: 8px;
+            color: #333333;
+            line-height: 1.35;
+        }
+        .header-divider {
+            border-bottom: 1.5px solid #C59B27;
+            margin: 6px 0 10px 0;
+        }
+        .section-pill {
+            background-color: #8C6512;
+            color: #FFFFFF;
+            font-weight: bold;
+            font-size: 9px;
+            padding: 3px 8px;
+            border-radius: 3px 3px 0 0;
             display: inline-block;
             letter-spacing: 0.5px;
         }
-        .invoice-meta-table {
-            font-size: 8px;
-            margin-top: 4px;
+        .card-box {
+            border: 1.5px solid #E2D7C1;
+            border-radius: 0 4px 4px 4px;
+            padding: 6px 8px;
+            background-color: #FFFFFF;
+            min-height: 105px;
         }
-        .invoice-meta-table td {
-            padding: 1.5px 0;
-        }
-
-        /* Details side by side columns */
-        .section-table {
-            width: 100%;
-            margin-bottom: 8px;
-        }
-        .section-header-bar {
-            background-color: #b4831b;
-            color: #ffffff;
-            font-size: 9px;
-            font-weight: bold;
-            padding: 3px 6px;
-            border-radius: 2px;
-            margin-bottom: 4px;
-        }
-        .details-box {
-            border: 1px solid #e8e2d2;
-            border-radius: 4px;
-            padding: 6px;
-            height: 110px; /* Fixed height for clean A4 alignment */
-            background-color: #ffffff;
-        }
-        .details-subtable {
-            width: 100%;
-            font-size: 8px;
-        }
-        .details-subtable td {
-            padding: 1.5px 0;
+        .info-table td {
+            padding: 2px 3px;
+            font-size: 8.5px;
             vertical-align: top;
         }
-
-        /* Main Details Table Styles */
-        .items-table {
-            width: 100%;
-            margin-bottom: 8px;
-            border: 1px solid #e8e2d2;
-            border-radius: 4px;
+        .info-label {
+            color: #333333;
+            width: 38%;
         }
-        .items-table th {
-            background-color: #fdfaf3;
-            color: #78350f;
-            font-weight: bold;
-            border-bottom: 1px solid #e8e2d2;
-            padding: 5px;
-            text-align: left;
-            font-size: 8.5px;
-        }
-        .items-table td {
-            padding: 5px;
-            border-bottom: 1px solid #e8e2d2;
-            font-size: 8px;
-        }
-        .notes-text {
-            font-size: 7.5px;
-            color: #666666;
-            line-height: 1.2;
-        }
-        .right-aligned-total {
-            background-color: #fffdf5;
-            border-left: 1px solid #e8e2d2;
-            font-weight: bold;
-            color: #78350f;
-            font-size: 9px;
-        }
-
-        /* Invoice Breakup Table */
-        .breakup-table {
-            width: 100%;
-            margin-bottom: 8px;
-            border: 1px solid #e8e2d2;
-            border-radius: 4px;
-        }
-        .breakup-table th {
-            background-color: #fdfaf3;
-            color: #78350f;
-            font-weight: bold;
-            border-bottom: 1px solid #e8e2d2;
-            padding: 4px 6px;
-            text-align: left;
-            font-size: 8.5px;
-        }
-        .breakup-table td {
-            padding: 4px 6px;
-            border-bottom: 1px solid #f3eedf;
-            font-size: 8px;
-        }
-        .highlight-breakup-row {
-            background-color: #faf5eb;
-            font-weight: bold;
-            color: #78350f;
-            border-top: 1px solid #b4831b;
-            border-bottom: 1px solid #b4831b;
-        }
-
-        /* Words & Total block */
-        .words-total-table {
-            width: 100%;
-            margin-bottom: 8px;
-        }
-        .words-card {
-            border: 1px solid #e8e2d2;
-            border-radius: 4px;
-            padding: 6px;
-            background-color: #ffffff;
-            height: 38px;
-        }
-        .total-card {
-            border: 2px solid #b4831b;
-            border-radius: 4px;
-            padding: 6px;
-            background-color: #fffdf5;
+        .info-colon {
+            width: 4%;
             text-align: center;
-            height: 38px;
         }
-
-        /* 5. Notes / Terms / Bank details grid cards */
-        .info-cards-table {
+        .info-value {
+            color: #111111;
+            font-weight: bold;
+        }
+        .data-table {
             width: 100%;
-            margin-bottom: 8px;
+            border-collapse: collapse;
+            margin-top: 8px;
+            border: 1.5px solid #E2D7C1;
         }
-        .info-card-box {
-            border: 1px solid #e8e2d2;
-            border-radius: 4px;
-            padding: 5px;
-            height: 105px; /* Fixed height to keep spacing clean */
-            background-color: #ffffff;
+        .data-table th {
+            background-color: #8C6512;
+            color: #FFFFFF;
+            font-size: 8.5px;
+            font-weight: bold;
+            padding: 5px 6px;
+            text-align: center;
+            border: 1px solid #8C6512;
         }
-        .card-bullets {
-            padding-left: 8px;
+        .data-table td {
+            padding: 5px 6px;
+            font-size: 8.5px;
+            border: 1px solid #E2D7C1;
+        }
+        .summary-row td {
+            padding: 4px 8px;
+            font-size: 8.5px;
+            border: 1px solid #E2D7C1;
+        }
+        .total-banner-row td {
+            background-color: #8C6512;
+            color: #FFFFFF;
+            font-weight: bold;
+            font-size: 9.5px;
+            padding: 5px 8px;
+            border: 1px solid #8C6512;
+        }
+        .terms-box {
+            border: 1.5px solid #8C6512;
+            border-radius: 0 0 4px 4px;
+            padding: 6px 8px;
+            background-color: #FFFFFF;
+        }
+        .terms-list {
+            padding-left: 12px;
             margin: 0;
             font-size: 7.5px;
-            color: #555555;
-            line-height: 1.25;
+            color: #333333;
+            line-height: 1.35;
         }
-        .card-bullets li {
+        .terms-list li {
             margin-bottom: 2px;
         }
-        
-        .seal-stamp {
-            position: absolute;
-            top: -12px;
-            right: 4px;
-            width: 44px;
-            height: 44px;
-            border: 1px dashed #b4831b;
-            border-radius: 50%;
-            text-align: center;
+        .signatory-box {
+            text-align: right;
+            font-size: 8.5px;
         }
-        .seal-text-small {
-            font-size: 4px;
-            color: #b4831b;
+        .signature-font {
+            font-family: Georgia, serif;
+            font-style: italic;
+            font-size: 16px;
+            color: #0B1E36;
             font-weight: bold;
-            margin-top: 8px;
+            margin: 4px 0 2px 0;
         }
-        .seal-text-large {
-            font-size: 8px;
-            color: #b4831b;
-            font-weight: bold;
-            margin: 1px 0;
-        }
-
-        /* Contact strip */
-        .contact-strip {
-            width: 100%;
-            border-top: 1px solid #e8e2d2;
+        .footer-banner {
+            border-top: 1px solid #E2D7C1;
             padding-top: 4px;
-            margin-top: 6px;
-            font-size: 7.5px;
-            color: #555555;
+            margin-top: 8px;
             text-align: center;
-        }
-        .contact-strip td {
-            padding: 1px;
-        }
-
-        /* Bottom banner */
-        .bottom-banner {
-            margin-top: 6px;
-            background-color: #1e1b15;
-            border-top: 2px solid #b4831b;
-            border-bottom: 2px solid #b4831b;
-            padding: 4px;
-            font-size: 9px;
-            color: #d4af37;
-            text-align: center;
+            font-size: 8.5px;
+            color: #8C6512;
+            font-style: italic;
             font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-        
-        @media print {
-            .no-print-bar {
-                display: none !important;
-            }
-            .outer-frame {
-                border: 2px solid #b4831b !important;
-                padding: 12px !important;
-            }
         }
     </style>
 </head>
 <body>
-    <div class="outer-frame">
-        <!-- Print Header controls -->
-        @if(isset($isPrint) && $isPrint)
-            <div class="no-print-bar">
-                <span style="float: left; font-size: 11px; font-weight: bold; color: #b4831b; padding-top: 4px;">AurOnGold Final GST Invoice Preview</span>
-                <button onclick="window.print()" class="btn btn-primary">Print Invoice</button>
-                <button onclick="window.close()" class="btn">Close Preview</button>
-                <div style="clear: both;"></div>
-            </div>
-        @endif
 
-        <!-- Header -->
-        <table class="header-table" width="100%">
+    <!-- ========================================================= -->
+    <!-- PAGE 1: GST TAX INVOICE                                   -->
+    <!-- ========================================================= -->
+    <div class="page-container">
+        <!-- HEADER -->
+        <table width="100%">
             <tr>
                 <td width="55%" align="left" valign="top">
-                    @if(file_exists(public_path('assets/images/logo.png')))
-                        <img src="{{ public_path('assets/images/logo.png') }}" class="logo-img" alt="AurOnGold">
-                    @else
-                        <span style="font-size: 20px; font-weight: bold; color: #b4831b;">AurOnGold</span>
-                    @endif
-                    <div style="font-size: 10px; color: #b4831b; font-weight: bold; letter-spacing: 1px; margin-top: 2px;">AurOnGold</div>
-                    <table class="company-details-header" width="100%">
+                    <table width="100%">
                         <tr>
-                            <td width="15%"><strong>GSTIN</strong></td>
-                            <td width="5%">:</td>
-                            <td>29ABCDE1234F1Z5</td>
-                        </tr>
-                        <tr>
-                            <td><strong>PAN</strong></td>
-                            <td>:</td>
-                            <td>ABCDE1234F</td>
-                        </tr>
-                        <tr>
-                            <td valign="top"><strong>Regd. Office</strong></td>
-                            <td valign="top">:</td>
-                            <td>#73, First Floor, Sumatha Woods Layout, Martikyatanahalli Circle, Mysuru - 570026, Karnataka, India</td>
+                            @if($logoExists)
+                                <td width="55" valign="middle">
+                                    <img src="{{ $logoPath }}" style="height: 46px; width: auto;" alt="AurOnGold">
+                                </td>
+                            @endif
+                            <td valign="middle">
+                                <div class="company-title">AURON GOLD</div>
+                                <div class="company-subtitle">PRIVATE LIMITED</div>
+                                <div class="company-tagline">— SMART WAY TO BUY GOLD —</div>
+                            </td>
                         </tr>
                     </table>
                 </td>
-                <td width="25%" align="right" valign="top">
-                    <div class="invoice-title-banner">FINAL GST TAX INVOICE</div>
-                    <table class="invoice-meta-table" width="100%">
-                        <tr>
-                            <td width="50%" align="right"><strong>Invoice No.</strong></td>
-                            <td width="8%" align="center">:</td>
-                            <td><strong>{{ $invoice->invoice_number }}</strong></td>
-                        </tr>
-                        <tr>
-                            <td align="right"><strong>Invoice Date</strong></td>
-                            <td align="center">:</td>
-                            <td>{{ $invoice->invoice_date->format('d M Y') }}</td>
-                        </tr>
-                        <tr>
-                            <td align="right"><strong>Place of Supply</strong></td>
-                            <td align="center">:</td>
-                            <td>{{ $customer->customerDetail->state ?? 'Karnataka' }} ({{ $customer->customerDetail->state_code ?? '29' }})</td>
-                        </tr>
-                        <tr>
-                            <td align="right"><strong>Reverse Charge</strong></td>
-                            <td align="center">:</td>
-                            <td>No</td>
-                        </tr>
-                        <tr>
-                            <td align="right"><strong>State Code</strong></td>
-                            <td align="center">:</td>
-                            <td>{{ $customer->customerDetail->state_code ?? '29' }}</td>
-                        </tr>
-                    </table>
-                </td>
-                <td width="20%" align="right" valign="top">
-                    <!-- Gold trust badge ribbon seal SVG -->
-                    <svg width="60" height="80" viewBox="0 0 120 160" style="display: block;">
-                        <path d="M 40 100 L 25 150 L 50 135 L 60 150 L 50 100 Z" fill="#b4831b" />
-                        <path d="M 80 100 L 95 150 L 70 135 L 60 150 L 70 100 Z" fill="#b4831b" />
-                        <circle cx="60" cy="60" r="50" fill="#a47214" stroke="#cfa643" stroke-width="2" />
-                        <circle cx="60" cy="60" r="44" fill="#1b1a18" />
-                        <circle cx="60" cy="60" r="41" fill="none" stroke="#d4af37" stroke-width="1" stroke-dasharray="3,3" />
-                        <text x="60" y="44" fill="#d4af37" font-size="7.5" font-family="'DejaVu Sans', sans-serif" font-weight="bold" text-anchor="middle">TRUSTED</text>
-                        <text x="60" y="56" fill="#d4af37" font-size="6.5" font-family="'DejaVu Sans', sans-serif" font-weight="bold" text-anchor="middle">TRANSPARENT</text>
-                        <text x="60" y="68" fill="#d4af37" font-size="7.5" font-family="'DejaVu Sans', sans-serif" font-weight="bold" text-anchor="middle">SECURE</text>
-                        <text x="60" y="85" fill="#d4af37" font-size="9" font-family="'DejaVu Sans', sans-serif" text-anchor="middle">★★★</text>
-                    </svg>
+                <td width="45%" align="right" valign="top" class="contact-info-block">
+                    📍 73, 1st Floor, Samathawoods Layout,<br>
+                    Bhogadi, Gaddige Main Road,<br>
+                    Mysuru - 570026, Karnataka<br>
+                    📞 7337616333 &nbsp;|&nbsp; ✉ support@aurongold.in<br>
+                    🌐 www.aurongold.in
                 </td>
             </tr>
         </table>
 
-        <!-- Contact top strip -->
-        <table width="100%" style="font-size: 8px; color: #666; border-top: 1px solid #e8e2d2; border-bottom: 1px solid #e8e2d2; padding: 3px 0; margin-bottom: 8px; text-align: center;">
-            <tr>
-                <td>🌐 www.aurongold.in</td>
-                <td>✉ support@aurongold.in</td>
-                <td>📞 +91 73376 16333</td>
-            </tr>
-        </table>
+        <div class="header-divider"></div>
 
-        <!-- Customer & Purchase details -->
-        <table class="section-table" width="100%" cellspacing="0">
+        <!-- TOP 2 CARDS: BILL TO & TAX INVOICE (GST) -->
+        <table width="100%" style="margin-bottom: 10px;">
             <tr>
-                <!-- Customer Details -->
-                <td width="48%" valign="top">
-                    <div class="details-box">
-                        <div class="section-header-bar">👤 BILLING DETAILS (CUSTOMER)</div>
-                        <table class="details-subtable">
+                <td width="49%" valign="top">
+                    <div class="section-pill">BILL TO</div>
+                    <div class="card-box">
+                        <table class="info-table">
                             <tr>
-                                <td width="30%"><strong>Customer Name</strong></td>
-                                <td width="5%">:</td>
-                                <td>{{ $invoice->customer_name }}</td>
+                                <td class="info-label">Customer Name</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value">{{ $customerName }}</td>
                             </tr>
                             <tr>
-                                <td><strong>Customer ID</strong></td>
-                                <td>:</td>
-                                <td>{{ $customer->customerDetail->customer_code ?? 'AGCUST' . str_pad($customer->id, 6, '0', STR_PAD_LEFT) }}</td>
+                                <td class="info-label">Customer ID</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value" style="font-weight: normal;">{{ $customerCode }}</td>
                             </tr>
                             <tr>
-                                <td><strong>Mobile Number</strong></td>
-                                <td>:</td>
-                                <td>{{ $invoice->customer_phone }}</td>
+                                <td class="info-label">Mobile Number</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value" style="font-weight: normal;">{{ $customerPhone }}</td>
                             </tr>
                             <tr>
-                                <td><strong>Email Address</strong></td>
-                                <td>:</td>
-                                <td>{{ $invoice->customer_email }}</td>
+                                <td class="info-label">Email Address</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value" style="font-weight: normal; font-size: 8px; word-break: break-all;">{{ $customerEmail }}</td>
                             </tr>
                             <tr>
-                                <td><strong>Billing Address</strong></td>
-                                <td>:</td>
-                                <td style="line-height: 1.2;">{{ $invoice->billing_address }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>State</strong></td>
-                                <td>:</td>
-                                <td>{{ $customer->customerDetail->state ?? 'N/A' }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>GSTIN</strong></td>
-                                <td>:</td>
-                                <td>{{ $customer->customerDetail->gst_number ?? 'N/A' }}</td>
+                                <td class="info-label">Address</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value" style="font-weight: normal; font-size: 8px; line-height: 1.25;">{{ $fullAddress }}</td>
                             </tr>
                         </table>
                     </div>
                 </td>
-                <td width="4%">&nbsp;</td>
-                <!-- Purchase Details -->
-                <td width="48%" valign="top">
-                    <div class="details-box">
-                        <div class="section-header-bar">📌 REFERENCE & PURCHASE DETAILS</div>
-                        <table class="details-subtable">
+                <td width="2%"></td>
+                <td width="49%" valign="top">
+                    <div class="section-pill">TAX INVOICE (GST)</div>
+                    <div class="card-box">
+                        <table class="info-table">
                             <tr>
-                                <td width="40%"><strong>Booking Ref</strong></td>
-                                <td width="5%">:</td>
-                                <td>{{ $booking->booking_number }}</td>
+                                <td class="info-label">Invoice No.</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value">{{ $invoice->invoice_number }}</td>
                             </tr>
                             <tr>
-                                <td><strong>Booking Date</strong></td>
-                                <td>:</td>
-                                <td>{{ $booking->booking_date->format('d M Y') }}</td>
+                                <td class="info-label">Invoice Date</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value" style="font-weight: normal;">{{ $invoice->invoice_date->format('d/m/Y') }}</td>
                             </tr>
                             <tr>
-                                <td><strong>Plan Type</strong></td>
-                                <td>:</td>
-                                <td>{{ $booking->duration_months }} Months Gold Purchase Plan (EMAP)</td>
+                                <td class="info-label">Place of Supply</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value" style="font-weight: normal;">{{ $placeOfSupply }}</td>
                             </tr>
                             <tr>
-                                <td><strong>Gold Product</strong></td>
-                                <td>:</td>
-                                <td>{{ $invoice->product_name }}</td>
+                                <td class="info-label">Reverse Charge</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value" style="font-weight: normal;">No</td>
                             </tr>
                             <tr>
-                                <td><strong>Gold Purity</strong></td>
-                                <td>:</td>
-                                <td>{{ (float)$invoice->gold_purity }} fine gold</td>
+                                <td class="info-label">Invoice Type</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value" style="font-weight: normal;">Tax Invoice</td>
                             </tr>
                             <tr>
-                                <td><strong>Gold Weight Purchased</strong></td>
-                                <td>:</td>
-                                <td>{{ number_format($invoice->gold_weight, 3) }} g</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Locked Gold Price</strong></td>
-                                <td>:</td>
-                                <td>₹{{ number_format($invoice->locked_gold_price, 2) }} per gram ({{ (float)$invoice->gold_purity }} fine gold)</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Plan Completion Date</strong></td>
-                                <td>:</td>
-                                <td>{{ $booking->booking_date->copy()->addMonths($booking->duration_months)->format('d M Y') }}</td>
+                                <td class="info-label">GSTIN</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value" style="font-weight: normal;">{{ $customer->customerDetail->gstin ?? 'Unregistered' }}</td>
                             </tr>
                         </table>
                     </div>
@@ -528,221 +348,333 @@
             </tr>
         </table>
 
-        <!-- Product Table -->
-        <table class="items-table" width="100%" cellspacing="0">
+        <!-- PRODUCT & TAX BREAKUP TABLE -->
+        <table class="data-table">
             <thead>
                 <tr>
-                    <th width="50%">Description</th>
-                    <th width="15%" align="right">Gold Weight (g)</th>
-                    <th width="15%" align="right">Locked Price (Per g)</th>
-                    <th width="20%" align="right">Gold Value (₹)</th>
+                    <th width="8%">SR. NO.</th>
+                    <th width="42%">DESCRIPTION</th>
+                    <th width="12%">HSN CODE</th>
+                    <th width="10%">QTY</th>
+                    <th width="8%">UNIT</th>
+                    <th width="10%">RATE (₹)</th>
+                    <th width="10%">AMOUNT (₹)</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td valign="top">
-                        <strong>{{ $invoice->product_name }}</strong><br>
-                        Gold bars/coins locked as per selected plan and accumulated monthly.
+                    <td align="center">1</td>
+                    <td>
+                        <strong>{{ $product->name ?? '1 g 24KT (999.9) Fine Gold' }}</strong><br>
+                        <span style="font-size: 7.5px; color: #555555;">Gold Value</span>
                     </td>
-                    <td valign="top" align="right">{{ number_format($invoice->gold_weight, 3) }}</td>
-                    <td valign="top" align="right">₹{{ number_format($invoice->locked_gold_price, 2) }}</td>
-                    <td valign="top" align="right">₹{{ number_format($invoice->gold_value, 2) }}</td>
+                    <td align="center">7108</td>
+                    <td align="center">{{ number_format($goldWeight, 3) }}</td>
+                    <td align="center">Gram</td>
+                    <td align="right">₹{{ number_format($lockedPrice > 0 ? $lockedPrice : ($goldValue / max(0.001, $goldWeight)), 2) }}</td>
+                    <td align="right">₹{{ number_format($goldValue, 2) }}</td>
                 </tr>
-                <tr>
-                    <td colspan="2" class="notes-text" valign="middle">
-                        * Gold weight is in grams. Final product (Coin/Bar) will be delivered upon completion of the plan, subject to stock availability.
-                    </td>
-                    <td class="right-aligned-total" align="right" valign="middle">TOTAL GOLD VALUE (A)</td>
-                    <td class="right-aligned-total" align="right" valign="middle">₹{{ number_format($invoice->gold_value, 2) }}</td>
-                </tr>
-            </tbody>
-        </table>
 
-        <!-- Invoice Breakup Table -->
-        <table class="breakup-table" width="100%" cellspacing="0">
-            <thead>
-                <tr>
-                    <th width="5%">#</th>
-                    <th width="50%">Particulars</th>
-                    <th width="25%">Calculation</th>
-                    <th width="20%" align="right">Amount (₹)</th>
+                <!-- TAXABLE VALUE -->
+                <tr class="summary-row">
+                    <td colspan="5" style="border: none;"></td>
+                    <td align="right" style="font-weight: bold; background-color: #FAFAFA;">TAXABLE VALUE</td>
+                    <td align="right" style="font-weight: bold; background-color: #FAFAFA;">₹{{ number_format($taxableValue, 2) }}</td>
                 </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>Gold Value ({{ number_format($invoice->gold_weight, 3) }} g @ ₹{{ number_format($invoice->locked_gold_price, 2) }})</td>
-                    <td>A</td>
-                    <td align="right">₹{{ number_format($invoice->gold_value, 2) }}</td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td>GST on Gold @ {{ number_format($invoice->gst_on_gold_percent, 1) }}%</td>
-                    <td>{{ number_format($invoice->gst_on_gold_percent, 1) }}% of A</td>
-                    <td align="right">₹{{ number_format($invoice->gst_on_gold_amount, 2) }}</td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td>Gold Storage & Price Locking Charges @ {{ number_format($booking->finance_charge_percent + $booking->storage_charge_percent, 1) }}%</td>
-                    <td>{{ number_format($booking->finance_charge_percent + $booking->storage_charge_percent, 1) }}% of A</td>
-                    <td align="right">₹{{ number_format($storagePriceLockCharges, 2) }}</td>
-                </tr>
-                <tr class="highlight-breakup-row">
-                    <td>&nbsp;</td>
-                    <td>SUB TOTAL (GOLD VALUE + GST + STORAGE & PRICE LOCKING)</td>
-                    <td>B (1 + 2 + 3)</td>
-                    <td align="right">₹{{ number_format($subtotalB, 2) }}</td>
-                </tr>
-                <tr>
-                    <td>4</td>
-                    <td>Our Service Charges (Processing Fee + Platform Convenience Fee + Insured Delivery Charges) @ 6%</td>
-                    <td>6% of A</td>
-                    <td align="right">₹{{ number_format($processingFee, 2) }}</td>
-                </tr>
-                <tr>
-                    <td>5</td>
-                    <td>GST on Our Service Charges @ {{ number_format($invoice->gst_on_charges_percent, 1) }}%</td>
-                    <td>{{ number_format($invoice->gst_on_charges_percent, 1) }}% of 4</td>
-                    <td align="right">₹{{ number_format($gstOnServiceCharges, 2) }}</td>
-                </tr>
-                @if((float)$booking->savings_amount > 0)
-                <tr>
-                    <td>6</td>
-                    <td>Promo Savings Discount (Applied Offer: {{ $booking->offer_name ?? 'Savings' }})</td>
-                    <td>Offer Benefit</td>
-                    <td align="right" style="color: #c53030; font-weight: bold;">- ₹{{ number_format($booking->savings_amount, 2) }}</td>
-                </tr>
-                <tr class="highlight-breakup-row">
-                    <td>&nbsp;</td>
-                    <td>NET TOTAL INVOICE AMOUNT</td>
-                    <td>(B + 4 + 5) - 6</td>
-                    <td align="right">₹{{ number_format($invoice->grand_total, 2) }}</td>
-                </tr>
+
+                <!-- GST BREAKUP: KARNATAKA (CGST+SGST) VS INTER-STATE (IGST) -->
+                @if($isKarnataka)
+                    <tr class="summary-row">
+                        <td colspan="5" style="border: none;"></td>
+                        <td align="right" style="color: #333333;">CGST @ 1.5%</td>
+                        <td align="right">₹{{ number_format($cgstAmount, 2) }}</td>
+                    </tr>
+                    <tr class="summary-row">
+                        <td colspan="5" style="border: none;"></td>
+                        <td align="right" style="color: #333333;">SGST @ 1.5%</td>
+                        <td align="right">₹{{ number_format($sgstAmount, 2) }}</td>
+                    </tr>
                 @else
-                <tr class="highlight-breakup-row">
-                    <td>&nbsp;</td>
-                    <td>TOTAL INVOICE AMOUNT</td>
-                    <td>B + 4 + 5</td>
-                    <td align="right">₹{{ number_format($totalInvoiceAmount, 2) }}</td>
-                </tr>
+                    <tr class="summary-row">
+                        <td colspan="5" style="border: none;"></td>
+                        <td align="right" style="color: #333333;">IGST @ 3.0%</td>
+                        <td align="right">₹{{ number_format($igstAmount, 2) }}</td>
+                    </tr>
                 @endif
+
+                <!-- TOTAL AMOUNT ROW -->
+                <tr class="total-banner-row">
+                    <td colspan="5" style="border: none; background-color: #FFFFFF;"></td>
+                    <td align="right">TOTAL AMOUNT (INR)</td>
+                    <td align="right">₹{{ number_format($grandTotal, 2) }}</td>
+                </tr>
             </tbody>
         </table>
 
-        <!-- Words and Total Block -->
-        <table class="words-total-table" width="100%" cellspacing="0">
+        <!-- AMOUNT IN WORDS & INFO NOTICE -->
+        <table width="100%" style="margin-top: 10px;">
             <tr>
-                <td width="65%" valign="top">
-                    <div class="words-card">
-                        <div style="font-size: 7.5px; color: #777777; font-weight: bold; text-transform: uppercase;">
-                            <!-- Coins stack icon -->
-                            💰 Amount in Words:
-                        </div>
-                        <div style="font-size: 8.5px; font-weight: bold; margin-top: 3px; color: #78350f;">
-                            {{ $amountInWords }}
-                        </div>
+                <td width="60%" valign="top">
+                    <div style="font-size: 8.5px; font-weight: bold; color: #8C6512;">AMOUNT IN WORDS:</div>
+                    <div style="font-size: 8px; color: #111111; margin-top: 2px; line-height: 1.3;">
+                        {{ $page1AmountInWords }}
                     </div>
                 </td>
-                <td width="5%">&nbsp;</td>
-                <td width="30%" valign="top">
-                    <div class="total-card">
-                        <div style="font-size: 7.5px; color: #777777; font-weight: bold; text-transform: uppercase;">TOTAL AMOUNT PAYABLE</div>
-                        <div style="font-size: 13px; font-weight: bold; color: #b4831b; margin-top: 2px;">₹{{ number_format($invoice->grand_total, 2) }}</div>
-                    </div>
-                </td>
-            </tr>
-        </table>
-
-        <!-- Row 5 Cards -->
-        <table class="info-cards-table" width="100%" cellspacing="0">
-            <tr>
-                <!-- Notes -->
-                <td width="36%" valign="top">
-                    <div class="info-card-box">
-                        <div class="section-header-bar">⚙ IMPORTANT NOTES</div>
-                        <ul class="card-bullets">
-                            <li>Gold price is locked as on booking date and will not change during the selected plan period.</li>
-                            <li>Gold Storage & Price Locking Charges are calculated @ 12% of the total gold value.</li>
-                            <li>Our Service Charges include Processing Fee, Platform Convenience Fee and Insured Delivery Charges calculated @ 6% of the total gold value.</li>
-                            <li>GST on gold is charged @ 3% as per applicable GST law.</li>
-                            <li>GST on our service charges is charged @ 18%.</li>
-                            <li>Gold Coin / Bar (Biscuit) will be delivered after successful completion of the plan and KYC verification.</li>
-                            <li>Purity Certificate will be provided with the product at the time of delivery.</li>
-                        </ul>
-                    </div>
-                </td>
-                <td width="3%">&nbsp;</td>
-                <!-- Bank & Verification -->
-                <td width="30%" valign="top">
-                    <div class="info-card-box" style="height: 105px;">
-                        <div class="section-header-bar">🏦 BANK DETAILS (FOR REFERENCE)</div>
-                        <table style="font-size: 7.5px; width: 100%; margin-bottom: 3px;">
-                            <tr><td width="42%"><strong>Account Name</strong></td><td>: AurOnGold</td></tr>
-                            <tr><td><strong>Bank Name</strong></td><td>: HDFC Bank</td></tr>
-                            <tr><td><strong>Account No.</strong></td><td>: 50200012345678</td></tr>
-                            <tr><td><strong>IFSC Code</strong></td><td>: HDFC0001234</td></tr>
-                            <tr><td><strong>Account Type</strong></td><td>: Current Account</td></tr>
-                        </table>
-                        
-                        <div class="section-header-bar" style="margin-top: 2px; margin-bottom: 2px; font-size: 7px; padding: 1.5px 4px;">🛡 VERIFY THIS INVOICE</div>
+                <td width="40%" valign="top" align="right">
+                    <div style="border: 1.5px solid #E2D7C1; border-radius: 5px; padding: 6px 10px; background-color: #FFFDF7; display: inline-block; text-align: left;">
                         <table width="100%">
                             <tr>
-                                <td width="30%" align="center">
-                                    @if(!empty($qrImageSrc))
-                                        <img src="{{ $qrImageSrc }}" style="width: 26px; height: 26px; border: 1px solid #e8e2d2;" alt="QR">
-                                    @else
-                                        <div style="border: 1px dashed #ccc; width: 26px; height: 26px; line-height: 26px; font-size: 5px; color: #999;">QR</div>
-                                    @endif
-                                </td>
-                                <td valign="middle" style="font-size: 6px; color: #666; line-height: 1.1; padding-left: 4px;">
-                                    Verification Code: <strong>{{ $verificationCode }}</strong><br>
-                                    Scan QR code to verify invoice authenticity.
+                                <td width="20" valign="middle" style="font-size: 14px; color: #8C6512;">📝</td>
+                                <td style="font-size: 7.5px; color: #333333; line-height: 1.25;">
+                                    GST Invoice will be provided once payment is completed.
                                 </td>
                             </tr>
                         </table>
                     </div>
                 </td>
-                <td width="3%">&nbsp;</td>
-                <!-- Terms & Signature -->
-                <td width="28%" valign="top">
-                    <div class="info-card-box">
-                        <div class="section-header-bar">📜 TERMS & CONDITIONS</div>
-                        <ul class="card-bullets">
-                            <li>This is the final GST Tax Invoice.</li>
-                            <li>Final GST Invoice is issued only after full payment of the plan amount with all applicable charges.</li>
-                            <li>All amounts are inclusive of applicable taxes.</li>
-                            <li>This is a computer generated invoice and does not require physical signature.</li>
+            </tr>
+        </table>
+
+        <!-- TERMS & CONDITIONS & SIGNATURE -->
+        <table width="100%" style="margin-top: 12px;">
+            <tr>
+                <td width="65%" valign="top">
+                    <div class="section-pill">TERMS & CONDITIONS</div>
+                    <div class="terms-box">
+                        <ul class="terms-list">
+                            <li>Goods once sold will not be exchanged or returned.</li>
+                            <li>Please ensure to verify the item before completing the purchase.</li>
+                            <li>Company is not responsible for any loss after delivery.</li>
+                            <li>All disputes are subject to Mysuru jurisdiction only.</li>
+                            <li>All our terms and conditions available in website it's included in this.</li>
                         </ul>
-                        
-                        <div style="height: 24px; position: relative; margin-top: 8px;">
-                            <span style="font-family: Georgia, serif; font-style: italic; font-size: 11px; color: #2e40e2; font-weight: bold; display: inline-block;">AurOnGold Official</span>
-                            <div class="seal-stamp" style="top: -24px; right: 2px; width: 34px; height: 34px;">
-                                <div class="seal-text-small" style="margin-top: 5px; font-size: 3px;">AURONGOLD</div>
-                                <div class="seal-text-large" style="font-size: 7px; margin: 0;">AG</div>
-                                <div class="seal-text-small" style="font-size: 3px; margin: 0;">SECURE</div>
-                            </div>
-                        </div>
-                        <div style="border-top: 1px solid #999; font-size: 7px; font-weight: bold; text-align: center; margin-top: 2px;">Authorized Signatory</div>
-                        <div style="font-size: 6px; color: #666; text-align: center;">AurOnGold</div>
+                    </div>
+                </td>
+                <td width="35%" valign="bottom" class="signatory-box">
+                    <div style="font-size: 8px; color: #555555; margin-bottom: 2px;">For Auron Gold Private Limited</div>
+                    <div class="signature-font">Harshith</div>
+                    <div style="border-top: 1.5px solid #111111; width: 130px; margin-left: auto; margin-top: 2px;"></div>
+                    <div style="font-size: 8.5px; font-weight: bold; color: #111111; margin-top: 2px;">Authorised Signatory</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- PAGE 2: PAYMENT RECEIPT                                   -->
+    <!-- ========================================================= -->
+    <div class="page-break"></div>
+
+    <div class="page-container">
+        <!-- HEADER -->
+        <table width="100%">
+            <tr>
+                <td width="55%" align="left" valign="top">
+                    <table width="100%">
+                        <tr>
+                            @if($logoExists)
+                                <td width="55" valign="middle">
+                                    <img src="{{ $logoPath }}" style="height: 46px; width: auto;" alt="AurOnGold">
+                                </td>
+                            @endif
+                            <td valign="middle">
+                                <div class="company-title">AURON GOLD</div>
+                                <div class="company-subtitle">PRIVATE LIMITED</div>
+                                <div class="company-tagline">— SMART WAY TO BUY GOLD —</div>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td width="45%" align="right" valign="top" class="contact-info-block">
+                    📍 73, 1st Floor, Samathawoods Layout,<br>
+                    Bhogadi, Gaddige Main Road,<br>
+                    Mysuru - 570026, Karnataka<br>
+                    📞 7337616333 &nbsp;|&nbsp; ✉ support@aurongold.in<br>
+                    🌐 www.aurongold.in
+                </td>
+            </tr>
+        </table>
+
+        <div class="header-divider"></div>
+
+        <!-- PAYMENT RECEIPT BANNER -->
+        <div style="text-align: center; margin-bottom: 10px;">
+            <div style="display: inline-block; background-color: #8C6512; color: #FFFFFF; font-weight: bold; font-size: 11px; padding: 4px 18px; border-radius: 4px; letter-spacing: 1px;">
+                ❖ &nbsp; PAYMENT RECEIPT &nbsp; ❖
+            </div>
+        </div>
+
+        <!-- TOP DETAILS: RECEIPT META & CUSTOMER DETAILS -->
+        <table width="100%" style="margin-bottom: 10px;">
+            <tr>
+                <td width="49%" valign="top">
+                    <table class="info-table">
+                        <tr>
+                            <td class="info-label" style="width: 42%;">Receipt No.</td>
+                            <td class="info-colon">:</td>
+                            <td class="info-value">AG-PR-{{ date('Y') }}-{{ str_pad($payment->id ?? $invoice->id, 6, '0', STR_PAD_LEFT) }}</td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Booking ID</td>
+                            <td class="info-colon">:</td>
+                            <td class="info-value" style="font-weight: normal;">{{ $booking->booking_number }}</td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Receipt Date</td>
+                            <td class="info-colon">:</td>
+                            <td class="info-value" style="font-weight: normal;">{{ optional($payment->created_at ?? $invoice->created_at)->format('d/m/Y') }}</td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Payment Date & Time</td>
+                            <td class="info-colon">:</td>
+                            <td class="info-value" style="font-weight: normal;">{{ optional($payment->payment_date ?? $payment->created_at)->format('d/m/Y | h:i A') }}</td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Payment Method</td>
+                            <td class="info-colon">:</td>
+                            <td class="info-value" style="font-weight: normal;">{{ ucfirst($payment->payment_method ?? 'Online Payment (UPI)') }}</td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Payment Status</td>
+                            <td class="info-colon">:</td>
+                            <td class="info-value" style="color: #2e7d32; font-weight: bold;">Successful</td>
+                        </tr>
+                    </table>
+                </td>
+                <td width="2%"></td>
+                <td width="49%" valign="top">
+                    <div class="section-pill">CUSTOMER DETAILS</div>
+                    <div class="card-box" style="min-height: 100px;">
+                        <table class="info-table">
+                            <tr>
+                                <td class="info-label">Customer Name</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value">{{ $customerName }}</td>
+                            </tr>
+                            <tr>
+                                <td class="info-label">Customer ID</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value" style="font-weight: normal;">{{ $customerCode }}</td>
+                            </tr>
+                            <tr>
+                                <td class="info-label">Mobile Number</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value" style="font-weight: normal;">{{ $customerPhone }}</td>
+                            </tr>
+                            <tr>
+                                <td class="info-label">Email Address</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value" style="font-weight: normal; font-size: 8px; word-break: break-all;">{{ $customerEmail }}</td>
+                            </tr>
+                            <tr>
+                                <td class="info-label">Address</td>
+                                <td class="info-colon">:</td>
+                                <td class="info-value" style="font-weight: normal; font-size: 8px; line-height: 1.25;">{{ $fullAddress }}</td>
+                            </tr>
+                        </table>
                     </div>
                 </td>
             </tr>
         </table>
 
-        <!-- Contact Strip -->
-        <table class="contact-strip" width="100%">
+        <!-- CHARGES BREAKDOWN TABLE -->
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th width="10%">SR. NO.</th>
+                    <th width="65%">DESCRIPTION</th>
+                    <th width="25%">AMOUNT (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td align="center">1</td>
+                    <td>Gold Price Lock Charges</td>
+                    <td align="right">₹{{ number_format($financeCharge, 2) }}</td>
+                </tr>
+                <tr>
+                    <td align="center">2</td>
+                    <td>Service Charges</td>
+                    <td align="right">₹{{ number_format($storageCharge, 2) }}</td>
+                </tr>
+                <tr>
+                    <td align="center">3</td>
+                    <td>Other Charges (All Inclusive)</td>
+                    <td align="right">₹{{ number_format($otherCharges, 2) }}</td>
+                </tr>
+                <tr class="total-banner-row">
+                    <td colspan="2" align="right">TOTAL CHARGES (ALL INCLUSIVE)</td>
+                    <td align="right">₹{{ number_format($totalReceiptCharges, 2) }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- AMOUNT IN WORDS & INFO NOTICE -->
+        <table width="100%" style="margin-top: 8px;">
             <tr>
-                <td width="22%">🌐 www.aurongold.in</td>
-                <td width="26%">✉ support@aurongold.in</td>
-                <td width="22%">📞 +91 73376 16333</td>
-                <td width="30%" align="right">📍 #73, BKC District, Mumbai, MH - 400051</td>
+                <td width="60%" valign="top">
+                    <div style="font-size: 8.5px; font-weight: bold; color: #8C6512;">AMOUNT IN WORDS:</div>
+                    <div style="font-size: 8px; color: #111111; margin-top: 2px; line-height: 1.3;">
+                        {{ $page2AmountInWords }}
+                    </div>
+                </td>
+                <td width="40%" valign="top" align="right">
+                    <div style="border: 1.5px solid #E2D7C1; border-radius: 5px; padding: 6px 10px; background-color: #FFFDF7; display: inline-block; text-align: left;">
+                        <table width="100%">
+                            <tr>
+                                <td width="20" valign="middle" style="font-size: 14px; color: #8C6512;">💳</td>
+                                <td style="font-size: 7.5px; color: #333333; line-height: 1.25;">
+                                    This is a payment receipt for advance charges received.
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </td>
             </tr>
         </table>
 
-        <!-- Bottom Banner -->
-        <div class="bottom-banner">
-            ❖ Thank you for choosing AurOnGold. Invest Smart. Grow Secure. ❖
+        <!-- NOTE BOX -->
+        <div style="border: 1.5px solid #E2D7C1; border-radius: 4px; padding: 5px 8px; background-color: #FFFDF7; margin-top: 8px;">
+            <div style="font-size: 8.5px; font-weight: bold; color: #8C6512; margin-bottom: 2px;">NOTE:</div>
+            <div style="font-size: 7.5px; color: #333333; line-height: 1.3;">
+                • This receipt is issued for the advance payment received towards Gold Price Lock Charges, Service Charges and Other Charges (All Inclusive).
+            </div>
+        </div>
+
+        <!-- TERMS, QR CODE & SIGNATURE -->
+        <table width="100%" style="margin-top: 8px;">
+            <tr>
+                <td width="50%" valign="top">
+                    <div class="section-pill">TERMS & CONDITIONS</div>
+                    <div class="terms-box">
+                        <ul class="terms-list">
+                            <li>This receipt is valid subject to realisation of payment.</li>
+                            <li>All our terms and conditions available in website it's included in this.</li>
+                            <li>Company reserves the right to modify or change any charges/terms without prior notice.</li>
+                            <li>This is a computer generated receipt and does not require any physical signature.</li>
+                        </ul>
+                    </div>
+                </td>
+                <td width="22%" align="center" valign="middle">
+                    @if(!empty($qrImageSrc))
+                        <img src="{{ $qrImageSrc }}" style="width: 55px; height: 55px; display: block; margin: 0 auto;" alt="QR Code"><br>
+                        <span style="font-size: 6.5px; color: #555555;">Scan to visit our website</span>
+                    @endif
+                </td>
+                <td width="28%" valign="bottom" class="signatory-box">
+                    <div style="font-size: 8px; color: #555555; margin-bottom: 2px;">For Auron Gold Private Limited</div>
+                    <div class="signature-font">Harshith</div>
+                    <div style="border-top: 1.5px solid #111111; width: 130px; margin-left: auto; margin-top: 2px;"></div>
+                    <div style="font-size: 8.5px; font-weight: bold; color: #111111; margin-top: 2px;">Authorised Signatory</div>
+                </td>
+            </tr>
+        </table>
+
+        <!-- FOOTER -->
+        <div class="footer-banner">
+            Thank you for choosing Auron Gold Private Limited.
         </div>
     </div>
+
 </body>
 </html>

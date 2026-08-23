@@ -69,7 +69,7 @@ class StaffController extends Controller
             'role_id' => 'required|exists:roles,id',
             'first_name' => 'required|string|max:255',
             'phone' => 'required|string|unique:users,phone',
-            'email' => 'nullable|email|unique:users,email',
+            'email' => 'required|email|unique:users,email',
             'joining_date' => 'required|date',
             'address' => 'required|string',
             'city' => 'required|string',
@@ -177,7 +177,7 @@ class StaffController extends Controller
             'role_id' => 'required|exists:roles,id',
             'first_name' => 'required|string|max:255',
             'phone' => 'required|string|unique:users,phone,' . $user->id,
-            'email' => 'nullable|email|unique:users,email,' . $user->id,
+            'email' => 'required|email|unique:users,email,' . $user->id,
             'joining_date' => 'required|date',
         ]);
 

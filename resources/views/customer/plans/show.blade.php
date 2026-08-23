@@ -125,22 +125,35 @@
 
                                     <div class="collapse plan-details-collapse mt-2" id="details-collapse-{{ $plan->id }}">
                                         <div class="border-top pt-2 mt-2 text-muted small" style="font-size: 0.75rem; line-height: 1.4;">
-                                            <div class="d-flex justify-content-between mb-1">
-                                                <span>Processing Fee:</span>
-                                                <span class="text-dark">₹{{ number_format($calc['processing_fee'], 2) }} {{ $plan->processing_fee_type === 'percent' ? "({$plan->processing_fee}%)" : '' }}</span>
-                                            </div>
-                                            <div class="d-flex justify-content-between mb-1">
-                                                <span>Finance Charge:</span>
-                                                <span class="text-dark">₹{{ number_format($calc['finance_charge'], 2) }} {{ $plan->finance_charge_enabled && strtolower($plan->finance_charge_type) === 'percentage' ? "({$plan->finance_charge_value}%)" : '' }}</span>
-                                            </div>
-                                            <div class="d-flex justify-content-between mb-1">
-                                                <span>Storage Charge:</span>
-                                                <span class="text-dark">₹{{ number_format($calc['storage_charge'], 2) }} {{ $plan->storage_charge_enabled && strtolower($plan->storage_charge_type) === 'percentage' ? "({$plan->storage_charge_value}%)" : '' }}</span>
-                                            </div>
-                                            <div class="d-flex justify-content-between mb-1">
-                                                <span>GST (Gold + Charges):</span>
-                                                <span class="text-dark">₹{{ number_format($calc['gst_on_gold'] + $calc['gst_on_charges'], 2) }}</span>
-                                            </div>
+                                            @if((float)($calc['processing_fee'] ?? 0) > 0)
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <span>Processing Fee:</span>
+                                                    <span class="text-dark">₹{{ number_format($calc['processing_fee'], 2) }} {{ $plan->processing_fee_type === 'percent' ? "({$plan->processing_fee}%)" : '' }}</span>
+                                                </div>
+                                            @endif
+                                            @if($plan->finance_charge_enabled && (float)($calc['finance_charge'] ?? 0) > 0)
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <span>Finance Charge:</span>
+                                                    <span class="text-dark">₹{{ number_format($calc['finance_charge'], 2) }} {{ (strtolower($plan->finance_charge_type) === 'percentage' || strtolower($plan->finance_charge_type) === 'percent') ? "({$plan->finance_charge_value}%)" : '' }}</span>
+                                                </div>
+                                            @endif
+                                            @if($plan->storage_charge_enabled && (float)($calc['storage_charge'] ?? 0) > 0)
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <span>Storage Charge:</span>
+                                                    <span class="text-dark">₹{{ number_format($calc['storage_charge'], 2) }} {{ (strtolower($plan->storage_charge_type) === 'percentage' || strtolower($plan->storage_charge_type) === 'percent') ? "({$plan->storage_charge_value}%)" : '' }}</span>
+                                                </div>
+                                            @endif
+                                            @php
+                                                $gstGold = $plan->gst_on_gold_enabled ? ($calc['gst_on_gold'] ?? 0) : 0;
+                                                $gstCharges = $plan->gst_on_charges_enabled ? ($calc['gst_on_charges'] ?? 0) : 0;
+                                                $totalGst = $gstGold + $gstCharges;
+                                            @endphp
+                                            @if($totalGst > 0)
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <span>GST (Gold + Charges):</span>
+                                                    <span class="text-dark">₹{{ number_format($totalGst, 2) }}</span>
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -177,8 +190,8 @@
                                             <td class="font-weight-bold text-dark">{{ $plan->plan_name }}</td>
                                             <td>{{ $plan->duration_months }} Months</td>
                                             <td class="text-success font-weight-bold">₹{{ number_format($calc['installment'], 2) }}</td>
-                                            <td>₹{{ number_format($calc['finance_charge'], 2) }}</td>
-                                            <td>₹{{ number_format($calc['storage_charge'], 2) }}</td>
+                                            <td>{{ $plan->finance_charge_enabled && (float)($calc['finance_charge'] ?? 0) > 0 ? '₹' . number_format($calc['finance_charge'], 2) : '—' }}</td>
+                                            <td>{{ $plan->storage_charge_enabled && (float)($calc['storage_charge'] ?? 0) > 0 ? '₹' . number_format($calc['storage_charge'], 2) : '—' }}</td>
                                             <td class="font-weight-bold text-primary">₹{{ number_format($calc['total_payable'], 2) }}</td>
                                             <td>
                                                 @if($plan->id == $cheapestPlanId)
@@ -229,37 +242,13 @@
                                     </select>
                                 </div>
 
-                                <div class="row border-bottom pb-2 mb-3">
-                                    <div class="col-6">
-                                        <span class="text-muted small d-block">Gold Value</span>
-                                        <span class="font-weight-medium text-dark" id="calc-gold-value">₹0.00</span>
-                                    </div>
-                                    <div class="col-6 text-right">
-                                        <span class="text-muted small d-block">GST on Gold - 3%</span>
-                                        <span class="font-weight-medium text-dark" id="calc-gst-gold">₹0.00</span>
-                                    </div>
+                                <div class="border-bottom pb-2 mb-3" id="calc-line-items-container">
+                                    <!-- Dynamic line items will be populated by JS -->
                                 </div>
 
-                                <div class="row border-bottom pb-2 mb-3">
-                                    <div class="col-6">
-                                        <span class="text-muted small d-block">Price Locking with secure storage charges - 12%</span>
-                                        <span class="font-weight-medium text-dark" id="calc-charges">₹0.00</span>
-                                    </div>
-                                    <div class="col-6 text-right">
-                                        <span class="text-muted small d-block">GST on Charges</span>
-                                        <span class="font-weight-medium text-dark" id="calc-gst-charges">₹0.00</span>
-                                    </div>
-                                </div>
-
-                                <div class="row border-bottom pb-2 mb-3">
-                                    <div class="col-6">
-                                        <span class="text-muted small d-block">Processing Fee</span>
-                                        <span class="font-weight-medium text-dark" id="calc-processing-fee">₹0.00</span>
-                                    </div>
-                                    <div class="col-6 text-right">
-                                        <span class="text-muted small d-block">Completion Date</span>
-                                        <span class="font-weight-medium text-dark" id="calc-completion-date">N/A</span>
-                                    </div>
+                                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                                    <span class="text-muted small">Completion Date</span>
+                                    <span class="font-weight-medium text-dark" id="calc-completion-date">N/A</span>
                                 </div>
 
                                 <div class="bg-light rounded p-3 mb-4">
@@ -476,16 +465,63 @@
                     })
                     .then(data => {
                         // Populate results
-                        document.getElementById('calc-plan-name').innerText = data.plan_name + ' (' + data.duration_months + ' mo)';
-                        document.getElementById('calc-gold-value').innerText = '₹' + parseFloat(data.gold_value).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                        document.getElementById('calc-gst-gold').innerText = '₹' + parseFloat(data.gst_on_gold).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                        
-                        const totalCharges = parseFloat(data.finance_charge) + parseFloat(data.storage_charge);
-                        document.getElementById('calc-charges').innerText = '₹' + totalCharges.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                        document.getElementById('calc-gst-charges').innerText = '₹' + parseFloat(data.gst_on_charges).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                        
-                        document.getElementById('calc-processing-fee').innerText = '₹' + parseFloat(data.processing_fee).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                        
+                        // Populate line items dynamically based on plan configuration
+                        const itemsContainer = document.getElementById('calc-line-items-container');
+                        if (itemsContainer) {
+                            itemsContainer.innerHTML = '';
+                            const formatINR = (amt) => '₹' + parseFloat(amt).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+                            // 1. Gold Value (Always applicable)
+                            const goldValRow = document.createElement('div');
+                            goldValRow.className = 'd-flex justify-content-between align-items-center mb-2';
+                            goldValRow.innerHTML = `<span class="text-muted small">Gold Value</span><span class="font-weight-medium text-dark">${formatINR(data.gold_value)}</span>`;
+                            itemsContainer.appendChild(goldValRow);
+
+                            // 2. GST on Gold (Only if enabled and > 0)
+                            if (data.gst_on_gold_enabled && parseFloat(data.gst_on_gold) > 0) {
+                                const percentStr = data.gst_on_gold_percent ? ` (${data.gst_on_gold_percent}%)` : '';
+                                const row = document.createElement('div');
+                                row.className = 'd-flex justify-content-between align-items-center mb-2';
+                                row.innerHTML = `<span class="text-muted small">GST on Gold${percentStr}</span><span class="font-weight-medium text-dark">${formatINR(data.gst_on_gold)}</span>`;
+                                itemsContainer.appendChild(row);
+                            }
+
+                            // 3. Finance Charge (Only if enabled and > 0)
+                            if (data.finance_charge_enabled && parseFloat(data.finance_charge) > 0) {
+                                const percentStr = data.finance_charge_percent ? ` (${data.finance_charge_percent}%)` : '';
+                                const row = document.createElement('div');
+                                row.className = 'd-flex justify-content-between align-items-center mb-2';
+                                row.innerHTML = `<span class="text-muted small">Finance Charge${percentStr}</span><span class="font-weight-medium text-dark">${formatINR(data.finance_charge)}</span>`;
+                                itemsContainer.appendChild(row);
+                            }
+
+                            // 4. Storage Charge / Price Lock (Only if enabled and > 0)
+                            if (data.storage_charge_enabled && parseFloat(data.storage_charge) > 0) {
+                                const percentStr = data.storage_charge_percent ? ` (${data.storage_charge_percent}%)` : '';
+                                const row = document.createElement('div');
+                                row.className = 'd-flex justify-content-between align-items-center mb-2';
+                                row.innerHTML = `<span class="text-muted small">Price Lock & Storage Charges${percentStr}</span><span class="font-weight-medium text-dark">${formatINR(data.storage_charge)}</span>`;
+                                itemsContainer.appendChild(row);
+                            }
+
+                            // 5. GST on Charges (Only if enabled and > 0)
+                            if (data.gst_on_charges_enabled && parseFloat(data.gst_on_charges) > 0) {
+                                const percentStr = data.gst_on_charges_percent ? ` (${data.gst_on_charges_percent}%)` : '';
+                                const row = document.createElement('div');
+                                row.className = 'd-flex justify-content-between align-items-center mb-2';
+                                row.innerHTML = `<span class="text-muted small">GST on Charges${percentStr}</span><span class="font-weight-medium text-dark">${formatINR(data.gst_on_charges)}</span>`;
+                                itemsContainer.appendChild(row);
+                            }
+
+                            // 6. Processing Fee (Only if > 0)
+                            if (parseFloat(data.processing_fee) > 0) {
+                                const row = document.createElement('div');
+                                row.className = 'd-flex justify-content-between align-items-center mb-2';
+                                row.innerHTML = `<span class="text-muted small">Processing Fee</span><span class="font-weight-medium text-dark">${formatINR(data.processing_fee)}</span>`;
+                                itemsContainer.appendChild(row);
+                            }
+                        }
+
                         // Parse date
                         const completion = new Date(data.completion_date);
                         const options = { year: 'numeric', month: 'short', day: 'numeric' };

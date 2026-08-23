@@ -562,7 +562,7 @@ class CustomerController extends Controller
                 $file = fopen('php://output', 'w');
                 fputcsv($file, $headers);
                 fputcsv($file, [
-                    'John Doe', 'john@example.com', '9876543210', '9876543210', 'EMP-1',
+                    'customer', 'john@example.com', '9876543210', '9876543210', 'EMP-1',
                     'Richard Doe', 'Jane Doe', 'Mary Doe', '1990-05-15', 'Male',
                     'Single', '', '123 Main St', 'Bengaluru', 'Karnataka',
                     'India', '560001', 'Engineer', '600000', 'State Bank of India',
@@ -580,7 +580,7 @@ class CustomerController extends Controller
         $sheet->fromArray($headers, null, 'A1');
 
         $sampleRow = [
-            'John Doe', 'john@example.com', '9876543210', '9876543210', 'EMP-1',
+            'customer', 'john@example.com', '9876543210', '9876543210', 'EMP-1',
             'Richard Doe', 'Jane Doe', 'Mary Doe', '1990-05-15', 'Male',
             'Single', '', '123 Main St', 'Bengaluru', 'Karnataka',
             'India', '560001', 'Engineer', '600000', 'State Bank of India',

@@ -31,7 +31,7 @@ class GoldBookingTest extends TestCase
 
         // Create mock data
         $this->customer = User::create([
-            'name' => 'John Doe',
+            'name' => 'customer',
             'email' => 'john.doe.' . uniqid() . '@example.com',
             'password' => bcrypt('password'),
             'role_id' => 4, // Customer Role

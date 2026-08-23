@@ -240,8 +240,8 @@
                             <h5 class="card-title text-dark mb-4">Contact Information</h5>
                             <div class="row">
                                 <div class="col-md-6 form-group">
-                                    <label>Email Address</label>
-                                    <input type="email" name="email" value="{{ $user->email }}" class="form-control bg-white text-dark">
+                                    <label>Email Address <span class="text-danger">*</span></label>
+                                    <input type="email" name="email" required value="{{ $user->email }}" class="form-control bg-white text-dark">
                                 </div>
                                 <div class="col-md-6 form-group">
                                     <label>Phone Number <span class="text-danger">*</span></label>
@@ -467,7 +467,7 @@
                 father_name: { required: true, lettersnspaces: true, minlength: 3 },
                 mother_name: { lettersnspaces: true, minlength: 3 },
                 dob: { pastdate: true },
-                email: { email: true },
+                email: { required: true, email: true },
                 phone: { required: true, indianmobile: true },
                 pincode: { required: true, pincode_custom: true },
                 address: { required: true },
@@ -480,6 +480,7 @@
             messages: {
                 first_name: { required: "First Name is required" },
                 father_name: { required: "Father Name is required" },
+                email: { required: "Email Address is required", email: "Please enter a valid email address" },
                 phone: { required: "Phone number is required" },
                 pincode: { required: "Pincode is required" },
                 address: { required: "Address is required" },

@@ -41,7 +41,7 @@ class GstInvoiceEngineTest extends TestCase
 
         // Create base customer
         $this->customer = User::create([
-            'name' => 'John Doe',
+            'name' => 'customer',
             'email' => 'john.doe@example.com',
             'password' => bcrypt('password'),
             'role_id' => 4,
@@ -130,7 +130,7 @@ class GstInvoiceEngineTest extends TestCase
         $this->assertMatchesRegularExpression('/^INV\d{9}$/', $invoice->invoice_number);
 
         // Verify snapshot values
-        $this->assertEquals('John Doe', $invoice->customer_name);
+        $this->assertEquals('customer', $invoice->customer_name);
         $this->assertEquals('10g Gold Coin', $invoice->product_name);
         $this->assertEquals(10.00, $invoice->gold_weight);
         $this->assertEquals(6000.00, $invoice->locked_gold_price);
@@ -232,7 +232,7 @@ class GstInvoiceEngineTest extends TestCase
         // Refresh and check invoice snapshot did NOT change
         $invoice->refresh();
         $this->assertEquals($originalName, $invoice->customer_name);
-        $this->assertEquals('John Doe', $invoice->customer_name);
+        $this->assertEquals('customer', $invoice->customer_name);
     }
 
     /**

@@ -2,11 +2,11 @@
     {{-- Header --}}
     <div class="page-header flex-wrap d-none d-md-flex">
         <h3 class="mb-0">Buy Gold Plans</h3>
-        <p class="text-muted mb-0">Select a physical gold product and choose a customized flexible EMAP plan.</p>
+        <p class="text-muted mb-0">Choose your physical gold product and a flexible EMAP( Easy Montly Advance Payments) plan that suits you.</p>
     </div>
     <div class="d-block d-md-none mb-3">
         <h5 class="font-weight-bold mb-1">Buy Gold Plans</h5>
-        <p class="text-muted small">Select a product and choose a flexible EMAP plan.</p>
+        <p class="text-muted small">Choose your physical gold product and a flexible EMAP( Easy Montly Advance Payments) plan that suits you.</p>
     </div>
 
     {{-- Live Price Banner --}}
@@ -16,7 +16,7 @@
             <div class="row align-items-center">
                 <div class="col-md-3 mb-2 mb-md-0">
                     <span class="badge badge-warning text-dark font-weight-bold px-3 py-2 mb-1" style="font-size: 0.75rem;">
-                        <i class="mdi mdi-clock-fast mr-1"></i> Live Gold Price
+                        <i class="mdi mdi-clock-fast mr-1"></i> Gold Price
                     </span>
                     <h5 class="mb-0 font-weight-bold text-warning-custom text-uppercase">Today's Rate</h5>
                 </div>
@@ -169,12 +169,35 @@
 
     {{-- Product List --}}
     @if($products->isEmpty())
-        <div class="alert alert-info text-center p-4">
-            <i class="mdi mdi-alert-circle-outline display-4 d-block mb-3"></i>
-            <h5>No Active Plans Found</h5>
-            <p class="text-muted">No products matched your active filters. Try resetting search parameters.</p>
-            <a href="{{ route('customer.plans.index') }}" class="btn btn-sm btn-primary mt-2">Reset Filters</a>
-        </div>
+        @if(($totalActiveProducts ?? 0) === 0)
+            {{-- CASE A: NO ACTIVE PLANS EXIST AT ALL (FULLY SOLD OUT) --}}
+            <div class="card border-0 shadow-sm text-center p-4 p-md-5 mb-4" style="border-radius: 12px; background-color: #FFFFFF;">
+                <div class="card-body">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle p-3 mb-3" style="width: 80px; height: 80px; background-color: #FFFDF5; border: 2px dashed #C59B27;">
+                        <i class="mdi mdi-gold display-4" style="color: #B4831B;"></i>
+                    </div>
+                    <h4 class="font-weight-bold text-dark mb-2">Our Current Gold Plans Are Fully Sold Out!</h4>
+                    <p class="text-muted mb-3" style="max-width: 520px; margin: 0 auto; font-size: 0.95rem; line-height: 1.5;">
+                        Due to high demand, all available gold plans have been successfully booked.<br>
+                        New stock will be available soon.
+                    </p>
+                    <div class="pt-2">
+                        <span class="text-muted small">For more details, please contact us:</span>
+                        <a href="tel:7337616333" class="font-weight-bold text-primary ml-1" style="font-size: 1rem; text-decoration: none;">
+                            <i class="mdi mdi-phone-in-talk mr-1"></i>7337616333
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @else
+            {{-- CASE B: ACTIVE PLANS EXIST BUT USER FILTERS RETURN ZERO RESULTS --}}
+            <div class="alert alert-info text-center p-4">
+                <i class="mdi mdi-alert-circle-outline display-4 d-block mb-3"></i>
+                <h5>No Active Plans Found</h5>
+                <p class="text-muted">No products matched your active filters. Try resetting search parameters.</p>
+                <a href="{{ route('customer.plans.index') }}" class="btn btn-sm btn-primary mt-2">Reset Filters</a>
+            </div>
+        @endif
     @else
         {{-- Desktop Grid --}}
         <div class="d-none d-md-block">

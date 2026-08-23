@@ -42,9 +42,9 @@ class PlanController extends CustomerBaseController
     {
         $goldPrice = $this->customerService->getGoldPriceWithTrend();
         
-        // Fetch active products
         $products = Product::where('status', 'active')->orderBy('display_order')->get();
-        
+        $totalActiveProducts = $products->count();
+
         // Enrich products with computed price and starting EMI
         foreach ($products as $product) {
             $productPrice = $this->pricingService->calculateCurrentProductPrice($product);
@@ -133,7 +133,7 @@ class PlanController extends CustomerBaseController
             'remaining' => $this->bookingService->getRemainingPurchaseLimit($customerId),
         ];
 
-        return view('customer.plans.index', compact('products', 'goldPrice', 'purchaseLimit'));
+        return view('customer.plans.index', compact('products', 'goldPrice', 'purchaseLimit', 'totalActiveProducts'));
     }
 
     /**

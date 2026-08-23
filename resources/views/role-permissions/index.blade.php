@@ -57,11 +57,11 @@
                     className: 'text-center align-middle',
                     render: function (data) {
                         return `
-                            <div class="btn-group" role="group">
-                                <a href="{{ url('role-permissions') }}/${data.id}" class="btn btn-outline-primary btn-sm">
+                            <div class="d-inline-flex align-items-center">
+                                <a href="{{ url('role-permissions') }}/${data.id}" class="btn btn-outline-primary btn-sm mr-2" style="border-radius: 4px;">
                                     <i class="mdi mdi-shield-key-outline mr-1"></i> Manage Permissions
                                 </a>
-                                <a href="{{ url('roles') }}" class="btn btn-outline-secondary btn-sm">
+                                <a href="{{ url('roles') }}" class="btn btn-outline-dark btn-sm font-weight-bold" style="color: #1a1d20; border-color: #6c757d; border-radius: 4px;">
                                     <i class="mdi mdi-pencil-outline mr-1"></i> Edit Role
                                 </a>
                             </div>
@@ -111,6 +111,23 @@
         background: #3f50f6 !important;
         color: white !important;
         border: 1px solid #3f50f6 !important;
+    }
+    #rolePermTable .btn {
+        font-weight: 600 !important;
+    }
+    #rolePermTable .btn-outline-primary {
+        color: #3f50f6 !important;
+    }
+    #rolePermTable .btn-outline-dark,
+    #rolePermTable .btn-outline-secondary {
+        color: #111827 !important;
+        border-color: #6c757d !important;
+        background-color: #ffffff !important;
+    }
+    #rolePermTable .btn-outline-dark:hover,
+    #rolePermTable .btn-outline-secondary:hover {
+        background-color: #111827 !important;
+        color: #ffffff !important;
     }
 </style>
 @endpush
