@@ -261,6 +261,7 @@ class InvoiceService
             'product' => $product,
             'plan' => $booking->emiPlan,
             'qrImageSrc' => $qrBase64,
+            'signatureImageSrc' => \App\Models\SystemSetting::getAuthorizedSignatureDataUri(),
             'amountInWords' => $this->convertAmountToWords($invoice->grand_total),
             'generatedAt' => now()->format('d M Y, h:i A'),
             'generatedBy' => auth()->user()->name ?? 'System'

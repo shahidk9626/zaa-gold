@@ -365,6 +365,7 @@ class BookingService
             'pricePerGram' => $pricePerGram,
             'calculations' => $calculations,
             'qrImageSrc' => $qrBase64,
+            'signatureImageSrc' => \App\Models\SystemSetting::getAuthorizedSignatureDataUri(),
             'firstPayment' => $firstPayment,
             'amountPaid' => $amountPaid,
             'outstandingAmount' => $outstandingAmount,

@@ -18,7 +18,9 @@ class GoldPriceController extends Controller
             'customer_max_purchase_grams' => \App\Models\SystemSetting::get('customer_max_purchase_grams', 100.00),
         ];
 
-        return view('admin.gold-prices.index', compact('latestPrice', 'prices', 'settings'));
+        $signatureUrl = \App\Models\SystemSetting::getAuthorizedSignatureUrl();
+
+        return view('admin.gold-prices.index', compact('latestPrice', 'prices', 'settings', 'signatureUrl'));
     }
 
     public function updateSettings(Request $request)
@@ -58,6 +60,75 @@ class GoldPriceController extends Controller
         ]);
 
         return response()->json(['success' => 'Configurations updated successfully.']);
+    }
+
+    public function uploadSignature(Request $request)
+    {
+        $request->validate([
+            'signature' => 'required|image|mimes:png,jpg,jpeg,webp|max:2048',
+        ], [
+            'signature.required' => 'Please select a signature image to upload.',
+            'signature.image' => 'The file must be a valid image.',
+            'signature.mimes' => 'Supported image formats are PNG, JPG, JPEG, and WEBP.',
+            'signature.max' => 'The signature image size must not exceed 2MB.',
+        ]);
+
+        if ($request->hasFile('signature')) {
+            $file = $request->file('signature');
+            
+            // Remove existing signature file if present
+            $oldPath = \App\Models\SystemSetting::get('authorized_signature_path');
+            if ($oldPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($oldPath)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+            }
+
+            $filename = 'signature_' . time() . '_' . \Illuminate\Support\Str::random(6) . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('signatures', $filename, 'public');
+
+            \App\Models\SystemSetting::updateOrCreate(
+                ['key' => 'authorized_signature_path'],
+                ['value' => $path]
+            );
+
+            \App\Models\ActivityLog::create([
+                'module_name' => 'system_settings',
+                'record_id' => 0,
+                'action_type' => 'authorized_signature_updated',
+                'description' => 'Global authorized signature updated.',
+                'created_by_id' => auth()->id() ?? 1,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->header('User-Agent'),
+            ]);
+
+            return response()->json([
+                'success' => 'Authorized signature uploaded successfully.',
+                'url' => asset('storage/' . $path)
+            ]);
+        }
+
+        return response()->json(['error' => 'No signature file uploaded.'], 422);
+    }
+
+    public function removeSignature(Request $request)
+    {
+        $oldPath = \App\Models\SystemSetting::get('authorized_signature_path');
+        if ($oldPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($oldPath)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+        }
+
+        \App\Models\SystemSetting::where('key', 'authorized_signature_path')->delete();
+
+        \App\Models\ActivityLog::create([
+            'module_name' => 'system_settings',
+            'record_id' => 0,
+            'action_type' => 'authorized_signature_removed',
+            'description' => 'Global authorized signature removed.',
+            'created_by_id' => auth()->id() ?? 1,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->header('User-Agent'),
+        ]);
+
+        return response()->json(['success' => 'Authorized signature removed successfully.']);
     }
 
     public function store(StoreGoldPriceRequest $request)

@@ -15,6 +15,8 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('permission:gold-price.edit')->group(function () {
         Route::post('/admin/gold-prices/update/{id}', [GoldPriceController::class, 'update'])->name('gold-prices.update');
         Route::post('/admin/settings/update', [GoldPriceController::class, 'updateSettings'])->name('settings.update');
+        Route::post('/admin/gold-prices/signature', [GoldPriceController::class, 'uploadSignature'])->name('gold-prices.signature.upload');
+        Route::delete('/admin/gold-prices/signature', [GoldPriceController::class, 'removeSignature'])->name('gold-prices.signature.remove');
     });
 
     Route::middleware('permission:gold-price.delete')->group(function () {

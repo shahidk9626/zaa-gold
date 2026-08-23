@@ -212,7 +212,11 @@
                 </td>
                 <td width="50%" style="vertical-align: bottom;">
                     <div class="signature-box">
-                        <div class="signature-line"></div><br>
+                        @if(!empty($signatureImageSrc))
+                            <img src="{{ $signatureImageSrc }}" style="max-height: 40px; max-width: 140px; object-fit: contain; margin-bottom: 2px;" alt="Signature"><br>
+                        @else
+                            <div class="signature-line"></div><br>
+                        @endif
                         Authorized Signatory for AurOnGold<br>
                         <small style="font-weight: normal; color: #888;">Issued By: {{ $generatedBy }}</small>
                     </div>

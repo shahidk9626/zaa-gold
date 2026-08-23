@@ -452,7 +452,11 @@
                 </td>
                 <td width="35%" valign="bottom" class="signatory-box">
                     <div style="font-size: 8px; color: #555555; margin-bottom: 2px;">For Auron Gold Private Limited</div>
-                    <div class="signature-font">Harshith</div>
+                    @if(!empty($signatureImageSrc))
+                        <img src="{{ $signatureImageSrc }}" style="max-height: 38px; max-width: 130px; object-fit: contain; margin-bottom: 2px;" alt="Signature">
+                    @else
+                        <div class="signature-font">Harshith</div>
+                    @endif
                     <div style="border-top: 1.5px solid #111111; width: 130px; margin-left: auto; margin-top: 2px;"></div>
                     <div style="font-size: 8.5px; font-weight: bold; color: #111111; margin-top: 2px;">Authorised Signatory</div>
                 </td>
@@ -663,7 +667,11 @@
                 </td>
                 <td width="28%" valign="bottom" class="signatory-box">
                     <div style="font-size: 8px; color: #555555; margin-bottom: 2px;">For Auron Gold Private Limited</div>
-                    <div class="signature-font">Harshith</div>
+                    @if(!empty($signatureImageSrc))
+                        <img src="{{ $signatureImageSrc }}" style="max-height: 38px; max-width: 130px; object-fit: contain; margin-bottom: 2px;" alt="Signature">
+                    @else
+                        <div class="signature-font">Harshith</div>
+                    @endif
                     <div style="border-top: 1.5px solid #111111; width: 130px; margin-left: auto; margin-top: 2px;"></div>
                     <div style="font-size: 8.5px; font-weight: bold; color: #111111; margin-top: 2px;">Authorised Signatory</div>
                 </td>

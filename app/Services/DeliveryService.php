@@ -423,6 +423,7 @@ class DeliveryService
             'product' => $product,
             'invoice' => $invoice,
             'qrImageSrc' => $qrBase64,
+            'signatureImageSrc' => \App\Models\SystemSetting::getAuthorizedSignatureDataUri(),
             'generatedAt' => now()->format('d M Y, h:i A'),
             'generatedBy' => auth()->user()->name ?? 'System'
         ];

@@ -404,9 +404,13 @@
                 <!-- Authorised Signatory -->
                 <td width="28%" valign="bottom" align="right">
                     <div style="font-size: 8.5px; color: #555555; margin-bottom: 2px;">For Auron Gold Private Limited</div>
-                    <div style="font-family: Georgia, serif; font-style: italic; font-size: 16px; color: #0B1E36; font-weight: bold; padding: 2px 0 0 5px;">
-                        Harshith
-                    </div>
+                    @if(!empty($signatureImageSrc))
+                        <img src="{{ $signatureImageSrc }}" style="max-height: 40px; max-width: 130px; object-fit: contain; margin-bottom: 2px;" alt="Signature">
+                    @else
+                        <div style="font-family: Georgia, serif; font-style: italic; font-size: 16px; color: #0B1E36; font-weight: bold; padding: 2px 0 0 5px;">
+                            Harshith
+                        </div>
+                    @endif
                     <div style="border-top: 1.5px solid #888888; width: 140px; margin-top: 3px;"></div>
                     <div style="font-size: 9.5px; font-weight: bold; color: #111111; margin-top: 2px;">Authorised Signatory</div>
                 </td>

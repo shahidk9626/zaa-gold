@@ -351,5 +351,24 @@
         </tbody>
     </table>
 
+    <!-- Signatory Section -->
+    <table width="100%" style="margin-top: 15px;">
+        <tr>
+            <td width="60%" valign="top">
+                <div style="font-size: 8px; color: #718096; font-style: italic;">
+                    * This outstanding statement is generated for informational/estimation purposes based on active EMAP parameters.
+                </div>
+            </td>
+            <td width="40%" align="right" valign="bottom">
+                <div style="font-size: 8px; color: #555555; margin-bottom: 2px;">For Auron Gold Private Limited</div>
+                @if(!empty($signatureImageSrc))
+                    <img src="{{ $signatureImageSrc }}" style="max-height: 38px; max-width: 130px; object-fit: contain; margin-bottom: 2px;" alt="Signature"><br>
+                @endif
+                <div style="border-top: 1px solid #718096; width: 130px; margin-left: auto; margin-top: 2px;"></div>
+                <div style="font-size: 8.5px; font-weight: bold; color: #111111; margin-top: 2px;">Authorised Signatory</div>
+            </td>
+        </tr>
+    </table>
+
 </body>
 </html>

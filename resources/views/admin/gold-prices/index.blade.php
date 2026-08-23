@@ -141,6 +141,64 @@
                 </div>
             </div>
         </div>
+
+        <!-- Authorized Signature Card -->
+        @if(hasPermission('gold-price.edit'))
+        <div class="card bg-white border shadow-sm mt-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h4 class="card-title text-dark mb-0">Authorized Signature</h4>
+                    @if($signatureUrl)
+                        <span class="badge badge-success"><i class="mdi mdi-check-circle mr-1"></i> Active Signature</span>
+                    @else
+                        <span class="badge badge-secondary"><i class="mdi mdi-alert-circle mr-1"></i> System Default Text</span>
+                    @endif
+                </div>
+                <p class="card-description text-muted">Upload the signature that will be used across all generated PDFs.</p>
+
+                <!-- Current Signature Preview Section -->
+                <div class="form-group mb-3">
+                    <label class="text-dark font-weight-bold">Current Signature Preview</label>
+                    <div id="signaturePreviewBox" class="p-3 border rounded text-center position-relative" style="background: repeating-conic-gradient(#f8f9fa 0% 25%, #ffffff 0% 50%) 50% / 16px 16px; min-height: 100px; display: flex; align-items: center; justify-content: center;">
+                        @if($signatureUrl)
+                            <img id="signaturePreviewImg" src="{{ $signatureUrl }}" alt="Authorized Signature" style="max-height: 80px; max-width: 260px; object-fit: contain;">
+                        @else
+                            <div id="signatureEmptyNotice" class="text-muted small">
+                                <i class="mdi mdi-draw text-secondary d-block mb-1" style="font-size: 2rem;"></i>
+                                No custom signature uploaded. Generated PDFs currently use system default signatory text.
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Signature Upload Form -->
+                <form id="signatureForm" action="{{ route('gold-prices.signature.upload') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="form-group mb-3">
+                        <label for="signatureInput" class="text-dark font-weight-bold">
+                            {{ $signatureUrl ? 'Replace / Update Signature' : 'Upload Signature Image' }}
+                        </label>
+                        <input type="file" name="signature" id="signatureInput" accept="image/png,image/jpeg,image/jpg,image/webp" class="form-control bg-white text-dark" style="height: auto;">
+                        <small class="form-text text-muted mt-1">
+                            Supported formats: <strong>PNG, JPG, JPEG, WEBP</strong> (Max size: 2MB).<br>
+                            <span class="text-primary"><i class="mdi mdi-information-outline"></i> PNG with transparent background is strongly recommended for best PDF rendering.</span>
+                        </small>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button type="submit" id="uploadSigBtn" class="btn btn-primary">
+                            <i class="mdi mdi-upload mr-1"></i> {{ $signatureUrl ? 'Update Signature' : 'Upload & Save Signature' }}
+                        </button>
+                        @if($signatureUrl)
+                            <button type="button" id="removeSigBtn" class="btn btn-outline-danger">
+                                <i class="mdi mdi-delete mr-1"></i> Remove Signature
+                            </button>
+                        @endif
+                    </div>
+                </form>
+            </div>
+        </div>
+        @endif
     </div>
 </div>
 @endsection
@@ -205,6 +263,95 @@
                         title: 'Error saving settings',
                         text: xhr.responseJSON.error || 'Failed to update business configurations',
                         confirmButtonColor: '#ff3ca6'
+                    });
+                }
+            });
+        });
+
+        $('#signatureForm').on('submit', function (e) {
+            e.preventDefault();
+            let fileInput = $('#signatureInput')[0];
+            if (!fileInput.files || !fileInput.files[0]) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No File Selected',
+                    text: 'Please select an image file to upload.',
+                    confirmButtonColor: '#3f50f6'
+                });
+                return;
+            }
+
+            let formData = new FormData(this);
+            let btn = $('#uploadSigBtn');
+            btn.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin mr-1"></i> Uploading...');
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Signature Updated',
+                        text: response.success,
+                        confirmButtonColor: '#3f50f6'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                },
+                error: function (xhr) {
+                    btn.prop('disabled', false).html('<i class="mdi mdi-upload mr-1"></i> Upload & Save Signature');
+                    let err = xhr.responseJSON ? (xhr.responseJSON.message || xhr.responseJSON.error) : 'Failed to upload signature.';
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        err = Object.values(xhr.responseJSON.errors).flat().join('\n');
+                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Upload Error',
+                        text: err,
+                        confirmButtonColor: '#ff3ca6'
+                    });
+                }
+            });
+        });
+
+        $('#removeSigBtn').on('click', function () {
+            Swal.fire({
+                title: 'Remove Signature?',
+                text: 'Generated PDFs will revert to using system default signatory text until a new signature is uploaded.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff3ca6',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Remove It'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{{ route('gold-prices.signature.remove') }}",
+                        type: 'DELETE',
+                        data: {
+                            _token: "{{ csrf_token() }}"
+                        },
+                        success: function (response) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Signature Removed',
+                                text: response.success,
+                                confirmButtonColor: '#3f50f6'
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        },
+                        error: function (xhr) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: xhr.responseJSON ? xhr.responseJSON.error : 'Failed to remove signature.',
+                                confirmButtonColor: '#ff3ca6'
+                            });
+                        }
                     });
                 }
             });

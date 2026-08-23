@@ -323,6 +323,7 @@ class ProductPurchasePreviewController extends Controller
             'productPrice' => $productPrice,
             'calculations' => $calculations,
             'schedule' => $schedule,
+            'signatureImageSrc' => \App\Models\SystemSetting::getAuthorizedSignatureDataUri(),
             'generatedAt' => now()->format('d M Y, h:i A'),
             'generatedBy' => auth()->user()->name
         ];
