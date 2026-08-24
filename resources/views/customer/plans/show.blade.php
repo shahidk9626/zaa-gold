@@ -465,6 +465,16 @@
                     })
                     .then(data => {
                         // Populate results
+                        const planNameElem = document.getElementById('calc-plan-name');
+                        if (planNameElem && data.plan_name) {
+                            planNameElem.innerText = data.plan_name;
+                        }
+
+                        const prodNameElem = document.getElementById('calc-product-name');
+                        if (prodNameElem && data.product_name) {
+                            prodNameElem.innerText = data.product_name;
+                        }
+
                         // Populate line items dynamically based on plan configuration
                         const itemsContainer = document.getElementById('calc-line-items-container');
                         if (itemsContainer) {
