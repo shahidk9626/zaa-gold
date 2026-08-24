@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use App\Services\CustomerOnboardingService;
 use App\Services\CustomerService;
+use App\Models\CustomerProfileUpdateRequest;
 
 class ProfileController extends CustomerBaseController
 {
@@ -23,14 +24,30 @@ class ProfileController extends CustomerBaseController
     {
         $user = Auth::user()->load(['customerDetail.documents', 'role']);
         $kycStatus = $this->onboardingService->getKycStatus($user);
+        $isKycApproved = $this->onboardingService->isKycApproved($user);
         $latestKyc = \App\Models\Kyc::where('user_id', $user->id)->latest('id')->first();
+        $hasPendingRequest = $user->hasPendingProfileUpdateRequest();
+        $profileUpdateRequests = CustomerProfileUpdateRequest::where('customer_id', $user->id)
+            ->latest('id')
+            ->get();
 
-        return view('customer.profile.index', compact('user', 'kycStatus', 'latestKyc'));
+        return view('customer.profile.index', compact(
+            'user', 
+            'kycStatus', 
+            'isKycApproved', 
+            'latestKyc', 
+            'hasPendingRequest', 
+            'profileUpdateRequests'
+        ));
     }
 
     public function update(Request $request): RedirectResponse
     {
         $user = Auth::user();
+
+        if ($this->onboardingService->isKycApproved($user)) {
+            return back()->with('error', 'Your KYC is already verified/approved. Direct profile edits are disabled. Please use "Request Profile Update" to request changes.');
+        }
 
         $request->validate([
             'phone' => 'required|string|max:15|unique:users,phone,' . $user->id,
@@ -69,6 +86,99 @@ class ProfileController extends CustomerBaseController
         $this->onboardingService->completeProfile($user, $profileData);
 
         return back()->with('success', 'Profile updated successfully.');
+    }
+
+    /**
+     * Submit a profile update request (For KYC Approved Customers)
+     */
+    public function requestUpdate(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+
+        if (!$this->onboardingService->isKycApproved($user)) {
+            return back()->with('error', 'Profile update request is only applicable to KYC approved customers.');
+        }
+
+        if ($user->hasPendingProfileUpdateRequest()) {
+            return back()->with('error', 'You already have a profile update request pending with our team.');
+        }
+
+        $request->validate([
+            'reason' => 'required|string|max:1000',
+        ]);
+
+        $fieldLabels = [
+            'name' => 'Full Name',
+            'email' => 'Email Address',
+            'phone' => 'Mobile Number',
+            'whatsapp_number' => 'WhatsApp Number',
+            'father_name' => "Father's Name",
+            'mother_name' => "Mother's Name",
+            'nominee_name' => 'Nominee Name',
+            'emergency_contact' => 'Emergency Contact',
+            'alternate_number' => 'Alternate Number',
+            'dob' => 'Date of Birth',
+            'gender' => 'Gender',
+            'marital_status' => 'Marital Status',
+            'address' => 'Full Address',
+            'city' => 'City',
+            'state' => 'State',
+            'country' => 'Country',
+            'pincode' => 'Pincode',
+            'occupation' => 'Occupation',
+            'annual_income' => 'Annual Income',
+            'pan_number' => 'PAN Card Number',
+            'aadhar_number' => 'Aadhaar Card Number',
+            'bank_name' => 'Bank Name',
+            'account_number' => 'Account Number',
+            'ifsc_code' => 'IFSC Code',
+            'branch' => 'Branch Name',
+        ];
+
+        $userDetail = $user->customerDetail;
+        $requestedChanges = [];
+
+        foreach ($fieldLabels as $fieldKey => $label) {
+            if ($request->has($fieldKey)) {
+                $newValue = trim((string) $request->input($fieldKey));
+                
+                $oldValue = '';
+                if (in_array($fieldKey, ['name', 'email', 'phone', 'whatsapp_number'])) {
+                    $oldValue = (string) ($user->{$fieldKey} ?? '');
+                } else {
+                    $oldValue = (string) ($userDetail->{$fieldKey} ?? '');
+                }
+
+                if ($newValue !== '' && $newValue !== $oldValue) {
+                    $requestedChanges[] = [
+                        'field_name' => $fieldKey,
+                        'field_label' => $label,
+                        'current_value' => $oldValue ?: 'N/A',
+                        'requested_value' => $newValue,
+                    ];
+                }
+            }
+        }
+
+        if (empty($requestedChanges)) {
+            return back()->with('error', 'Please change at least one field to submit a profile update request.');
+        }
+
+        CustomerProfileUpdateRequest::create([
+            'customer_id' => $user->id,
+            'requested_changes' => $requestedChanges,
+            'reason' => trim($request->reason),
+            'status' => 'Pending',
+        ]);
+
+        // Log Activity
+        $this->onboardingService->logOnboardingActivity(
+            $user, 
+            'profile_update_requested', 
+            "Customer submitted profile update request for review. Reason: {$request->reason}"
+        );
+
+        return back()->with('success', 'Your profile update request has been submitted successfully. Our team will review your request.');
     }
 
     public function submitKyc(Request $request): RedirectResponse

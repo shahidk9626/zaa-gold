@@ -7,18 +7,13 @@
         <div class="card bg-white border shadow-sm p-4">
             <div class="d-flex justify-content-between align-items-center flex-wrap">
                 <div>
-                    <h4 class="card-title text-dark font-weight-bold mb-1">Referral Program Directory</h4>
-                    <p class="card-description text-muted mb-0">Track and reward customer referrals, update statuses, and export histories.</p>
+                    <h4 class="card-title text-dark font-weight-bold mb-1">Customer Referrals</h4>
+                    <p class="card-description text-muted mb-0">Monitor and manage employee-to-customer referral associations and registration histories.</p>
                 </div>
                 <div>
                     @if(hasPermission('referral.export'))
-                    <a href="{{ route('referrals.export', request()->all()) }}" class="btn btn-success px-4 mr-2">
-                        <i class="mdi mdi-export mr-1"></i> Export list (CSV)
-                    </a>
-                    @endif
-                    @if(hasPermission('referral.edit'))
-                    <a href="{{ route('referrals.create') }}" class="btn btn-primary px-4">
-                        <i class="mdi mdi-plus-circle mr-1"></i> Add Referral
+                    <a href="{{ route('referrals.export', request()->all()) }}" class="btn btn-success px-4">
+                        <i class="mdi mdi-export mr-1"></i> Export (CSV)
                     </a>
                     @endif
                 </div>
@@ -30,51 +25,37 @@
     <div class="col-12 mb-4">
         <div class="card bg-white border shadow-sm p-4">
             <h5 class="text-dark font-weight-bold mb-3 border-bottom pb-2">Filter Referrals</h5>
-            <form action="{{ route('referrals.index') }}" method="GET" class="row">
-                <!-- Search Input -->
-                <div class="col-md-3 form-group">
+            <form action="{{ route('referrals.index') }}" method="GET" class="row align-items-end">
+                <!-- Search Query -->
+                <div class="col-md-4 form-group mb-3">
                     <label class="text-dark font-weight-bold">Search Query</label>
-                    <input type="text" name="search" class="form-control bg-white text-dark" placeholder="Code, Customer name, phone..." value="{{ request('search') }}">
+                    <input type="text" name="search" class="form-control bg-white text-dark" 
+                           placeholder="Referral Code, Employee / Customer Name, Phone, Email..." 
+                           value="{{ request('search') }}">
                 </div>
 
-                <!-- Status Filter -->
-                <div class="col-md-3 form-group">
-                    <label class="text-dark font-weight-bold">Status</label>
-                    <select name="status" class="form-control bg-white text-dark">
-                        <option value="">All Statuses</option>
-                        @foreach(['Pending', 'Eligible', 'Rewarded', 'Rejected'] as $st)
-                            <option value="{{ $st }}" {{ request('status') === $st ? 'selected' : '' }}>{{ $st }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <!-- Reward Type Filter -->
-                <div class="col-md-2 form-group">
-                    <label class="text-dark font-weight-bold">Reward Type</label>
-                    <select name="reward_type" class="form-control bg-white text-dark">
-                        <option value="">All Types</option>
-                        @foreach(['Cash', 'Gold Grams', 'Discount'] as $rt)
-                            <option value="{{ $rt }}" {{ request('reward_type') === $rt ? 'selected' : '' }}>{{ $rt }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <!-- Start Date -->
-                <div class="col-md-2 form-group">
+                <!-- From Date -->
+                <div class="col-md-3 form-group mb-3">
                     <label class="text-dark font-weight-bold">From Date</label>
-                    <input type="date" name="start_date" class="form-control bg-white text-dark" value="{{ request('start_date') }}">
+                    <input type="date" name="from_date" class="form-control bg-white text-dark" 
+                           value="{{ request('from_date', request('start_date')) }}">
                 </div>
 
-                <!-- End Date -->
-                <div class="col-md-2 form-group">
+                <!-- To Date -->
+                <div class="col-md-3 form-group mb-3">
                     <label class="text-dark font-weight-bold">To Date</label>
-                    <input type="date" name="end_date" class="form-control bg-white text-dark" value="{{ request('end_date') }}">
+                    <input type="date" name="to_date" class="form-control bg-white text-dark" 
+                           value="{{ request('to_date', request('end_date')) }}">
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="col-12 mt-2 d-flex justify-content-end">
-                    <a href="{{ route('referrals.index') }}" class="btn btn-secondary px-4 mr-2">Clear Filters</a>
-                    <button type="submit" class="btn btn-info px-4">Search & Filter</button>
+                <div class="col-md-2 form-group mb-3 d-flex">
+                    <button type="submit" class="btn btn-primary btn-block mr-2 px-3">
+                        <i class="mdi mdi-filter mr-1"></i> Apply Filter
+                    </button>
+                    <a href="{{ route('referrals.index') }}" class="btn btn-secondary px-3" title="Reset Filter">
+                        Reset
+                    </a>
                 </div>
             </form>
         </div>
@@ -86,77 +67,77 @@
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     {{ session('success') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
             @endif
             
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped text-dark">
+            <div class="table-responsive" style="overflow-x: auto;">
+                <table class="table table-bordered table-striped text-dark" style="white-space: nowrap; width: 100%;">
                     <thead class="bg-light text-dark">
                         <tr>
-                            <th>Referral Code</th>
-                            <th>Referrer Customer</th>
-                            <th>Referred Customer</th>
-                            <th>Booking Number</th>
-                            <th>Reward Type</th>
-                            <th>Reward Amount</th>
-                            <th>Created Date</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th class="font-weight-bold text-center">Sr. No.</th>
+                            <th class="font-weight-bold">Referral Date</th>
+                            <th class="font-weight-bold">Referral Code</th>
+                            <th class="font-weight-bold">Employee/Staff Name</th>
+                            <th class="font-weight-bold">Employee/Staff Code</th>
+                            <th class="font-weight-bold">Customer Name</th>
+                            <th class="font-weight-bold">Customer ID</th>
+                            <th class="font-weight-bold">Customer Mobile</th>
+                            <th class="font-weight-bold">Customer Email</th>
+                            <th class="font-weight-bold">Customer Registration Date</th>
+                            <th class="font-weight-bold text-center">Status</th>
+                            <th class="font-weight-bold text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($referrals as $ref)
+                        @forelse($referrals as $index => $ref)
                             <tr>
+                                <td class="text-center font-weight-bold">
+                                    {{ (($referrals->currentPage() - 1) * $referrals->perPage()) + $loop->iteration }}
+                                </td>
+                                <td>{{ $ref->referred_at ? $ref->referred_at->format('d/m/Y H:i') : 'N/A' }}</td>
                                 <td class="font-weight-bold text-primary">{{ $ref->referral_code }}</td>
                                 <td>
-                                    <div class="font-weight-bold text-dark">{{ $ref->referrer->name ?? 'N/A' }}</div>
-                                    <small class="text-muted">{{ $ref->referrer->email ?? '' }}</small>
+                                    <div class="font-weight-bold text-dark">{{ $ref->staff->name ?? 'N/A' }}</div>
                                 </td>
                                 <td>
-                                    <div class="font-weight-bold text-dark">{{ $ref->referred->name ?? 'N/A' }}</div>
-                                    <small class="text-muted">{{ $ref->referred->email ?? '' }}</small>
+                                    <span class="badge badge-outline-dark font-weight-bold">
+                                        {{ $ref->staff->staffDetail->emp_code ?? 'N/A' }}
+                                    </span>
                                 </td>
                                 <td>
-                                    @if($ref->booking)
-                                        <a href="{{ route('bookings.show', $ref->booking->id) }}" class="text-primary font-weight-bold">
-                                            {{ $ref->booking->booking_number }}
-                                        </a>
-                                    @else
-                                        <span class="text-muted">None</span>
-                                    @endif
+                                    <div class="font-weight-bold text-dark">{{ $ref->customer->name ?? 'N/A' }}</div>
                                 </td>
-                                <td>{{ $ref->reward_type }}</td>
-                                <td class="font-weight-bold text-success">₹{{ number_format($ref->reward_amount, 2) }}</td>
-                                <td>{{ $ref->created_at->format('d M Y') }}</td>
                                 <td>
+                                    <span class="badge badge-light border font-weight-bold">#{{ $ref->customer->id ?? 'N/A' }}</span>
+                                </td>
+                                <td>{{ $ref->customer->phone ?? 'N/A' }}</td>
+                                <td>{{ $ref->customer->email ?? 'N/A' }}</td>
+                                <td>{{ $ref->customer && $ref->customer->created_at ? $ref->customer->created_at->format('d/m/Y H:i') : 'N/A' }}</td>
+                                <td class="text-center">
                                     @php
-                                        $badgeClass = 'badge-secondary';
-                                        switch($ref->reward_status) {
-                                            case 'Pending': $badgeClass = 'badge-warning'; break;
-                                            case 'Eligible': $badgeClass = 'badge-info'; break;
-                                            case 'Rewarded': $badgeClass = 'badge-success'; break;
-                                            case 'Rejected': $badgeClass = 'badge-danger'; break;
-                                        }
+                                        $status = $ref->customer->status ?? 'active';
+                                        $badgeClass = $status === 'active' ? 'badge-success' : 'badge-danger';
                                     @endphp
-                                    <span class="badge {{ $badgeClass }} text-dark font-weight-bold px-3 py-2">{{ $ref->reward_status }}</span>
+                                    <span class="badge {{ $badgeClass }} font-weight-bold px-3 py-2">
+                                        {{ ucfirst($status) }}
+                                    </span>
                                 </td>
-                                <td>
+                                <td class="text-center">
                                     @if(hasPermission('referral.view'))
-                                    <a href="{{ route('referrals.show', $ref->id) }}" class="btn btn-sm btn-info px-3">
-                                        <i class="mdi mdi-eye"></i> View
-                                    </a>
-                                    @endif
-                                    @if(hasPermission('referral.edit'))
-                                    <a href="{{ route('referrals.edit', $ref->id) }}" class="btn btn-sm btn-primary px-3">
-                                        <i class="mdi mdi-pencil"></i> Edit
+                                    <a href="{{ route('referrals.show', $ref->id) }}" class="btn btn-sm btn-info px-3 font-weight-bold">
+                                        <i class="mdi mdi-eye mr-1"></i> View Details
                                     </a>
                                     @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center py-4 text-muted">
-                                    <i class="mdi mdi-alert mr-1"></i> No referrals found matching your search.
+                                <td colspan="12" class="text-center py-5 text-muted">
+                                    <i class="mdi mdi-account-search mdi-36px d-block mb-2 text-secondary"></i>
+                                    No customer referrals found matching your query.
                                 </td>
                             </tr>
                         @endforelse
@@ -165,8 +146,13 @@
             </div>
 
             <!-- Pagination block -->
-            <div class="mt-4 d-flex justify-content-end">
-                {{ $referrals->links() }}
+            <div class="mt-4 d-flex justify-content-between align-items-center flex-wrap">
+                <div class="text-muted small mb-2">
+                    Showing {{ $referrals->firstItem() ?? 0 }} to {{ $referrals->lastItem() ?? 0 }} of {{ $referrals->total() }} entries
+                </div>
+                <div>
+                    {{ $referrals->links() }}
+                </div>
             </div>
         </div>
     </div>

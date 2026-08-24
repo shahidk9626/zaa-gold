@@ -35,4 +35,18 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/admin/customers/import', [CustomerController::class, 'import'])->name('customers.import');
         Route::get('/admin/customers/import-template', [CustomerController::class, 'downloadTemplate'])->name('customers.import-template');
     });
+
+    // Profile Update Requests Routes
+    Route::middleware('permission:profile-update-requests.view')->group(function () {
+        Route::get('/admin/customer/profile-update-requests', [\App\Http\Controllers\AdminProfileUpdateRequestController::class, 'index'])->name('admin.profile-update-requests.index');
+        Route::get('/admin/customer/profile-update-requests/{id}', [\App\Http\Controllers\AdminProfileUpdateRequestController::class, 'show'])->name('admin.profile-update-requests.show');
+    });
+
+    Route::middleware('permission:profile-update-requests.approve')->group(function () {
+        Route::post('/admin/customer/profile-update-requests/{id}/approve', [\App\Http\Controllers\AdminProfileUpdateRequestController::class, 'approve'])->name('admin.profile-update-requests.approve');
+    });
+
+    Route::middleware('permission:profile-update-requests.reject')->group(function () {
+        Route::post('/admin/customer/profile-update-requests/{id}/reject', [\App\Http\Controllers\AdminProfileUpdateRequestController::class, 'reject'])->name('admin.profile-update-requests.reject');
+    });
 });

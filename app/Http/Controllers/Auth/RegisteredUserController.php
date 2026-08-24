@@ -35,7 +35,28 @@ class RegisteredUserController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'phone' => ['required', 'string', 'max:15', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'referral_code' => ['nullable', 'string', 'max:50'],
         ]);
+
+        $referredStaffUser = null;
+        $refCodeInput = $request->referral_code ? trim($request->referral_code) : null;
+
+        if ($refCodeInput) {
+            $staffDetail = \App\Models\StaffDetail::where('emp_code', $refCodeInput)->first();
+            if (!$staffDetail) {
+                throw ValidationException::withMessages([
+                    'referral_code' => 'Invalid referral code.',
+                ]);
+            }
+
+            if (!$staffDetail->user || $staffDetail->user->status !== 'active') {
+                throw ValidationException::withMessages([
+                    'referral_code' => 'This referral code is no longer active.',
+                ]);
+            }
+
+            $referredStaffUser = $staffDetail->user;
+        }
 
         $customerRole = \App\Models\Role::where('slug', 'customer')->first();
         $customerRoleId = $customerRole ? $customerRole->id : null;
@@ -46,9 +67,21 @@ class RegisteredUserController extends Controller
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
             'role_id' => $customerRoleId,
+            'referred_by_staff_id' => $referredStaffUser ? $referredStaffUser->id : null,
             'status' => 'inactive',
             'profile_completed' => 0,
         ]);
+
+        if ($referredStaffUser) {
+            \App\Models\CustomerReferral::firstOrCreate(
+                ['customer_id' => $user->id],
+                [
+                    'staff_id' => $referredStaffUser->id,
+                    'referral_code' => $refCodeInput,
+                    'referred_at' => now(),
+                ]
+            );
+        }
 
         if ($customerRoleId) {
             $slug = \Illuminate\Support\Str::slug($user->name . '-' . \Illuminate\Support\Str::random(5));

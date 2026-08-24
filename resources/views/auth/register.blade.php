@@ -64,13 +64,27 @@
         </div>
 
         <!-- Confirm Password -->
-        <div class="form-group mb-4">
+        <div class="form-group mb-3">
             <label for="password_confirmation">Confirm Password</label>
             <input id="password_confirmation" type="password" name="password_confirmation" 
                    class="form-control @error('password_confirmation') is-invalid @enderror" 
                    required autocomplete="new-password" 
                    placeholder="Confirm your password" />
             @error('password_confirmation')
+                <span class="invalid-feedback" role="alert">
+                    <strong>{{ $message }}</strong>
+                </span>
+            @enderror
+        </div>
+
+        <!-- Referral Code -->
+        <div class="form-group mb-4">
+            <label for="referral_code">Referral Code <span class="text-muted" style="font-size: 0.85rem;">(Optional)</span></label>
+            <input id="referral_code" type="text" name="referral_code" 
+                   class="form-control @error('referral_code') is-invalid @enderror" 
+                   value="{{ old('referral_code') }}" 
+                   placeholder="Enter referral code" />
+            @error('referral_code')
                 <span class="invalid-feedback" role="alert">
                     <strong>{{ $message }}</strong>
                 </span>

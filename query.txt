@@ -96,3 +96,118 @@ INSERT INTO `permissions` (`name`, `slug`, `module_id`, `created_at`, `updated_a
 INSERT INTO `system_settings` (`key`, `value`, `description`, `created_at`, `updated_at`)
 VALUES ('maintenance_mode', '0', 'Global website maintenance mode toggle (0 = Off, 1 = On).', NOW(), NOW())
 ON DUPLICATE KEY UPDATE `value` = '0', `updated_at` = NOW();
+
+-- Customer Referrals Module Schema
+-- Generated from database/migrations/2026_08_24_190000_create_customer_referrals_table.php
+-- Purpose: Store permanent referral associations between Employee/Staff members and Customers using Employee referral code.
+-- Table: customer_referrals
+-- Columns:
+--   id: BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY
+--   staff_id: BIGINT UNSIGNED NOT NULL (Foreign key to users.id)
+--   customer_id: BIGINT UNSIGNED NOT NULL UNIQUE (Foreign key to users.id)
+--   referral_code: VARCHAR(255) NOT NULL (Indexed)
+--   referred_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP (Indexed)
+--   created_at: TIMESTAMP NULL
+--   updated_at: TIMESTAMP NULL
+--   deleted_at: TIMESTAMP NULL
+
+CREATE TABLE `customer_referrals` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `staff_id` BIGINT UNSIGNED NOT NULL,
+  `customer_id` BIGINT UNSIGNED NOT NULL,
+  `referral_code` VARCHAR(255) NOT NULL,
+  `referred_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` TIMESTAMP NULL,
+  `updated_at` TIMESTAMP NULL,
+  `deleted_at` TIMESTAMP NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `customer_referrals_customer_id_unique` (`customer_id`),
+  KEY `customer_referrals_staff_id_index` (`staff_id`),
+  KEY `customer_referrals_referral_code_index` (`referral_code`),
+  KEY `customer_referrals_referred_at_index` (`referred_at`),
+  CONSTRAINT `customer_referrals_staff_id_foreign` FOREIGN KEY (`staff_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `customer_referrals_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) DEFAULT CHARACTER SET utf8mb4 COLLATE 'utf8mb4_unicode_ci';
+
+-- Customer Profile Update Requests Module Schema
+-- Generated from database/migrations/2026_08_24_193000_create_customer_profile_update_requests_table.php
+-- Purpose: Manage profile change requests for KYC-approved customers requiring Admin review and approval.
+-- Table: customer_profile_update_requests
+-- Columns:
+--   id: BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY
+--   customer_id: BIGINT UNSIGNED NOT NULL (Foreign key to users.id)
+--   requested_changes: JSON NOT NULL (JSON array of field_name, field_label, current_value, requested_value)
+--   reason: TEXT NOT NULL (Customer's mandatory explanation for change)
+--   status: VARCHAR(20) NOT NULL DEFAULT 'Pending' (Values: Pending, Approved, Rejected)
+--   admin_remark: TEXT NULL (Admin review/rejection remark)
+--   reviewed_by: BIGINT UNSIGNED NULL (Foreign key to users.id)
+--   reviewed_at: TIMESTAMP NULL
+--   created_at: TIMESTAMP NULL
+--   updated_at: TIMESTAMP NULL
+--   deleted_at: TIMESTAMP NULL
+
+CREATE TABLE `customer_profile_update_requests` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `customer_id` BIGINT UNSIGNED NOT NULL,
+  `requested_changes` JSON NOT NULL,
+  `reason` TEXT NOT NULL,
+  `status` VARCHAR(20) NOT NULL DEFAULT 'Pending',
+  `admin_remark` TEXT NULL,
+  `reviewed_by` BIGINT UNSIGNED NULL,
+  `reviewed_at` TIMESTAMP NULL,
+  `created_at` TIMESTAMP NULL,
+  `updated_at` TIMESTAMP NULL,
+  `deleted_at` TIMESTAMP NULL,
+  PRIMARY KEY (`id`),
+  KEY `customer_profile_update_requests_status_index` (`status`),
+  KEY `customer_profile_update_requests_customer_id_status_index` (`customer_id`, `status`),
+  CONSTRAINT `customer_profile_update_requests_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `customer_profile_update_requests_reviewed_by_foreign` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) DEFAULT CHARACTER SET utf8mb4 COLLATE 'utf8mb4_unicode_ci';
+
+-- =========================================================================
+-- MODULES & PERMISSIONS SEED QUERIES FOR REFERRALS AND PROFILE UPDATE REQUESTS
+-- Generated from database/migrations/2026_08_24_200000_seed_referral_and_profile_update_permissions.php
+-- =========================================================================
+
+-- 1. Customer Referrals Module & Permissions
+INSERT INTO `modules` (`name`, `slug`, `status`, `created_at`, `updated_at`)
+VALUES ('Customer Referrals', 'referral', 'active', NOW(), NOW())
+ON DUPLICATE KEY UPDATE `name` = 'Customer Referrals', `status` = 'active', `updated_at` = NOW();
+
+INSERT INTO `permissions` (`name`, `slug`, `module_id`, `created_at`, `updated_at`) VALUES
+('View Customer Referrals', 'referral.view', (SELECT `id` FROM `modules` WHERE `slug` = 'referral' LIMIT 1), NOW(), NOW()),
+('Edit Customer Referrals', 'referral.edit', (SELECT `id` FROM `modules` WHERE `slug` = 'referral' LIMIT 1), NOW(), NOW()),
+('Export Customer Referrals', 'referral.export', (SELECT `id` FROM `modules` WHERE `slug` = 'referral' LIMIT 1), NOW(), NOW())
+ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `updated_at` = NOW();
+
+INSERT INTO `role_permissions` (`role_id`, `permission_id`, `allowed`, `created_at`, `updated_at`)
+SELECT r.id, p.id, 1, NOW(), NOW()
+FROM `roles` r
+CROSS JOIN `permissions` p
+WHERE r.slug IN ('super-admin', 'admin')
+  AND p.slug IN ('referral.view', 'referral.edit', 'referral.export')
+ON DUPLICATE KEY UPDATE `allowed` = 1, `updated_at` = NOW();
+
+
+-- 2. Profile Update Requests Module & Permissions
+INSERT INTO `modules` (`name`, `slug`, `status`, `created_at`, `updated_at`)
+VALUES ('Profile Update Requests', 'profile-update-requests', 'active', NOW(), NOW())
+ON DUPLICATE KEY UPDATE `name` = 'Profile Update Requests', `status` = 'active', `updated_at` = NOW();
+
+INSERT INTO `permissions` (`name`, `slug`, `module_id`, `created_at`, `updated_at`) VALUES
+('View Profile Update Requests', 'profile-update-requests.view', (SELECT `id` FROM `modules` WHERE `slug` = 'profile-update-requests' LIMIT 1), NOW(), NOW()),
+('Approve Profile Update Requests', 'profile-update-requests.approve', (SELECT `id` FROM `modules` WHERE `slug` = 'profile-update-requests' LIMIT 1), NOW(), NOW()),
+('Reject Profile Update Requests', 'profile-update-requests.reject', (SELECT `id` FROM `modules` WHERE `slug` = 'profile-update-requests' LIMIT 1), NOW(), NOW())
+ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `updated_at` = NOW();
+
+INSERT INTO `role_permissions` (`role_id`, `permission_id`, `allowed`, `created_at`, `updated_at`)
+SELECT r.id, p.id, 1, NOW(), NOW()
+FROM `roles` r
+CROSS JOIN `permissions` p
+WHERE r.slug IN ('super-admin', 'admin')
+  AND p.slug IN ('profile-update-requests.view', 'profile-update-requests.approve', 'profile-update-requests.reject')
+ON DUPLICATE KEY UPDATE `allowed` = 1, `updated_at` = NOW();
+
+
+

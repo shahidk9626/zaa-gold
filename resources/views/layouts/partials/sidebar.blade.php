@@ -39,6 +39,11 @@
             <a class="nav-link" href="{{ route('customers.index') }}">Customer list</a>
           </li>
           @endif
+          @if(hasPermission('profile-update-requests.view') || hasPermission('customer.view'))
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('admin.profile-update-requests.index') }}">Profile Update Requests</a>
+          </li>
+          @endif
           @if(hasPermission('customer.create'))
           <li class="nav-item">
             <a class="nav-link" href="{{ route('customers.create') }}">Add customer</a>

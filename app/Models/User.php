@@ -85,6 +85,26 @@ class User extends Authenticatable
         return $this->hasMany(User::class, 'referred_by_staff_id');
     }
 
+    public function customerReferral()
+    {
+        return $this->hasOne(CustomerReferral::class, 'customer_id');
+    }
+
+    public function staffReferrals()
+    {
+        return $this->hasMany(CustomerReferral::class, 'staff_id');
+    }
+
+    public function profileUpdateRequests()
+    {
+        return $this->hasMany(CustomerProfileUpdateRequest::class, 'customer_id');
+    }
+
+    public function hasPendingProfileUpdateRequest(): bool
+    {
+        return $this->profileUpdateRequests()->where('status', 'Pending')->exists();
+    }
+
     public function permissions()
     {
         return $this->belongsToMany(Permission::class, 'user_permissions')->withPivot('allowed');

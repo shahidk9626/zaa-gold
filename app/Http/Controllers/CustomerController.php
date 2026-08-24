@@ -103,9 +103,11 @@ class CustomerController extends Controller
             $customerRoleId = $customerRole ? $customerRole->id : 0;
 
             $referredById = null;
+            $refCodeInput = null;
             if ($request->referral_code) {
-                $staff = StaffDetail::where('emp_code', $request->referral_code)->first();
-                if ($staff) {
+                $refCodeInput = trim($request->referral_code);
+                $staff = StaffDetail::where('emp_code', $refCodeInput)->first();
+                if ($staff && $staff->user && $staff->user->status === 'active') {
                     $referredById = $staff->user_id;
                 }
             }
@@ -123,6 +125,17 @@ class CustomerController extends Controller
                 'profile_completed' => 1, // Created via admin wizard, complete profile
                 'verification_status' => 'verified',
             ]);
+
+            if ($referredById && $refCodeInput) {
+                \App\Models\CustomerReferral::firstOrCreate(
+                    ['customer_id' => $user->id],
+                    [
+                        'staff_id' => $referredById,
+                        'referral_code' => $refCodeInput,
+                        'referred_at' => now(),
+                    ]
+                );
+            }
 
             // Create Customer Business Details
             $slug = Str::slug($user->name . '-' . Str::random(5));
@@ -202,10 +215,12 @@ class CustomerController extends Controller
             DB::beginTransaction();
 
             $referredById = $user->referred_by_staff_id;
+            $refCodeInput = null;
             if ($request->has('referral_code')) {
                 if ($request->referral_code) {
-                    $staff = StaffDetail::where('emp_code', $request->referral_code)->first();
-                    if ($staff) {
+                    $refCodeInput = trim($request->referral_code);
+                    $staff = StaffDetail::where('emp_code', $refCodeInput)->first();
+                    if ($staff && $staff->user && $staff->user->status === 'active') {
                         $referredById = $staff->user_id;
                     }
                 } else {
@@ -222,6 +237,19 @@ class CustomerController extends Controller
                 'status' => $request->status ? 'active' : 'inactive',
                 'referred_by_staff_id' => $referredById,
             ]);
+
+            if ($referredById && $refCodeInput) {
+                \App\Models\CustomerReferral::updateOrCreate(
+                    ['customer_id' => $user->id],
+                    [
+                        'staff_id' => $referredById,
+                        'referral_code' => $refCodeInput,
+                        'referred_at' => now(),
+                    ]
+                );
+            } elseif ($request->has('referral_code') && empty($request->referral_code)) {
+                \App\Models\CustomerReferral::where('customer_id', $user->id)->delete();
+            }
 
             // Update Customer Business Details
             if ($customerDetail) {
@@ -668,7 +696,7 @@ class CustomerController extends Controller
                 $referredById = null;
                 if ($refCode) {
                     $staff = StaffDetail::where('emp_code', $refCode)->first();
-                    if ($staff) {
+                    if ($staff && $staff->user && $staff->user->status === 'active') {
                         $referredById = $staff->user_id;
                     }
                 }
@@ -686,6 +714,17 @@ class CustomerController extends Controller
                     'profile_completed' => 1,
                     'verification_status' => 'verified',
                 ]);
+
+                if ($referredById && $refCode) {
+                    \App\Models\CustomerReferral::firstOrCreate(
+                        ['customer_id' => $user->id],
+                        [
+                            'staff_id' => $referredById,
+                            'referral_code' => $refCode,
+                            'referred_at' => now(),
+                        ]
+                    );
+                }
 
                 // Create details
                 $slug = Str::slug($name . '-' . Str::random(5));
