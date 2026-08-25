@@ -128,32 +128,7 @@
                         </div>
                     </div>
 
-                    {{-- Need Help? Raise a Ticket Card --}}
-                    <div class="support-ticket-box p-4 mb-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="icon-circle-ticket mr-3">
-                                <i class="mdi mdi-ticket-confirmation-outline"></i>
-                            </div>
-                            <div>
-                                <h5 class="font-weight-bold text-dark mb-0">Need Help? Raise a Ticket</h5>
-                                <p class="text-muted small mb-0">Have a query or issue? Submit a support ticket and our team will assist you.</p>
-                            </div>
-                        </div>
 
-                        <form id="supportTicketForm" action="{{ route('customer.support.ticket.store') }}" method="POST">
-                            @csrf
-                            <div class="form-group mb-2">
-                                <label for="query" class="font-weight-bold text-dark small">Describe your query or issue</label>
-                                <textarea name="query" id="query" rows="3" required class="form-control bg-white text-dark border" placeholder="Type your reason here..."></textarea>
-                            </div>
-                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-                                <p class="text-muted small mb-2 mb-md-0">Please provide as much detail as possible so we can help you better.</p>
-                                <button type="submit" id="submitTicketBtn" class="btn btn-gold font-weight-bold px-4 py-2">
-                                    <i class="mdi mdi-send mr-1"></i> Raise Ticket
-                                </button>
-                            </div>
-                        </form>
-                    </div>
 
                     {{-- Replied from Team Section --}}
                     <div class="support-reply-box p-4 mb-4">
