@@ -59,3 +59,25 @@ if (!function_exists('hasPermission')) {
         return false;
     }
 }
+
+if (!function_exists('storage_url')) {
+    /**
+     * Generate a public storage URL compatible with Hostinger/production environments.
+     *
+     * @param string|null $path
+     * @return string
+     */
+    function storage_url($path)
+    {
+        if (!$path) {
+            return '';
+        }
+
+        if (strpos(request()->getHost(), 'aurongold.in') !== false) {
+            return asset('storage/app/public/' . ltrim($path, '/'));
+        }
+
+        return asset('storage/' . ltrim($path, '/'));
+    }
+}
+

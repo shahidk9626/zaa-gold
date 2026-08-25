@@ -35,6 +35,8 @@ class Product extends Model
 
     protected $appends = [
         'calculated_price',
+        'thumbnail_url',
+        'gallery_urls',
     ];
 
     public function getCurrentPrice()
@@ -58,11 +60,27 @@ class Product extends Model
             return asset('assets/images/dashboard/img_1.jpg');
         }
 
-        // Hostinger production environment detection
-        if (strpos(request()->getHost(), 'aurongold.in') !== false) {
-            return asset('storage/app/public/' . $this->thumbnail);
+        return storage_url($this->thumbnail);
+    }
+
+    public function getThumbnailUrlAttribute()
+    {
+        return $this->getThumbnailUrl();
+    }
+
+    public function getGalleryUrls()
+    {
+        if (!$this->gallery_images || !is_array($this->gallery_images)) {
+            return [];
         }
 
-        return asset('storage/' . $this->thumbnail);
+        return array_map(function ($img) {
+            return storage_url($img);
+        }, $this->gallery_images);
+    }
+
+    public function getGalleryUrlsAttribute()
+    {
+        return $this->getGalleryUrls();
     }
 }

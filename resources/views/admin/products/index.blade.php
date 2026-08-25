@@ -95,9 +95,10 @@
                     className: 'align-middle text-center',
                     orderable: false,
                     searchable: false,
-                    render: function (data) {
-                        if (data) {
-                            return `<img src="{{ asset('storage') }}/${data}" style="width: 45px; height: 45px; border-radius: 4px; object-fit: cover;">`;
+                    render: function (data, type, row) {
+                        let src = (row && row.thumbnail_url) ? row.thumbnail_url : (data ? `{{ asset('storage') }}/${data}` : null);
+                        if (src) {
+                            return `<img src="${src}" style="width: 45px; height: 45px; border-radius: 4px; object-fit: cover;">`;
                         }
                         return `<div class="bg-light d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; border-radius: 4px;"><i class="mdi mdi-image text-muted" style="font-size: 1.2rem;"></i></div>`;
                     }

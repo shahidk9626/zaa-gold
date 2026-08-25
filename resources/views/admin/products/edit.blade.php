@@ -88,10 +88,10 @@
 
                         <div class="col-md-6 form-group">
                             <label for="gallery_images" class="text-dark">Gallery Images</label>
-                            @if($product->gallery_images)
+                            @if($product->getGalleryUrls() && count($product->getGalleryUrls()) > 0)
                                 <div class="d-flex mb-2 flex-wrap gap-2">
-                                    @foreach($product->gallery_images as $img)
-                                        <img src="{{ asset('storage/' . $img) }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
+                                    @foreach($product->getGalleryUrls() as $imgUrl)
+                                        <img src="{{ $imgUrl }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
                                     @endforeach
                                 </div>
                             @endif

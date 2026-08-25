@@ -83,13 +83,13 @@
                 </div>
             </div>
 
-            @if($product->gallery_images && count($product->gallery_images) > 0)
+            @if($product->getGalleryUrls() && count($product->getGalleryUrls()) > 0)
                 <h5 class="text-primary font-weight-bold mb-3 mt-2">Gallery Display</h5>
                 <div class="row">
-                    @foreach($product->gallery_images as $img)
+                    @foreach($product->getGalleryUrls() as $imgUrl)
                         <div class="col-md-3 col-sm-6 mb-3">
                             <div class="border rounded p-1">
-                                <img src="{{ asset('storage/' . $img) }}" class="w-100 rounded" style="height: 150px; object-fit: cover;">
+                                <img src="{{ $imgUrl }}" class="w-100 rounded" style="height: 150px; object-fit: cover;">
                             </div>
                         </div>
                     @endforeach
