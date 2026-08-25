@@ -54,7 +54,7 @@
                 <div class="col-auto">
                     <div class="profile-image-container bg-light d-flex align-items-center justify-content-center">
                         @if($staff->profile_image)
-                            <img src="{{ asset('storage/' . $staff->profile_image) }}" class="w-100 h-100 object-cover" alt="profile_image" />
+                            <img src="{{ $staff->profile_image_url }}" class="w-100 h-100 object-cover" alt="profile_image" />
                         @else
                             <i class="mdi mdi-account text-muted" style="font-size: 3rem;"></i>
                         @endif
@@ -254,7 +254,7 @@
                                     <div class="bg-white border rounded p-3 mb-3 d-flex align-items-center justify-content-center" style="height: 100px;">
                                         @php $ext = pathinfo($doc->file_path, PATHINFO_EXTENSION); @endphp
                                         @if(in_array($ext, ['jpg', 'jpeg', 'png', 'gif']))
-                                            <img src="{{ asset('storage/' . $doc->file_path) }}" class="w-100 h-100 object-cover" style="max-height: 80px; border-radius: 0.25rem;">
+                                            <img src="{{ storage_url($doc->file_path) }}" class="w-100 h-100 object-cover" style="max-height: 80px; border-radius: 0.25rem;">
                                         @else
                                             <i class="mdi mdi-file-pdf text-danger" style="font-size: 3rem;"></i>
                                         @endif
@@ -262,7 +262,7 @@
                                     <p class="small font-weight-bold text-truncate text-dark mb-3" title="{{ $doc->document_name }}">
                                         {{ $doc->document_name }}
                                     </p>
-                                    <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="btn btn-primary btn-sm btn-block">
+                                    <a href="{{ storage_url($doc->file_path) }}" target="_blank" class="btn btn-primary btn-sm btn-block">
                                         <i class="mdi mdi-eye"></i> View File
                                     </a>
                                 </div>

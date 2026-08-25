@@ -380,7 +380,7 @@
                                             @if($latestKyc && $latestKyc->pan_card)
                                                 <div class="mt-2 small d-flex align-items-center">
                                                     <span class="text-success"><i class="mdi mdi-file-check mr-1"></i> Document Uploaded</span>
-                                                    <a href="{{ asset('storage/' . $latestKyc->pan_card) }}" target="_blank" class="ml-3 font-weight-bold text-primary"><i class="mdi mdi-eye mr-1"></i> View</a>
+                                                    <a href="{{ storage_url($latestKyc->pan_card) }}" target="_blank" class="ml-3 font-weight-bold text-primary"><i class="mdi mdi-eye mr-1"></i> View</a>
                                                 </div>
                                             @endif
                                         </div>
@@ -393,7 +393,7 @@
                                             @if($latestKyc && $latestKyc->front_image)
                                                 <div class="mt-2 small d-flex align-items-center">
                                                     <span class="text-success"><i class="mdi mdi-file-check mr-1"></i> Document Uploaded</span>
-                                                    <a href="{{ asset('storage/' . $latestKyc->front_image) }}" target="_blank" class="ml-3 font-weight-bold text-primary"><i class="mdi mdi-eye mr-1"></i> View</a>
+                                                    <a href="{{ storage_url($latestKyc->front_image) }}" target="_blank" class="ml-3 font-weight-bold text-primary"><i class="mdi mdi-eye mr-1"></i> View</a>
                                                 </div>
                                             @endif
                                         </div>
@@ -406,7 +406,7 @@
                                             @if($latestKyc && $latestKyc->back_image)
                                                 <div class="mt-2 small d-flex align-items-center">
                                                     <span class="text-success"><i class="mdi mdi-file-check mr-1"></i> Document Uploaded</span>
-                                                    <a href="{{ asset('storage/' . $latestKyc->back_image) }}" target="_blank" class="ml-3 font-weight-bold text-primary"><i class="mdi mdi-eye mr-1"></i> View</a>
+                                                    <a href="{{ storage_url($latestKyc->back_image) }}" target="_blank" class="ml-3 font-weight-bold text-primary"><i class="mdi mdi-eye mr-1"></i> View</a>
                                                 </div>
                                             @endif
                                         </div>
@@ -419,7 +419,7 @@
                                             @if($latestKyc && $latestKyc->selfie)
                                                 <div class="mt-2 small d-flex align-items-center">
                                                     <span class="text-success"><i class="mdi mdi-file-check mr-1"></i> Document Uploaded</span>
-                                                    <a href="{{ asset('storage/' . $latestKyc->selfie) }}" target="_blank" class="ml-3 font-weight-bold text-primary"><i class="mdi mdi-eye mr-1"></i> View</a>
+                                                    <a href="{{ storage_url($latestKyc->selfie) }}" target="_blank" class="ml-3 font-weight-bold text-primary"><i class="mdi mdi-eye mr-1"></i> View</a>
                                                 </div>
                                             @endif
                                         </div>
@@ -432,7 +432,7 @@
                                             @if($latestKyc && $latestKyc->signature)
                                                 <div class="mt-2 small d-flex align-items-center">
                                                     <span class="text-success"><i class="mdi mdi-file-check mr-1"></i> Document Uploaded</span>
-                                                    <a href="{{ asset('storage/' . $latestKyc->signature) }}" target="_blank" class="ml-3 font-weight-bold text-primary"><i class="mdi mdi-eye mr-1"></i> View</a>
+                                                    <a href="{{ storage_url($latestKyc->signature) }}" target="_blank" class="ml-3 font-weight-bold text-primary"><i class="mdi mdi-eye mr-1"></i> View</a>
                                                 </div>
                                             @endif
                                         </div>
@@ -445,7 +445,7 @@
                                             @if($latestKyc && $latestKyc->bank_document)
                                                 <div class="mt-2 small d-flex align-items-center">
                                                     <span class="text-success"><i class="mdi mdi-file-check mr-1"></i> Document Uploaded</span>
-                                                    <a href="{{ asset('storage/' . $latestKyc->bank_document) }}" target="_blank" class="ml-3 font-weight-bold text-primary"><i class="mdi mdi-eye mr-1"></i> View</a>
+                                                    <a href="{{ storage_url($latestKyc->bank_document) }}" target="_blank" class="ml-3 font-weight-bold text-primary"><i class="mdi mdi-eye mr-1"></i> View</a>
                                                 </div>
                                             @endif
                                         </div>
@@ -458,7 +458,7 @@
                                             @if($latestKyc && $latestKyc->additional_documents)
                                                 <div class="mt-2 small d-flex align-items-center">
                                                     <span class="text-success"><i class="mdi mdi-file-check mr-1"></i> Document Uploaded</span>
-                                                    <a href="{{ asset('storage/' . $latestKyc->additional_documents) }}" target="_blank" class="ml-3 font-weight-bold text-primary"><i class="mdi mdi-eye mr-1"></i> View</a>
+                                                    <a href="{{ storage_url($latestKyc->additional_documents) }}" target="_blank" class="ml-3 font-weight-bold text-primary"><i class="mdi mdi-eye mr-1"></i> View</a>
                                                 </div>
                                             @endif
                                         </div>

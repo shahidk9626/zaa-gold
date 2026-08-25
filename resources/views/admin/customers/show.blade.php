@@ -54,7 +54,7 @@
                 <div class="col-auto">
                     <div class="profile-image-container bg-light d-flex align-items-center justify-content-center">
                         @if($customer->profile_image)
-                            <img src="{{ asset('storage/' . $customer->profile_image) }}" class="w-100 h-100 object-cover" alt="profile_image" />
+                            <img src="{{ $customer->profile_image_url }}" class="w-100 h-100 object-cover" alt="profile_image" />
                         @else
                             <i class="mdi mdi-account text-muted" style="font-size: 3rem;"></i>
                         @endif
@@ -269,7 +269,7 @@
                                         <span class="font-weight-bold text-dark">{{ $doc->document_name }}</span>
                                         <small class="text-muted d-block text-truncate">{{ $doc->file_original_name }}</small>
                                     </div>
-                                    <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="btn btn-primary btn-sm px-3">
+                                    <a href="{{ storage_url($doc->file_path) }}" target="_blank" class="btn btn-primary btn-sm px-3">
                                         <i class="mdi mdi-download mr-1"></i> View
                                     </a>
                                 </div>

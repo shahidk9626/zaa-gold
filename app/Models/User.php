@@ -138,7 +138,7 @@ class User extends Authenticatable
     public function getProfileImageUrlAttribute(): string
     {
         if ($this->profile_image && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->profile_image)) {
-            return asset('storage/' . $this->profile_image);
+            return storage_url($this->profile_image);
         }
         return asset('assets/images/faces/face1.jpg');
     }

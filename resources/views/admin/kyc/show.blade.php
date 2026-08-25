@@ -71,7 +71,7 @@
                     <div class="card bg-light border p-3 text-center">
                         <span class="font-weight-bold d-block mb-3 text-dark">Document Front Image</span>
                         <div class="border rounded p-1 bg-white" style="height: 200px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                            <img src="{{ asset('storage/' . $kyc->front_image) }}" class="w-100 h-100 object-cover" style="cursor: pointer;" onclick="viewImage('{{ asset('storage/' . $kyc->front_image) }}')">
+                            <img src="{{ storage_url($kyc->front_image) }}" class="w-100 h-100 object-cover" style="cursor: pointer;" onclick="viewImage('{{ storage_url($kyc->front_image) }}')">
                         </div>
                     </div>
                 </div>
@@ -81,7 +81,7 @@
                         <div class="card bg-light border p-3 text-center">
                             <span class="font-weight-bold d-block mb-3 text-dark">Document Back Image</span>
                             <div class="border rounded p-1 bg-white" style="height: 200px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                                <img src="{{ asset('storage/' . $kyc->back_image) }}" class="w-100 h-100 object-cover" style="cursor: pointer;" onclick="viewImage('{{ asset('storage/' . $kyc->back_image) }}')">
+                                <img src="{{ storage_url($kyc->back_image) }}" class="w-100 h-100 object-cover" style="cursor: pointer;" onclick="viewImage('{{ storage_url($kyc->back_image) }}')">
                             </div>
                         </div>
                     </div>
@@ -92,7 +92,7 @@
                         <div class="card bg-light border p-3 text-center">
                             <span class="font-weight-bold d-block mb-3 text-dark">Passport Size Photo</span>
                             <div class="border rounded p-1 bg-white" style="height: 200px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                                <img src="{{ asset('storage/' . $kyc->selfie) }}" class="w-100 h-100 object-cover" style="cursor: pointer;" onclick="viewImage('{{ asset('storage/' . $kyc->selfie) }}')">
+                                <img src="{{ storage_url($kyc->selfie) }}" class="w-100 h-100 object-cover" style="cursor: pointer;" onclick="viewImage('{{ storage_url($kyc->selfie) }}')">
                             </div>
                         </div>
                     </div>
@@ -104,9 +104,9 @@
                             <span class="font-weight-bold d-block mb-3 text-dark">PAN Card</span>
                             <div class="border rounded p-1 bg-white" style="height: 200px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
                                 @if(Str::endsWith($kyc->pan_card, '.pdf'))
-                                    <a href="{{ asset('storage/' . $kyc->pan_card) }}" target="_blank" class="btn btn-outline-primary btn-sm"><i class="mdi mdi-file-pdf mr-1"></i> View PAN PDF</a>
+                                    <a href="{{ storage_url($kyc->pan_card) }}" target="_blank" class="btn btn-outline-primary btn-sm"><i class="mdi mdi-file-pdf mr-1"></i> View PAN PDF</a>
                                 @else
-                                    <img src="{{ asset('storage/' . $kyc->pan_card) }}" class="w-100 h-100 object-cover" style="cursor: pointer;" onclick="viewImage('{{ asset('storage/' . $kyc->pan_card) }}')">
+                                    <img src="{{ storage_url($kyc->pan_card) }}" class="w-100 h-100 object-cover" style="cursor: pointer;" onclick="viewImage('{{ storage_url($kyc->pan_card) }}')">
                                 @endif
                             </div>
                         </div>
@@ -119,9 +119,9 @@
                             <span class="font-weight-bold d-block mb-3 text-dark">Signature Scan</span>
                             <div class="border rounded p-1 bg-white" style="height: 200px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
                                 @if(Str::endsWith($kyc->signature, '.pdf'))
-                                    <a href="{{ asset('storage/' . $kyc->signature) }}" target="_blank" class="btn btn-outline-primary btn-sm"><i class="mdi mdi-file-pdf mr-1"></i> View Signature PDF</a>
+                                    <a href="{{ storage_url($kyc->signature) }}" target="_blank" class="btn btn-outline-primary btn-sm"><i class="mdi mdi-file-pdf mr-1"></i> View Signature PDF</a>
                                 @else
-                                    <img src="{{ asset('storage/' . $kyc->signature) }}" class="w-100 h-100 object-cover" style="cursor: pointer;" onclick="viewImage('{{ asset('storage/' . $kyc->signature) }}')">
+                                    <img src="{{ storage_url($kyc->signature) }}" class="w-100 h-100 object-cover" style="cursor: pointer;" onclick="viewImage('{{ storage_url($kyc->signature) }}')">
                                 @endif
                             </div>
                         </div>
@@ -134,9 +134,9 @@
                             <span class="font-weight-bold d-block mb-3 text-dark">Bank Document / Cancelled Cheque</span>
                             <div class="border rounded p-1 bg-white" style="height: 200px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
                                 @if(Str::endsWith($kyc->bank_document, '.pdf'))
-                                    <a href="{{ asset('storage/' . $kyc->bank_document) }}" target="_blank" class="btn btn-outline-primary btn-sm"><i class="mdi mdi-file-pdf mr-1"></i> View Bank Doc PDF</a>
+                                    <a href="{{ storage_url($kyc->bank_document) }}" target="_blank" class="btn btn-outline-primary btn-sm"><i class="mdi mdi-file-pdf mr-1"></i> View Bank Doc PDF</a>
                                 @else
-                                    <img src="{{ asset('storage/' . $kyc->bank_document) }}" class="w-100 h-100 object-cover" style="cursor: pointer;" onclick="viewImage('{{ asset('storage/' . $kyc->bank_document) }}')">
+                                    <img src="{{ storage_url($kyc->bank_document) }}" class="w-100 h-100 object-cover" style="cursor: pointer;" onclick="viewImage('{{ storage_url($kyc->bank_document) }}')">
                                 @endif
                             </div>
                         </div>
@@ -149,9 +149,9 @@
                             <span class="font-weight-bold d-block mb-3 text-dark">Additional Documents</span>
                             <div class="border rounded p-1 bg-white" style="height: 200px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
                                 @if(Str::endsWith($kyc->additional_documents, '.pdf'))
-                                    <a href="{{ asset('storage/' . $kyc->additional_documents) }}" target="_blank" class="btn btn-outline-primary btn-sm"><i class="mdi mdi-file-pdf mr-1"></i> View PDF Scan</a>
+                                    <a href="{{ storage_url($kyc->additional_documents) }}" target="_blank" class="btn btn-outline-primary btn-sm"><i class="mdi mdi-file-pdf mr-1"></i> View PDF Scan</a>
                                 @else
-                                    <img src="{{ asset('storage/' . $kyc->additional_documents) }}" class="w-100 h-100 object-cover" style="cursor: pointer;" onclick="viewImage('{{ asset('storage/' . $kyc->additional_documents) }}')">
+                                    <img src="{{ storage_url($kyc->additional_documents) }}" class="w-100 h-100 object-cover" style="cursor: pointer;" onclick="viewImage('{{ storage_url($kyc->additional_documents) }}')">
                                 @endif
                             </div>
                         </div>

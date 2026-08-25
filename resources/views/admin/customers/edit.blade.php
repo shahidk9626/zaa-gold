@@ -323,7 +323,7 @@
                                                     <span class="small font-weight-bold text-dark">{{ $doc->document_name }}</span>
                                                 </div>
                                                 <div>
-                                                    <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="btn btn-outline-primary btn-xs mr-1 py-1" style="padding: 0.2rem 0.4rem;">
+                                                    <a href="{{ storage_url($doc->file_path) }}" target="_blank" class="btn btn-outline-primary btn-xs mr-1 py-1" style="padding: 0.2rem 0.4rem;">
                                                         <i class="mdi mdi-download"></i>
                                                     </a>
                                                     <button type="button" onclick="deleteExistingDoc({{ $doc->id }})" class="btn btn-outline-danger btn-xs py-1" style="padding: 0.2rem 0.4rem;">
