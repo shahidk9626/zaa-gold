@@ -133,13 +133,13 @@
                                             @endif
                                             @if($plan->finance_charge_enabled && (float)($calc['finance_charge'] ?? 0) > 0)
                                                 <div class="d-flex justify-content-between mb-1">
-                                                    <span>Finance Charge:</span>
+                                                    <span>Price lock charges & Storage charges :</span>
                                                     <span class="text-dark">₹{{ number_format($calc['finance_charge'], 2) }} {{ (strtolower($plan->finance_charge_type) === 'percentage' || strtolower($plan->finance_charge_type) === 'percent') ? "({$plan->finance_charge_value}%)" : '' }}</span>
                                                 </div>
                                             @endif
                                             @if($plan->storage_charge_enabled && (float)($calc['storage_charge'] ?? 0) > 0)
                                                 <div class="d-flex justify-content-between mb-1">
-                                                    <span>Storage Charge:</span>
+                                                    <span>Service charges :</span>
                                                     <span class="text-dark">₹{{ number_format($calc['storage_charge'], 2) }} {{ (strtolower($plan->storage_charge_type) === 'percentage' || strtolower($plan->storage_charge_type) === 'percent') ? "({$plan->storage_charge_value}%)" : '' }}</span>
                                                 </div>
                                             @endif
@@ -173,8 +173,8 @@
                                         <th>EMAP Plan</th>
                                         <th>Duration</th>
                                         <th>EMAP (Easy Monthly Advance Payment)</th>
-                                        <th>Finance Charges</th>
-                                        <th>Storage Charges</th>
+                                        <th>Price lock charges & Storage charges</th>
+                                        <th>Service charges</th>
                                         <th>Grand Total</th>
                                         <th>Highlight</th>
                                     </tr>
@@ -501,7 +501,7 @@
                                 const percentStr = data.finance_charge_percent ? ` (${data.finance_charge_percent}%)` : '';
                                 const row = document.createElement('div');
                                 row.className = 'd-flex justify-content-between align-items-center mb-2';
-                                row.innerHTML = `<span class="text-muted small">Finance Charge${percentStr}</span><span class="font-weight-medium text-dark">${formatINR(data.finance_charge)}</span>`;
+                                row.innerHTML = `<span class="text-muted small">Price lock charges & Storage charges :${percentStr}</span><span class="font-weight-medium text-dark">${formatINR(data.finance_charge)}</span>`;
                                 itemsContainer.appendChild(row);
                             }
 
@@ -510,7 +510,7 @@
                                 const percentStr = data.storage_charge_percent ? ` (${data.storage_charge_percent}%)` : '';
                                 const row = document.createElement('div');
                                 row.className = 'd-flex justify-content-between align-items-center mb-2';
-                                row.innerHTML = `<span class="text-muted small">Price Lock & Storage Charges${percentStr}</span><span class="font-weight-medium text-dark">${formatINR(data.storage_charge)}</span>`;
+                                row.innerHTML = `<span class="text-muted small">Service charges :${percentStr}</span><span class="font-weight-medium text-dark">${formatINR(data.storage_charge)}</span>`;
                                 itemsContainer.appendChild(row);
                             }
 
@@ -519,7 +519,7 @@
                                 const percentStr = data.gst_on_charges_percent ? ` (${data.gst_on_charges_percent}%)` : '';
                                 const row = document.createElement('div');
                                 row.className = 'd-flex justify-content-between align-items-center mb-2';
-                                row.innerHTML = `<span class="text-muted small">GST on Charges${percentStr}</span><span class="font-weight-medium text-dark">${formatINR(data.gst_on_charges)}</span>`;
+                                row.innerHTML = `<span class="text-muted small">GST on Service Charges :${percentStr}</span><span class="font-weight-medium text-dark">${formatINR(data.gst_on_charges)}</span>`;
                                 itemsContainer.appendChild(row);
                             }
 

@@ -21,7 +21,7 @@
                     @if(isset($financials['finance_charge']) && (float)$financials['finance_charge'] > 0)
                     <tr>
                         <td class="text-muted">
-                            Finance Charge
+                            Price lock charges & Storage charges :
                             @if(isset($financials['finance_charge_percent']) && $financials['finance_charge_percent'] > 0)
                                 ({{ number_format($financials['finance_charge_percent'], 2) }}%)
                             @endif
@@ -32,7 +32,7 @@
                     @if(isset($financials['storage_charge']) && (float)$financials['storage_charge'] > 0)
                     <tr>
                         <td class="text-muted">
-                            Storage Charge
+                            Service charges :
                             @if(isset($financials['storage_charge_percent']) && $financials['storage_charge_percent'] > 0)
                                 ({{ number_format($financials['storage_charge_percent'], 2) }}%)
                             @endif
@@ -43,7 +43,7 @@
                     @if(isset($financials['gst_on_charges']) && (float)$financials['gst_on_charges'] > 0)
                     <tr>
                         <td class="text-muted">
-                            GST on Charges
+                            GST on Service Charges :
                             @if(isset($financials['gst_on_charges_percent']) && $financials['gst_on_charges_percent'] > 0)
                                 ({{ number_format($financials['gst_on_charges_percent'], 2) }}%)
                             @endif
