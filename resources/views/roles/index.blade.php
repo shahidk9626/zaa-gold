@@ -284,7 +284,7 @@
         // Load Permissions
         $.get(`{{ url('roles/permissions') }}/${id}`, function (permissions) {
             permissions.forEach(function (rp) {
-                if (rp.allowed) {
+                if (rp.allowed == 1 || rp.allowed === true) {
                     $(`.permission-checkbox[data-permission-id="${rp.permission_id}"]`).prop('checked', true);
                 }
             });

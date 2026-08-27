@@ -9,4 +9,8 @@ class RolePermission extends Model
     use \App\Traits\LogsActivity;
 
     protected $fillable = ['role_id', 'permission_id', 'allowed'];
+
+    protected $casts = [
+        'allowed' => 'boolean',
+    ];
 }

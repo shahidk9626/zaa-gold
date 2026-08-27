@@ -101,8 +101,9 @@ class RoleController extends Controller
                 'status' => $request->status,
             ]);
 
+            // Clear all permissions and sync new ones
+            RolePermission::where('role_id', $role->id)->delete();
             if ($request->has('permissions')) {
-                RolePermission::where('role_id', $role->id)->delete();
                 foreach ($request->permissions as $permissionId => $allowed) {
                     RolePermission::create([
                         'role_id' => $role->id,

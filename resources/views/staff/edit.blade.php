@@ -147,7 +147,7 @@
                                                 @foreach (['view', 'create', 'edit', 'delete', 'status'] as $action)
                                                     @php
                                                         $permission = $module->permissions->where('slug', $module->slug . '.' . $action)->first();
-                                                        $currentOverride = $permission ? ($userPermissions[$permission->id] ?? null) : null;
+                                                        $currentOverride = $permission && isset($userPermissions[$permission->id]) ? (int)$userPermissions[$permission->id] : null;
                                                     @endphp
                                                     <td class="text-center align-middle">
                                                         @if ($permission)
