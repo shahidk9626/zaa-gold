@@ -38,24 +38,39 @@ class RegisteredUserController extends Controller
             'referral_code' => ['nullable', 'string', 'max:50'],
         ]);
 
-        $referredStaffUser = null;
+        $referredUser = null;
         $refCodeInput = $request->referral_code ? trim($request->referral_code) : null;
 
         if ($refCodeInput) {
-            $staffDetail = \App\Models\StaffDetail::where('emp_code', $refCodeInput)->first();
-            if (!$staffDetail) {
+            // Find referrer in users table
+            $referredUser = \App\Models\User::where('referral_code', $refCodeInput)->first();
+            
+            // Fallback to staff emp_code
+            if (!$referredUser) {
+                $staffDetail = \App\Models\StaffDetail::where('emp_code', $refCodeInput)->first();
+                if ($staffDetail && $staffDetail->user) {
+                    $referredUser = $staffDetail->user;
+                }
+            }
+
+            if (!$referredUser) {
                 throw ValidationException::withMessages([
-                    'referral_code' => 'Invalid referral code.',
+                    'referral_code' => 'Invalid referral code. Please check the code and try again.',
                 ]);
             }
 
-            if (!$staffDetail->user || $staffDetail->user->status !== 'active') {
+            if ($referredUser->status !== 'active') {
                 throw ValidationException::withMessages([
                     'referral_code' => 'This referral code is no longer active.',
                 ]);
             }
 
-            $referredStaffUser = $staffDetail->user;
+            // Prevent self-referral
+            if ($referredUser->email === $request->email || $referredUser->phone === $request->phone) {
+                throw ValidationException::withMessages([
+                    'referral_code' => 'You cannot use your own referral code.',
+                ]);
+            }
         }
 
         $customerRole = \App\Models\Role::where('slug', 'customer')->first();
@@ -67,16 +82,19 @@ class RegisteredUserController extends Controller
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
             'role_id' => $customerRoleId,
-            'referred_by_staff_id' => $referredStaffUser ? $referredStaffUser->id : null,
+            'referred_by_staff_id' => $referredUser ? $referredUser->id : null,
             'status' => 'inactive',
             'profile_completed' => 0,
         ]);
 
-        if ($referredStaffUser) {
+        if ($referredUser) {
+            $isStaff = $referredUser->isStaffOrAdmin();
             \App\Models\CustomerReferral::firstOrCreate(
                 ['customer_id' => $user->id],
                 [
-                    'staff_id' => $referredStaffUser->id,
+                    'staff_id' => $isStaff ? $referredUser->id : null,
+                    'referrer_id' => $referredUser->id,
+                    'referrer_type' => $isStaff ? 'staff' : 'customer',
                     'referral_code' => $refCodeInput,
                     'referred_at' => now(),
                 ]

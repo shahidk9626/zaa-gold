@@ -181,6 +181,20 @@
                         @endif
                     </div>
                 </div>
+
+                {{-- Desktop Referral Card --}}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h4 class="card-title">Share & Earn</h4>
+                        <p class="text-muted small">Invite friends to AurOnGold and get rewards. Your Referral Code:</p>
+                        <div class="bg-light p-3 rounded d-flex align-items-center justify-content-between border">
+                            <strong id="dashReferralCode" class="text-dark font-weight-bold" style="font-size: 1.15rem; letter-spacing: 0.5px;">{{ Auth::user()->referral_code }}</strong>
+                            <button type="button" class="btn btn-sm btn-link text-primary font-weight-bold text-decoration-none p-0" onclick="copyDashReferralCode()">
+                                <i class="mdi mdi-content-copy mr-1"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -270,6 +284,25 @@
         </div>
     </div>
 </x-customer-layout>
+
+@push('scripts')
+<script>
+    function copyDashReferralCode() {
+        var codeText = document.getElementById('dashReferralCode').innerText;
+        navigator.clipboard.writeText(codeText).then(function() {
+            alert('Referral code copied to clipboard: ' + codeText);
+        }).catch(function(err) {
+            var tempInput = document.createElement("input");
+            tempInput.value = codeText;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            alert('Referral code copied to clipboard: ' + codeText);
+        });
+    }
+</script>
+@endpush
 
 @if($showReminderModal)
     @push('scripts')

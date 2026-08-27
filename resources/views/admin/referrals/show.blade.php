@@ -48,60 +48,66 @@
         </div>
     </div>
 
-    <!-- EMPLOYEE DETAILS CARD -->
+    <!-- REFERRER DETAILS CARD -->
     <div class="col-md-6 mb-4">
         <div class="card bg-white border shadow-sm h-100">
             <div class="card-header bg-dark text-white p-3 font-weight-bold">
-                <i class="mdi mdi-account-star mr-2"></i> EMPLOYEE DETAILS
+                <i class="mdi mdi-account-star mr-2"></i> REFERRER DETAILS
             </div>
             <div class="card-body p-4">
                 <div class="table-responsive">
                     <table class="table table-borderless text-dark mb-0">
                         <tbody>
                             <tr>
-                                <th class="pl-0 text-muted" style="width: 40%;">Employee Name:</th>
-                                <td class="font-weight-bold">{{ $referral->staff->name ?? 'N/A' }}</td>
+                                <th class="pl-0 text-muted" style="width: 40%;">Referrer Name:</th>
+                                <td class="font-weight-bold">{{ $referral->referrer->name ?? 'N/A' }}</td>
                             </tr>
                             <tr>
-                                <th class="pl-0 text-muted">Employee/Staff Code:</th>
-                                <td>
-                                    <span class="badge badge-info font-weight-bold">
-                                        {{ $referral->staff->staffDetail->emp_code ?? 'N/A' }}
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th class="pl-0 text-muted">Employee Email:</th>
-                                <td>{{ $referral->staff->email ?? 'N/A' }}</td>
-                            </tr>
-                            <tr>
-                                <th class="pl-0 text-muted">Employee Mobile:</th>
-                                <td>{{ $referral->staff->phone ?? 'N/A' }}</td>
-                            </tr>
-                            <tr>
-                                <th class="pl-0 text-muted">Employee Status:</th>
+                                <th class="pl-0 text-muted">Referrer Type:</th>
                                 <td>
                                     @php
-                                        $empStatus = $referral->staff->status ?? 'inactive';
-                                        $empBadge = $empStatus === 'active' ? 'badge-success' : 'badge-danger';
+                                        $refType = $referral->referrer_type ? ucfirst($referral->referrer_type) : ($referral->staff_id ? 'Staff' : 'Customer');
+                                        $typeBadge = $refType === 'Staff' ? 'badge-info' : 'badge-primary';
                                     @endphp
-                                    <span class="badge {{ $empBadge }} font-weight-bold px-2 py-1">
-                                        {{ ucfirst($empStatus) }}
+                                    <span class="badge {{ $typeBadge }} font-weight-bold">{{ $refType }}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="pl-0 text-muted">Referrer ID:</th>
+                                <td>
+                                    <span class="badge badge-light border font-weight-bold">
+                                        #{{ $referral->referrer->id ?? 'N/A' }}
                                     </span>
                                 </td>
                             </tr>
-                            @if(isset($referral->staff->staffDetail->department))
                             <tr>
-                                <th class="pl-0 text-muted">Department:</th>
-                                <td>{{ $referral->staff->staffDetail->department }}</td>
+                                <th class="pl-0 text-muted">Referrer Code:</th>
+                                <td>
+                                    <span class="badge badge-outline-dark font-weight-bold">
+                                        {{ $referral->referrer->referral_code ?? ($referral->referrer->staffDetail->emp_code ?? 'N/A') }}
+                                    </span>
+                                </td>
                             </tr>
-                            @endif
-                            @if(isset($referral->staff->staffDetail->designation))
                             <tr>
-                                <th class="pl-0 text-muted">Designation:</th>
-                                <td>{{ $referral->staff->staffDetail->designation }}</td>
+                                <th class="pl-0 text-muted">Referrer Email:</th>
+                                <td>{{ $referral->referrer->email ?? 'N/A' }}</td>
                             </tr>
-                            @endif
+                            <tr>
+                                <th class="pl-0 text-muted">Referrer Mobile:</th>
+                                <td>{{ $referral->referrer->phone ?? 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <th class="pl-0 text-muted">Referrer Status:</th>
+                                <td>
+                                    @php
+                                        $refStatus = $referral->referrer->status ?? 'inactive';
+                                        $refBadge = $refStatus === 'active' ? 'badge-success' : 'badge-danger';
+                                    @endphp
+                                    <span class="badge {{ $refBadge }} font-weight-bold px-2 py-1">
+                                        {{ ucfirst($refStatus) }}
+                                    </span>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

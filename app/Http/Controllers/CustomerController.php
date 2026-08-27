@@ -37,7 +37,7 @@ class CustomerController extends Controller
                     'email' => $user->email,
                     'phone' => $user->phone ?? 'N/A',
                     'whatsapp' => $user->whatsapp_number ?? 'N/A',
-                    'referral' => $user->referredBy ? ($user->referredBy->name . ' (' . ($user->referredBy->staffDetail->emp_code ?? 'N/A') . ')') : 'None',
+                    'referral' => $user->referredBy ? ($user->referredBy->name . ' (' . ($user->referredBy->referral_code ?? ($user->referredBy->staffDetail->emp_code ?? 'N/A')) . ')') : 'None',
                     'verified' => $user->verification_status ?? 'pending',
                     'profile_complete' => $user->profile_completed ? 'Yes' : 'No',
                     'status' => $user->status,
@@ -102,13 +102,39 @@ class CustomerController extends Controller
             $customerRole = Role::where('slug', 'customer')->first();
             $customerRoleId = $customerRole ? $customerRole->id : 0;
 
-            $referredById = null;
+            $referredUser = null;
             $refCodeInput = null;
             if ($request->referral_code) {
                 $refCodeInput = trim($request->referral_code);
-                $staff = StaffDetail::where('emp_code', $refCodeInput)->first();
-                if ($staff && $staff->user && $staff->user->status === 'active') {
-                    $referredById = $staff->user_id;
+                
+                // Find referrer in users table
+                $referredUser = \App\Models\User::where('referral_code', $refCodeInput)->first();
+                
+                // Fallback to staff emp_code
+                if (!$referredUser) {
+                    $staffDetail = \App\Models\StaffDetail::where('emp_code', $refCodeInput)->first();
+                    if ($staffDetail && $staffDetail->user) {
+                        $referredUser = $staffDetail->user;
+                    }
+                }
+
+                if (!$referredUser) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'referral_code' => 'Invalid referral code. Please check the code and try again.',
+                    ]);
+                }
+
+                if ($referredUser->status !== 'active') {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'referral_code' => 'This referral code is no longer active.',
+                    ]);
+                }
+
+                // Prevent self-referral
+                if ($referredUser->email === $request->email || $referredUser->phone === $request->phone) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'referral_code' => 'You cannot use your own referral code.',
+                    ]);
                 }
             }
 
@@ -120,17 +146,20 @@ class CustomerController extends Controller
                 'whatsapp_number' => $request->whatsapp_number,
                 'password' => Hash::make(Str::random(12)),
                 'role_id' => $customerRoleId,
-                'referred_by_staff_id' => $referredById,
+                'referred_by_staff_id' => $referredUser ? $referredUser->id : null,
                 'status' => $request->status ? 'active' : 'inactive',
                 'profile_completed' => 1, // Created via admin wizard, complete profile
                 'verification_status' => 'verified',
             ]);
 
-            if ($referredById && $refCodeInput) {
+            if ($referredUser && $refCodeInput) {
+                $isStaff = $referredUser->isStaffOrAdmin();
                 \App\Models\CustomerReferral::firstOrCreate(
                     ['customer_id' => $user->id],
                     [
-                        'staff_id' => $referredById,
+                        'staff_id' => $isStaff ? $referredUser->id : null,
+                        'referrer_id' => $referredUser->id,
+                        'referrer_type' => $isStaff ? 'staff' : 'customer',
                         'referral_code' => $refCodeInput,
                         'referred_at' => now(),
                     ]
@@ -214,15 +243,44 @@ class CustomerController extends Controller
         try {
             DB::beginTransaction();
 
+            $referredUser = null;
             $referredById = $user->referred_by_staff_id;
             $refCodeInput = null;
             if ($request->has('referral_code')) {
                 if ($request->referral_code) {
                     $refCodeInput = trim($request->referral_code);
-                    $staff = StaffDetail::where('emp_code', $refCodeInput)->first();
-                    if ($staff && $staff->user && $staff->user->status === 'active') {
-                        $referredById = $staff->user_id;
+                    
+                    // Find referrer in users table
+                    $referredUser = \App\Models\User::where('referral_code', $refCodeInput)->first();
+                    
+                    // Fallback to staff emp_code
+                    if (!$referredUser) {
+                        $staffDetail = \App\Models\StaffDetail::where('emp_code', $refCodeInput)->first();
+                        if ($staffDetail && $staffDetail->user) {
+                            $referredUser = $staffDetail->user;
+                        }
                     }
+
+                    if (!$referredUser) {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            'referral_code' => 'Invalid referral code. Please check the code and try again.',
+                        ]);
+                    }
+
+                    if ($referredUser->status !== 'active') {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            'referral_code' => 'This referral code is no longer active.',
+                        ]);
+                    }
+
+                    // Prevent self-referral
+                    if ($referredUser->id === $user->id || $referredUser->email === $request->email || $referredUser->phone === $request->phone) {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            'referral_code' => 'You cannot use your own referral code.',
+                        ]);
+                    }
+
+                    $referredById = $referredUser->id;
                 } else {
                     $referredById = null;
                 }
@@ -238,11 +296,14 @@ class CustomerController extends Controller
                 'referred_by_staff_id' => $referredById,
             ]);
 
-            if ($referredById && $refCodeInput) {
+            if ($referredById && $refCodeInput && $referredUser) {
+                $isStaff = $referredUser->isStaffOrAdmin();
                 \App\Models\CustomerReferral::updateOrCreate(
                     ['customer_id' => $user->id],
                     [
-                        'staff_id' => $referredById,
+                        'staff_id' => $isStaff ? $referredUser->id : null,
+                        'referrer_id' => $referredUser->id,
+                        'referrer_type' => $isStaff ? 'staff' : 'customer',
                         'referral_code' => $refCodeInput,
                         'referred_at' => now(),
                     ]
@@ -693,11 +754,25 @@ class CustomerController extends Controller
                     continue;
                 }
 
+                $referredUser = null;
                 $referredById = null;
                 if ($refCode) {
-                    $staff = StaffDetail::where('emp_code', $refCode)->first();
-                    if ($staff && $staff->user && $staff->user->status === 'active') {
-                        $referredById = $staff->user_id;
+                    // Find referrer in users table
+                    $referredUser = \App\Models\User::where('referral_code', $refCode)->first();
+                    
+                    // Fallback to staff emp_code
+                    if (!$referredUser) {
+                        $staffDetail = \App\Models\StaffDetail::where('emp_code', $refCode)->first();
+                        if ($staffDetail && $staffDetail->user) {
+                            $referredUser = $staffDetail->user;
+                        }
+                    }
+
+                    if ($referredUser && $referredUser->status === 'active') {
+                        // Prevent self-referral
+                        if ($referredUser->email !== $email && $referredUser->phone !== $phone) {
+                            $referredById = $referredUser->id;
+                        }
                     }
                 }
 
@@ -715,11 +790,14 @@ class CustomerController extends Controller
                     'verification_status' => 'verified',
                 ]);
 
-                if ($referredById && $refCode) {
+                if ($referredById && $refCode && $referredUser) {
+                    $isStaff = $referredUser->isStaffOrAdmin();
                     \App\Models\CustomerReferral::firstOrCreate(
                         ['customer_id' => $user->id],
                         [
-                            'staff_id' => $referredById,
+                            'staff_id' => $isStaff ? $referredUser->id : null,
+                            'referrer_id' => $referredUser->id,
+                            'referrer_type' => $isStaff ? 'staff' : 'customer',
                             'referral_code' => $refCode,
                             'referred_at' => now(),
                         ]

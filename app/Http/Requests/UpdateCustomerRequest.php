@@ -20,7 +20,7 @@ class UpdateCustomerRequest extends FormRequest
             'email' => 'required|email|unique:users,email,' . $userId,
             'phone' => 'required|string|unique:users,phone,' . $userId,
             'whatsapp_number' => 'required|string',
-            'referral_code' => 'nullable|string|exists:staff_details,emp_code',
+            'referral_code' => 'nullable|string',
             'father_name' => 'required|string|max:255',
             'mother_name' => 'nullable|string|max:255',
             'nominee_name' => 'nullable|string|max:255',

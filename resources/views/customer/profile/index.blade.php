@@ -311,6 +311,22 @@
                             </div>
                         </div>
                     </div>
+
+                    {{-- Referral Code Card --}}
+                    <div class="card mb-4 bg-white border">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary font-weight-bold mb-3">
+                                <i class="mdi mdi-share-variant mr-1"></i> Referral Code
+                            </h5>
+                            <p class="text-muted small mb-3">Invite your friends to register and buy gold plans to earn exciting rewards!</p>
+                            <div class="bg-light p-3 rounded mb-2 border d-flex align-items-center justify-content-between">
+                                <strong id="referralCodeText" class="text-dark font-weight-bold" style="font-size: 1.2rem; letter-spacing: 0.5px;">{{ Auth::user()->referral_code }}</strong>
+                                <button type="button" class="btn btn-sm btn-link text-primary font-weight-bold text-decoration-none p-0" onclick="copyReferralCode()">
+                                    <i class="mdi mdi-content-copy mr-1"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -324,6 +340,21 @@
                     }
                     reader.readAsDataURL(input.files[0]);
                 }
+            }
+
+            function copyReferralCode() {
+                var codeText = document.getElementById('referralCodeText').innerText;
+                navigator.clipboard.writeText(codeText).then(function() {
+                    alert('Referral code copied to clipboard: ' + codeText);
+                }).catch(function(err) {
+                    var tempInput = document.createElement("input");
+                    tempInput.value = codeText;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(tempInput);
+                    alert('Referral code copied to clipboard: ' + codeText);
+                });
             }
         </script>
 

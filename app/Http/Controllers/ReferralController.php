@@ -15,7 +15,7 @@ class ReferralController extends Controller
      */
     public function index(Request $request)
     {
-        $query = CustomerReferral::with(['staff.staffDetail', 'customer.customerDetail'])->latest('referred_at');
+        $query = CustomerReferral::with(['referrer.staffDetail', 'customer.customerDetail'])->latest('referred_at');
 
         // Date Range Filter (From Date / To Date)
         if ($request->filled('from_date') || $request->filled('start_date')) {
@@ -43,10 +43,11 @@ class ReferralController extends Controller
             $search = trim($request->search);
             $query->where(function ($q) use ($search) {
                 $q->where('referral_code', 'like', "%{$search}%")
-                  ->orWhereHas('staff', function ($sq) use ($search) {
+                  ->orWhereHas('referrer', function ($sq) use ($search) {
                       $sq->where('name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%")
                         ->orWhere('phone', 'like', "%{$search}%")
+                        ->orWhere('referral_code', 'like', "%{$search}%")
                         ->orWhereHas('staffDetail', function ($sdq) use ($search) {
                             $sdq->where('emp_code', 'like', "%{$search}%");
                         });
@@ -70,7 +71,7 @@ class ReferralController extends Controller
      */
     public function show($id)
     {
-        $referral = CustomerReferral::with(['staff.staffDetail', 'customer.customerDetail'])->findOrFail($id);
+        $referral = CustomerReferral::with(['referrer.staffDetail', 'customer.customerDetail'])->findOrFail($id);
 
         $activityLogs = ActivityLog::where('module_name', 'referral')
             ->where('record_id', $referral->id)
@@ -86,7 +87,7 @@ class ReferralController extends Controller
      */
     public function exportCsv(Request $request)
     {
-        $query = CustomerReferral::with(['staff.staffDetail', 'customer.customerDetail'])->latest('referred_at');
+        $query = CustomerReferral::with(['referrer.staffDetail', 'customer.customerDetail'])->latest('referred_at');
 
         if ($request->filled('from_date') || $request->filled('start_date')) {
             $fromDateStr = $request->from_date ?? $request->start_date;
@@ -108,10 +109,11 @@ class ReferralController extends Controller
             $search = trim($request->search);
             $query->where(function ($q) use ($search) {
                 $q->where('referral_code', 'like', "%{$search}%")
-                  ->orWhereHas('staff', function ($sq) use ($search) {
+                  ->orWhereHas('referrer', function ($sq) use ($search) {
                       $sq->where('name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%")
                         ->orWhere('phone', 'like', "%{$search}%")
+                        ->orWhere('referral_code', 'like', "%{$search}%")
                         ->orWhereHas('staffDetail', function ($sdq) use ($search) {
                             $sdq->where('emp_code', 'like', "%{$search}%");
                         });
@@ -140,9 +142,10 @@ class ReferralController extends Controller
         $columns = [
             'Sr. No.',
             'Referral Date',
-            'Referral Code',
-            'Employee/Staff Name',
-            'Employee/Staff Code',
+            'Referral Code Used',
+            'Referrer Name',
+            'Referrer Type',
+            'Referrer Code',
             'Customer Name',
             'Customer ID',
             'Customer Mobile',
@@ -156,12 +159,15 @@ class ReferralController extends Controller
             fputcsv($file, $columns);
 
             foreach ($referrals as $index => $ref) {
+                $refType = $ref->referrer_type ? ucfirst($ref->referrer_type) : ($ref->staff_id ? 'Staff' : 'Customer');
+                $refCode = $ref->referral_code;
                 fputcsv($file, [
                     $index + 1,
                     $ref->referred_at ? $ref->referred_at->format('d/m/Y H:i:s') : 'N/A',
                     $ref->referral_code,
-                    $ref->staff->name ?? 'N/A',
-                    $ref->staff->staffDetail->emp_code ?? 'N/A',
+                    $ref->referrer->name ?? 'N/A',
+                    $refType,
+                    $refCode,
                     $ref->customer->name ?? 'N/A',
                     $ref->customer->id ?? 'N/A',
                     $ref->customer->phone ?? 'N/A',

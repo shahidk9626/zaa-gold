@@ -25,6 +25,7 @@ class User extends Authenticatable
         'profile_completed',
         'profile_image',
         'verification_status',
+        'referral_code',
     ];
 
     /**
@@ -48,6 +49,46 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::creating(function ($user) {
+            if (empty($user->referral_code)) {
+                $prefix = 'CUS';
+                if ($user->role_id) {
+                    $role = \App\Models\Role::find($user->role_id);
+                    if ($role && in_array($role->slug, ['super-admin', 'admin', 'staff'], true)) {
+                        $prefix = 'STF';
+                    }
+                }
+                
+                $cleanName = preg_replace('/[^A-Za-z]/', '', $user->name);
+                preg_match_all('/[BCDFGHJKLMNPQRSTVWXYZbcdfghjklmnpqrstvwxyz]/', $cleanName, $matches);
+                $consonants = implode('', $matches[0]);
+                
+                $letters = '';
+                if (strlen($consonants) >= 2) {
+                    $letters = substr($consonants, 0, 2);
+                } else {
+                    $letters = substr($cleanName, 0, 2);
+                }
+                
+                if (strlen($letters) < 2) {
+                    $letters = str_pad($letters, 2, 'X');
+                }
+                
+                $letters = strtoupper($letters);
+                
+                do {
+                    $code = $prefix . $letters . mt_rand(1000, 9999);
+                } while (static::where('referral_code', $code)->exists());
+                
+                $user->referral_code = $code;
+            }
+        });
     }
 
     public function role()

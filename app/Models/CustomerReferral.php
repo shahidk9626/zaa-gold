@@ -13,6 +13,8 @@ class CustomerReferral extends Model
 
     protected $fillable = [
         'staff_id',
+        'referrer_id',
+        'referrer_type',
         'customer_id',
         'referral_code',
         'referred_at',
@@ -21,6 +23,14 @@ class CustomerReferral extends Model
     protected $casts = [
         'referred_at' => 'datetime',
     ];
+
+    /**
+     * Get the referrer user (Staff or Customer).
+     */
+    public function referrer()
+    {
+        return $this->belongsTo(User::class, 'referrer_id');
+    }
 
     /**
      * Get the staff user who referred the customer.

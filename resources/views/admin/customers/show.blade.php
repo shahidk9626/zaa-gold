@@ -63,7 +63,7 @@
                 <div class="col-md-5">
                     <h4 class="mb-1 text-dark font-weight-bold">{{ $customer->name }}</h4>
                     <p class="mb-0 text-muted">
-                        Role: <strong>Customer</strong> | Referred By: <strong>{{ $customer->referredBy ? ($customer->referredBy->name . ' (' . ($customer->referredBy->staffDetail->emp_code ?? 'N/A') . ')') : 'None' }}</strong>
+                        Role: <strong>Customer</strong> | Referral Code: <strong>{{ $customer->referral_code ?? 'N/A' }}</strong> | Referred By: <strong>{{ $customer->referredBy ? ($customer->referredBy->name . ' (' . ($customer->referredBy->referral_code ?? ($customer->referredBy->staffDetail->emp_code ?? 'N/A')) . ')') : 'None' }}</strong>
                     </p>
                 </div>
                 <div class="col-md-4 border-left pl-md-4 mt-3 mt-md-0">
@@ -152,6 +152,10 @@
                         <div class="col-md-6 mb-3">
                             <label class="small text-muted d-block">Full Name</label>
                             <span class="font-weight-bold text-dark">{{ $customer->name }}</span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="small text-muted d-block">Referral Code</label>
+                            <span class="font-weight-bold text-primary">{{ $customer->referral_code ?? 'N/A' }}</span>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="small text-muted d-block">Father's Name</label>

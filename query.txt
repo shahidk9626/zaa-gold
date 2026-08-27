@@ -49,3 +49,16 @@ CROSS JOIN `permissions` p
 WHERE r.slug IN ('super-admin', 'admin') 
 AND p.slug IN ('inspection.view', 'inspection.create', 'inspection.edit', 'inspection.delete')
 ON DUPLICATE KEY UPDATE `allowed`=1;
+
+-- REFERRAL SYSTEM ENHANCEMENT
+-- Add referral_code to users table
+ALTER TABLE `users` ADD COLUMN `referral_code` VARCHAR(255) DEFAULT NULL UNIQUE AFTER `phone`, ADD INDEX `users_referral_code_index` (`referral_code`);
+
+-- Modify customer_referrals table to support customer and staff referrers
+ALTER TABLE `customer_referrals` DROP FOREIGN KEY `customer_referrals_staff_id_foreign`;
+ALTER TABLE `customer_referrals` MODIFY COLUMN `staff_id` BIGINT(20) UNSIGNED NULL;
+ALTER TABLE `customer_referrals` ADD CONSTRAINT `customer_referrals_staff_id_foreign` FOREIGN KEY (`staff_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+ALTER TABLE `customer_referrals` ADD COLUMN `referrer_id` BIGINT(20) UNSIGNED DEFAULT NULL AFTER `staff_id`;
+ALTER TABLE `customer_referrals` ADD COLUMN `referrer_type` VARCHAR(30) DEFAULT NULL AFTER `referrer_id`;
+ALTER TABLE `customer_referrals` ADD CONSTRAINT `customer_referrals_referrer_id_foreign` FOREIGN KEY (`referrer_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;

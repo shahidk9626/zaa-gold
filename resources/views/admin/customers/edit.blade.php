@@ -117,9 +117,9 @@
                             <h5 class="card-title text-dark mb-4">Referral & Status</h5>
                             <div class="row">
                                 <div class="col-md-6 form-group">
-                                    <label for="referral_code">Staff Referral Code</label>
-                                    <input type="text" name="referral_code" id="referral_code" value="{{ $customer->referredBy->staffDetail->emp_code ?? '' }}" class="form-control bg-white text-dark" placeholder="Enter staff employee code (e.g. EMP-1)">
-                                    <small class="text-muted">Optional. Enter the employee code of the referring staff member.</small>
+                                    <label for="referral_code">Referral Code (Optional)</label>
+                                    <input type="text" name="referral_code" id="referral_code" value="{{ $customer->referredBy->referral_code ?? ($customer->referredBy->staffDetail->emp_code ?? '') }}" class="form-control bg-white text-dark" placeholder="Enter staff or customer referral code (e.g. STFXX1234, CUSXX1234)">
+                                    <small class="text-muted">Optional. Enter the unique referral code of the referring staff or customer.</small>
                                 </div>
                                 <div class="col-md-6 form-group">
                                     <label for="status">Account Status</label>

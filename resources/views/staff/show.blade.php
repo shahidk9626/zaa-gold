@@ -63,7 +63,7 @@
                 <div class="col">
                     <h4 class="mb-1 text-dark font-weight-bold">{{ $staff->name }}</h4>
                     <p class="mb-0 text-muted">
-                        {{ $staff->role->name ?? 'Staff Member' }} | Employee Code: <strong>{{ $staff->staffDetail->emp_code ?? 'N/A' }}</strong>
+                        {{ $staff->role->name ?? 'Staff Member' }} | Employee Code: <strong>{{ $staff->staffDetail->emp_code ?? 'N/A' }}</strong> | Referral Code: <strong>{{ $staff->referral_code ?? 'N/A' }}</strong>
                     </p>
                 </div>
                 <div class="col-md-auto text-right mt-3 mt-md-0">
@@ -191,6 +191,10 @@
                         <div class="col-md-6 mb-3">
                             <label class="small text-muted d-block uppercase">Employee Code</label>
                             <span class="font-weight-bold text-dark">{{ $staff->staffDetail->emp_code ?? 'N/A' }}</span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="small text-muted d-block uppercase">Referral Code</label>
+                            <span class="font-weight-bold text-primary">{{ $staff->referral_code ?? 'N/A' }}</span>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="small text-muted d-block uppercase">Role</label>

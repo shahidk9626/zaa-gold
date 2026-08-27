@@ -79,9 +79,10 @@
                         <tr>
                             <th class="font-weight-bold text-center">Sr. No.</th>
                             <th class="font-weight-bold">Referral Date</th>
-                            <th class="font-weight-bold">Referral Code</th>
-                            <th class="font-weight-bold">Employee/Staff Name</th>
-                            <th class="font-weight-bold">Employee/Staff Code</th>
+                            <th class="font-weight-bold">Referral Code Used</th>
+                            <th class="font-weight-bold">Referrer Name</th>
+                            <th class="font-weight-bold">Referrer Type</th>
+                            <th class="font-weight-bold">Referrer Code</th>
                             <th class="font-weight-bold">Customer Name</th>
                             <th class="font-weight-bold">Customer ID</th>
                             <th class="font-weight-bold">Customer Mobile</th>
@@ -100,11 +101,18 @@
                                 <td>{{ $ref->referred_at ? $ref->referred_at->format('d/m/Y H:i') : 'N/A' }}</td>
                                 <td class="font-weight-bold text-primary">{{ $ref->referral_code }}</td>
                                 <td>
-                                    <div class="font-weight-bold text-dark">{{ $ref->staff->name ?? 'N/A' }}</div>
+                                    <div class="font-weight-bold text-dark">{{ $ref->referrer->name ?? 'N/A' }}</div>
+                                </td>
+                                <td>
+                                    @php
+                                        $type = $ref->referrer_type ? ucfirst($ref->referrer_type) : ($ref->staff_id ? 'Staff' : 'Customer');
+                                        $badgeClass = $type === 'Staff' ? 'badge-info' : 'badge-primary';
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }} font-weight-bold">{{ $type }}</span>
                                 </td>
                                 <td>
                                     <span class="badge badge-outline-dark font-weight-bold">
-                                        {{ $ref->staff->staffDetail->emp_code ?? 'N/A' }}
+                                        {{ $ref->referrer->referral_code ?? ($ref->referrer->staffDetail->emp_code ?? 'N/A') }}
                                     </span>
                                 </td>
                                 <td>
