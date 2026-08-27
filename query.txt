@@ -1,213 +1,51 @@
--- Delivery Fulfillment Workflow schema changes
--- Generated from database/migrations/2026_08_06_170000_add_delivery_fulfillment_fields.php
-
-CREATE TABLE `customer_addresses` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `customer_id` BIGINT UNSIGNED NOT NULL,
-  `address_name` VARCHAR(255) NOT NULL,
-  `mobile` VARCHAR(20) NOT NULL,
-  `alternate_mobile` VARCHAR(20) NULL,
-  `house_no` VARCHAR(255) NULL,
-  `street` VARCHAR(255) NULL,
-  `area` VARCHAR(255) NULL,
-  `landmark` VARCHAR(255) NULL,
-  `city` VARCHAR(255) NOT NULL,
-  `state` VARCHAR(255) NOT NULL,
-  `pin_code` VARCHAR(20) NOT NULL,
-  `country` VARCHAR(255) NOT NULL DEFAULT 'India',
-  `address_type` VARCHAR(20) NOT NULL DEFAULT 'Home',
-  `is_default` TINYINT(1) NOT NULL DEFAULT 0,
-  `created_by_id` BIGINT UNSIGNED NULL,
-  `updated_by_id` BIGINT UNSIGNED NULL,
-  `created_at` TIMESTAMP NULL,
-  `updated_at` TIMESTAMP NULL,
-  `deleted_at` TIMESTAMP NULL,
+-- CREATE gold_inspection_enquiries TABLE
+CREATE TABLE `gold_inspection_enquiries` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `phone` varchar(255) NOT NULL,
+  `address` varchar(255) NOT NULL,
+  `approx_grams` decimal(10,2) NOT NULL,
+  `gold_type` varchar(255) NOT NULL,
+  `gold_location` varchar(255) NOT NULL,
+  `preferred_date` date NOT NULL,
+  `photos` json DEFAULT NULL,
+  `status` varchar(30) NOT NULL DEFAULT 'New',
+  `admin_remark` text DEFAULT NULL,
+  `reviewed_by` bigint(20) unsigned DEFAULT NULL,
+  `reviewed_at` datetime DEFAULT NULL,
+  `created_by_id` bigint(20) unsigned DEFAULT NULL,
+  `updated_by_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  CONSTRAINT `customer_addresses_customer_id_foreign`
-    FOREIGN KEY (`customer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `customer_addresses_created_by_id_foreign`
-    FOREIGN KEY (`created_by_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `customer_addresses_updated_by_id_foreign`
-    FOREIGN KEY (`updated_by_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) DEFAULT CHARACTER SET utf8mb4 COLLATE 'utf8mb4_unicode_ci';
+  KEY `gold_inspection_enquiries_reviewed_by_foreign` (`reviewed_by`),
+  KEY `gold_inspection_enquiries_created_by_id_foreign` (`created_by_id`),
+  KEY `gold_inspection_enquiries_updated_by_id_foreign` (`updated_by_id`),
+  CONSTRAINT `gold_inspection_enquiries_created_by_id_foreign` FOREIGN KEY (`created_by_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `gold_inspection_enquiries_reviewed_by_foreign` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `gold_inspection_enquiries_updated_by_id_foreign` FOREIGN KEY (`updated_by_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-ALTER TABLE `booking_deliveries`
-  ADD `customer_address_id` BIGINT UNSIGNED NULL AFTER `customer_id`,
-  ADD CONSTRAINT `booking_deliveries_customer_address_id_foreign`
-    FOREIGN KEY (`customer_address_id`) REFERENCES `customer_addresses` (`id`) ON DELETE SET NULL;
+-- SEED MODULE & PERMISSIONS
+INSERT INTO `modules` (`name`, `slug`, `status`, `created_at`, `updated_at`) 
+VALUES ('Inspection', 'inspection', 'active', NOW(), NOW())
+ON DUPLICATE KEY UPDATE `status`='active', `updated_at`=NOW();
 
-ALTER TABLE `booking_deliveries`
-  ADD `delivery_address_name` VARCHAR(255) NULL AFTER `delivery_address`,
-  ADD `delivery_address_mobile` VARCHAR(20) NULL AFTER `delivery_address_name`,
-  ADD `delivery_address_alternate_mobile` VARCHAR(20) NULL AFTER `delivery_address_mobile`,
-  ADD `delivery_address_type` VARCHAR(20) NULL AFTER `delivery_address_alternate_mobile`,
-  ADD `delivery_city` VARCHAR(255) NULL AFTER `delivery_address_type`,
-  ADD `delivery_state` VARCHAR(255) NULL AFTER `delivery_city`,
-  ADD `delivery_pin_code` VARCHAR(20) NULL AFTER `delivery_state`,
-  ADD `delivery_country` VARCHAR(255) NULL AFTER `delivery_pin_code`,
-  ADD `expected_delivery_date` DATE NULL AFTER `dispatch_date`,
-  ADD `ready_for_dispatch_at` DATETIME NULL AFTER `expected_delivery_date`,
-  ADD `in_transit_at` DATETIME NULL AFTER `ready_for_dispatch_at`,
-  ADD `out_for_delivery_at` DATETIME NULL AFTER `in_transit_at`,
-  ADD `collected_at` DATETIME NULL AFTER `out_for_delivery_at`,
-  ADD `dispatch_remarks` TEXT NULL AFTER `remarks`,
-  ADD `rejection_reason` TEXT NULL AFTER `dispatch_remarks`,
-  ADD `hold_reason` TEXT NULL AFTER `rejection_reason`;
+-- Insert permissions
+INSERT INTO `permissions` (`module_id`, `name`, `slug`, `created_at`, `updated_at`)
+VALUES 
+((SELECT `id` FROM `modules` WHERE `slug`='inspection'), 'View Inspection', 'inspection.view', NOW(), NOW()),
+((SELECT `id` FROM `modules` WHERE `slug`='inspection'), 'Create Inspection', 'inspection.create', NOW(), NOW()),
+((SELECT `id` FROM `modules` WHERE `slug`='inspection'), 'Edit Inspection', 'inspection.edit', NOW(), NOW()),
+((SELECT `id` FROM `modules` WHERE `slug`='inspection'), 'Delete Inspection', 'inspection.delete', NOW(), NOW())
+ON DUPLICATE KEY UPDATE `updated_at`=NOW();
 
--- Website Enquiries Module Integration schema changes
--- Generated from database/migrations/2026_08_11_110000_create_website_enquiries_table.php
-
-CREATE TABLE `website_enquiries` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(255) NOT NULL,
-  `email` VARCHAR(255) NOT NULL,
-  `phone` VARCHAR(20) NOT NULL,
-  `subject` VARCHAR(255) NOT NULL,
-  `message` TEXT NOT NULL,
-  `status` VARCHAR(20) NOT NULL DEFAULT 'New',
-  `admin_remark` TEXT NULL,
-  `resolved_at` TIMESTAMP NULL,
-  `resolved_by` BIGINT UNSIGNED NULL,
-  `created_by_id` BIGINT UNSIGNED NULL,
-  `updated_by_id` BIGINT UNSIGNED NULL,
-  `created_at` TIMESTAMP NULL,
-  `updated_at` TIMESTAMP NULL,
-  `deleted_at` TIMESTAMP NULL,
-  PRIMARY KEY (`id`),
-  CONSTRAINT `website_enquiries_resolved_by_foreign`
-    FOREIGN KEY (`resolved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) DEFAULT CHARACTER SET utf8mb4 COLLATE 'utf8mb4_unicode_ci';
-
--- Insert Module for Website Enquiries
-INSERT INTO `modules` (`name`, `slug`, `created_at`, `updated_at`)
-VALUES ('Website Enquiries', 'website-enquiries', NOW(), NOW())
-ON DUPLICATE KEY UPDATE `name` = 'Website Enquiries', `updated_at` = NOW();
-
--- Insert Permissions for Website Enquiries
-INSERT INTO `permissions` (`name`, `slug`, `module_id`, `created_at`, `updated_at`) VALUES
-('View Website Enquiries', 'website-enquiries.view', (SELECT `id` FROM `modules` WHERE `slug` = 'website-enquiries' LIMIT 1), NOW(), NOW()),
-('Update Website Enquiry Status', 'website-enquiries.update', (SELECT `id` FROM `modules` WHERE `slug` = 'website-enquiries' LIMIT 1), NOW(), NOW()),
-('Delete Website Enquiries', 'website-enquiries.delete', (SELECT `id` FROM `modules` WHERE `slug` = 'website-enquiries' LIMIT 1), NOW(), NOW());
-
-
--- Global Maintenance Mode configuration
--- Generated from database/migrations/2026_08_11_120000_add_maintenance_mode_to_system_settings.php
-
-INSERT INTO `system_settings` (`key`, `value`, `description`, `created_at`, `updated_at`)
-VALUES ('maintenance_mode', '0', 'Global website maintenance mode toggle (0 = Off, 1 = On).', NOW(), NOW())
-ON DUPLICATE KEY UPDATE `value` = '0', `updated_at` = NOW();
-
--- Customer Referrals Module Schema
--- Generated from database/migrations/2026_08_24_190000_create_customer_referrals_table.php
--- Purpose: Store permanent referral associations between Employee/Staff members and Customers using Employee referral code.
--- Table: customer_referrals
--- Columns:
---   id: BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY
---   staff_id: BIGINT UNSIGNED NOT NULL (Foreign key to users.id)
---   customer_id: BIGINT UNSIGNED NOT NULL UNIQUE (Foreign key to users.id)
---   referral_code: VARCHAR(255) NOT NULL (Indexed)
---   referred_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP (Indexed)
---   created_at: TIMESTAMP NULL
---   updated_at: TIMESTAMP NULL
---   deleted_at: TIMESTAMP NULL
-
-CREATE TABLE `customer_referrals` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `staff_id` BIGINT UNSIGNED NOT NULL,
-  `customer_id` BIGINT UNSIGNED NOT NULL,
-  `referral_code` VARCHAR(255) NOT NULL,
-  `referred_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `created_at` TIMESTAMP NULL,
-  `updated_at` TIMESTAMP NULL,
-  `deleted_at` TIMESTAMP NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `customer_referrals_customer_id_unique` (`customer_id`),
-  KEY `customer_referrals_staff_id_index` (`staff_id`),
-  KEY `customer_referrals_referral_code_index` (`referral_code`),
-  KEY `customer_referrals_referred_at_index` (`referred_at`),
-  CONSTRAINT `customer_referrals_staff_id_foreign` FOREIGN KEY (`staff_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `customer_referrals_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) DEFAULT CHARACTER SET utf8mb4 COLLATE 'utf8mb4_unicode_ci';
-
--- Customer Profile Update Requests Module Schema
--- Generated from database/migrations/2026_08_24_193000_create_customer_profile_update_requests_table.php
--- Purpose: Manage profile change requests for KYC-approved customers requiring Admin review and approval.
--- Table: customer_profile_update_requests
--- Columns:
---   id: BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY
---   customer_id: BIGINT UNSIGNED NOT NULL (Foreign key to users.id)
---   requested_changes: JSON NOT NULL (JSON array of field_name, field_label, current_value, requested_value)
---   reason: TEXT NOT NULL (Customer's mandatory explanation for change)
---   status: VARCHAR(20) NOT NULL DEFAULT 'Pending' (Values: Pending, Approved, Rejected)
---   admin_remark: TEXT NULL (Admin review/rejection remark)
---   reviewed_by: BIGINT UNSIGNED NULL (Foreign key to users.id)
---   reviewed_at: TIMESTAMP NULL
---   created_at: TIMESTAMP NULL
---   updated_at: TIMESTAMP NULL
---   deleted_at: TIMESTAMP NULL
-
-CREATE TABLE `customer_profile_update_requests` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `customer_id` BIGINT UNSIGNED NOT NULL,
-  `requested_changes` JSON NOT NULL,
-  `reason` TEXT NOT NULL,
-  `status` VARCHAR(20) NOT NULL DEFAULT 'Pending',
-  `admin_remark` TEXT NULL,
-  `reviewed_by` BIGINT UNSIGNED NULL,
-  `reviewed_at` TIMESTAMP NULL,
-  `created_at` TIMESTAMP NULL,
-  `updated_at` TIMESTAMP NULL,
-  `deleted_at` TIMESTAMP NULL,
-  PRIMARY KEY (`id`),
-  KEY `customer_profile_update_requests_status_index` (`status`),
-  KEY `customer_profile_update_requests_customer_id_status_index` (`customer_id`, `status`),
-  CONSTRAINT `customer_profile_update_requests_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `customer_profile_update_requests_reviewed_by_foreign` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) DEFAULT CHARACTER SET utf8mb4 COLLATE 'utf8mb4_unicode_ci';
-
--- =========================================================================
--- MODULES & PERMISSIONS SEED QUERIES FOR REFERRALS AND PROFILE UPDATE REQUESTS
--- Generated from database/migrations/2026_08_24_200000_seed_referral_and_profile_update_permissions.php
--- =========================================================================
-
--- 1. Customer Referrals Module & Permissions
-INSERT INTO `modules` (`name`, `slug`, `status`, `created_at`, `updated_at`)
-VALUES ('Customer Referrals', 'referral', 'active', NOW(), NOW())
-ON DUPLICATE KEY UPDATE `name` = 'Customer Referrals', `status` = 'active', `updated_at` = NOW();
-
-INSERT INTO `permissions` (`name`, `slug`, `module_id`, `created_at`, `updated_at`) VALUES
-('View Customer Referrals', 'referral.view', (SELECT `id` FROM `modules` WHERE `slug` = 'referral' LIMIT 1), NOW(), NOW()),
-('Edit Customer Referrals', 'referral.edit', (SELECT `id` FROM `modules` WHERE `slug` = 'referral' LIMIT 1), NOW(), NOW()),
-('Export Customer Referrals', 'referral.export', (SELECT `id` FROM `modules` WHERE `slug` = 'referral' LIMIT 1), NOW(), NOW())
-ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `updated_at` = NOW();
-
-INSERT INTO `role_permissions` (`role_id`, `permission_id`, `allowed`, `created_at`, `updated_at`)
-SELECT r.id, p.id, 1, NOW(), NOW()
+-- ASSIGN TO SUPER ADMIN AND ADMIN ROLES
+INSERT INTO `role_permissions` (`role_id`, `permission_id`, `allowed`)
+SELECT r.id, p.id, 1 
 FROM `roles` r
 CROSS JOIN `permissions` p
-WHERE r.slug IN ('super-admin', 'admin')
-  AND p.slug IN ('referral.view', 'referral.edit', 'referral.export')
-ON DUPLICATE KEY UPDATE `allowed` = 1, `updated_at` = NOW();
-
-
--- 2. Profile Update Requests Module & Permissions
-INSERT INTO `modules` (`name`, `slug`, `status`, `created_at`, `updated_at`)
-VALUES ('Profile Update Requests', 'profile-update-requests', 'active', NOW(), NOW())
-ON DUPLICATE KEY UPDATE `name` = 'Profile Update Requests', `status` = 'active', `updated_at` = NOW();
-
-INSERT INTO `permissions` (`name`, `slug`, `module_id`, `created_at`, `updated_at`) VALUES
-('View Profile Update Requests', 'profile-update-requests.view', (SELECT `id` FROM `modules` WHERE `slug` = 'profile-update-requests' LIMIT 1), NOW(), NOW()),
-('Approve Profile Update Requests', 'profile-update-requests.approve', (SELECT `id` FROM `modules` WHERE `slug` = 'profile-update-requests' LIMIT 1), NOW(), NOW()),
-('Reject Profile Update Requests', 'profile-update-requests.reject', (SELECT `id` FROM `modules` WHERE `slug` = 'profile-update-requests' LIMIT 1), NOW(), NOW())
-ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `updated_at` = NOW();
-
-INSERT INTO `role_permissions` (`role_id`, `permission_id`, `allowed`, `created_at`, `updated_at`)
-SELECT r.id, p.id, 1, NOW(), NOW()
-FROM `roles` r
-CROSS JOIN `permissions` p
-WHERE r.slug IN ('super-admin', 'admin')
-  AND p.slug IN ('profile-update-requests.view', 'profile-update-requests.approve', 'profile-update-requests.reject')
-ON DUPLICATE KEY UPDATE `allowed` = 1, `updated_at` = NOW();
-
-
-
+WHERE r.slug IN ('super-admin', 'admin') 
+AND p.slug IN ('inspection.view', 'inspection.create', 'inspection.edit', 'inspection.delete')
+ON DUPLICATE KEY UPDATE `allowed`=1;

@@ -119,4 +119,47 @@ class PublicApiController extends Controller
             'maintenance_mode' => $service->isEnabled()
         ]);
     }
+
+    /**
+     * Store a new gold inspection enquiry from the landing page.
+     */
+    public function storeGoldInspectionEnquiry(Request $request, \App\Services\GoldInspectionEnquiryService $service)
+    {
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'name' => 'required|string|max:100',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string|max:500',
+            'approx_grams' => 'required|numeric|min:1',
+            'gold_type' => 'required|string|max:50',
+            'gold_location' => 'required|string|max:50',
+            'preferred_date' => 'required|date|after_or_equal:today',
+            'photos' => 'nullable|array',
+            'photos.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please check the submitted information.',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $service->createEnquiry($request->all());
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Thank you! Your request has been submitted successfully. Our team will contact you shortly.'
+            ], 201);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Gold inspection enquiry storage failed: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong while processing your request. Please try again later.'
+            ], 500);
+        }
+    }
 }
+

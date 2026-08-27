@@ -55,6 +55,8 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware('web')
                 ->group(base_path('routes/sellOldGoldRoute.php'));
             Route::middleware('web')
+                ->group(base_path('routes/inspectionRoute.php'));
+            Route::middleware('web')
                 ->group(base_path('routes/franchiseRoute.php'));
             Route::middleware('web')
                 ->group(base_path('routes/reportRoute.php'));
