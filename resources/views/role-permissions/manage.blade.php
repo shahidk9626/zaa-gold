@@ -28,7 +28,7 @@
                 <form id="rolePermForm" action="{{ route('roles.update', $role->id) }}" method="POST">
                     @csrf
                     <div class="table-responsive border rounded">
-                        <table class="table table-bordered table-hover text-dark mb-0">
+                        <table id="rolePermManageTable" class="table table-bordered table-hover text-dark mb-0">
                             <thead class="bg-light text-dark">
                                 <tr class="text-uppercase font-weight-bold text-center">
                                     <th class="text-left">Module</th>
@@ -99,8 +99,29 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
-        // Check initial state for row-wise "All"
-        $('.module-row').each(function() {
+        // Initialize DataTable explicitly to prevent global auto-init and reference it
+        const table = $('#rolePermManageTable').DataTable({
+            "paging": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "responsive": true,
+            "language": {
+                "search": "",
+                "searchPlaceholder": "Quick Search..."
+            }
+        });
+
+        // Initialize state on first load and draw
+        table.on('draw', function() {
+            $('#rolePermManageTable tbody tr').each(function() {
+                updateRowState($(this));
+            });
+            updateGlobalState();
+        });
+
+        // Initial run
+        $('#rolePermManageTable tbody tr').each(function() {
             updateRowState($(this));
         });
         updateGlobalState();
@@ -108,18 +129,18 @@
         // Global Select All
         $('#selectAllGlobal').on('change', function() {
             const checked = $(this).is(':checked');
-            $('.permission-checkbox, .row-select-all').prop('checked', checked);
+            table.$('.permission-checkbox, .row-select-all').prop('checked', checked);
         });
 
-        // Row-wise Select All
-        $('.row-select-all').on('change', function() {
+        // Row-wise Select All (Event Delegation for dynamic pages)
+        $(document).on('change', '.row-select-all', function() {
             const checked = $(this).is(':checked');
             $(this).closest('tr').find('.permission-checkbox').prop('checked', checked);
             updateGlobalState();
         });
 
-        // Individual Permission Checkbox
-        $('.permission-checkbox').on('change', function() {
+        // Individual Permission Checkbox (Event Delegation for dynamic pages)
+        $(document).on('change', '.permission-checkbox', function() {
             updateRowState($(this).closest('tr'));
             updateGlobalState();
         });
@@ -131,19 +152,27 @@
         }
 
         function updateGlobalState() {
-            const total = $('.permission-checkbox').length;
-            const checked = $('.permission-checkbox:checked').length;
+            const total = table.$('.permission-checkbox').length;
+            const checked = table.$('.permission-checkbox:checked').length;
             $('#selectAllGlobal').prop('checked', total > 0 && total === checked);
         }
 
         $('#rolePermForm').on('submit', function(e) {
             e.preventDefault();
             const form = $(this);
+
+            // Serialize the entire table inputs (all pages)
+            let serializedPermissions = table.$('.permission-checkbox').serialize();
+            let additionalFields = form.find('input[name="_token"], input[name="name"], input[name="status"]').serialize();
+            let data = additionalFields;
+            if (serializedPermissions) {
+                data += '&' + serializedPermissions;
+            }
             
             $.ajax({
                 url: form.attr('action'),
                 type: 'POST',
-                data: form.serialize(),
+                data: data,
                 success: function(response) {
                     Swal.fire({
                         icon: 'success',
