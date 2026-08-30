@@ -223,7 +223,7 @@
               <img src="{{ asset('assets/images/logo.png') }}" alt="logo" style="max-height: 80px; width: auto; object-fit: contain;" />
             </div>
             <h3>AurOnGold</h3>
-            <p>Welcome to AurOnGold Enterprise Application. Please authenticate to access your dashboard.</p>
+            <p>Welcome to AurOnGold Login securely to access your account and manage your gold plans.</p>
           </div>
           <!-- Right Form Column -->
           <div class="col-lg-7 form-section">
