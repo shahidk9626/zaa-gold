@@ -14,9 +14,14 @@ use App\Http\Controllers\Customer\ProfileController;
 use App\Http\Controllers\Customer\NotificationController;
 use App\Http\Controllers\Customer\SupportController;
 use App\Http\Controllers\Customer\OutstandingController;
+use App\Http\Controllers\Customer\ReferralController;
 
 Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Referrals
+    Route::get('/referrals', [ReferralController::class, 'index'])->name('referrals.index');
+    Route::get('/plans/referrals/validate', [PlanController::class, 'validateReferral'])->name('referrals.validate');
 
     // Buy Gold Plans (Marketplace & Booking flow)
     Route::get('/plans', [PlanController::class, 'index'])->name('plans.index');

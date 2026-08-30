@@ -18,10 +18,23 @@ class CustomerReferral extends Model
         'customer_id',
         'referral_code',
         'referred_at',
+        'booking_id',
+        'gold_weight',
+        'cashback_rate',
+        'cashback_amount',
+        'status',
+        'payment_reference_number',
+        'admin_remark',
+        'processed_by',
+        'completed_at',
     ];
 
     protected $casts = [
         'referred_at' => 'datetime',
+        'gold_weight' => 'decimal:3',
+        'cashback_rate' => 'decimal:2',
+        'cashback_amount' => 'decimal:2',
+        'completed_at' => 'datetime',
     ];
 
     /**
@@ -46,5 +59,21 @@ class CustomerReferral extends Model
     public function customer()
     {
         return $this->belongsTo(User::class, 'customer_id');
+    }
+
+    /**
+     * Get the booking associated with the referral.
+     */
+    public function booking()
+    {
+        return $this->belongsTo(GoldBooking::class, 'booking_id');
+    }
+
+    /**
+     * Get the user who processed the referral.
+     */
+    public function processor()
+    {
+        return $this->belongsTo(User::class, 'processed_by');
     }
 }

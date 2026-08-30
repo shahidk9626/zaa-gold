@@ -82,6 +82,30 @@
         ])
     </div>
 
+    {{-- Mobile: Referral Cashback Card --}}
+    <div class="d-block d-md-none mb-4">
+        <h5 class="font-weight-bold mb-3">Referral Cashback</h5>
+        <div class="card bg-white border p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <span class="small text-muted d-block font-weight-medium">Total Cashback Earned</span>
+                    <h3 class="font-weight-bold text-primary mb-0">₹{{ number_format($totalEarnedCashback, 2) }}</h3>
+                </div>
+                <i class="mdi mdi-gift text-primary" style="font-size: 2rem;"></i>
+            </div>
+            <div class="row text-center border-top pt-2">
+                <div class="col-6 border-right">
+                    <span class="text-muted small d-block">Pending</span>
+                    <span class="font-weight-bold text-warning">₹{{ number_format($pendingCashback, 2) }}</span>
+                </div>
+                <div class="col-6">
+                    <span class="text-muted small d-block">Completed</span>
+                    <span class="font-weight-bold text-success">₹{{ number_format($completedCashback, 2) }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Mobile: Service Tiles --}}
     <div class="d-block d-md-none mb-4">
         <h5 class="font-weight-bold mb-3">Services</h5>
@@ -179,6 +203,27 @@
                                 {{ $kycStatus === 'Draft' ? 'Verify Now' : 'Edit documents' }}
                             </a>
                         @endif
+                    </div>
+                </div>
+
+                {{-- Desktop Referral Cashback Summary Card --}}
+                <div class="card mb-4 bg-white border shadow-sm">
+                    <div class="card-body">
+                        <h4 class="card-title text-dark font-weight-bold">Referral Cashback</h4>
+                        <div class="text-center py-3">
+                            <span class="text-muted small d-block">Total Cashback Earned</span>
+                            <h2 class="font-weight-bold text-primary mb-0">₹{{ number_format($totalEarnedCashback, 2) }}</h2>
+                        </div>
+                        <div class="row text-center mt-2 border-top pt-2">
+                            <div class="col-6 border-right">
+                                <span class="text-muted small d-block">Pending</span>
+                                <span class="font-weight-bold text-warning">₹{{ number_format($pendingCashback, 2) }}</span>
+                            </div>
+                            <div class="col-6">
+                                <span class="text-muted small d-block">Completed</span>
+                                <span class="font-weight-bold text-success">₹{{ number_format($completedCashback, 2) }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

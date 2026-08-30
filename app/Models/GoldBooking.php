@@ -48,6 +48,7 @@ class GoldBooking extends Model
         'savings_amount',
         'waived_emi_count',
         'offer_snapshot',
+        'referral_code',
     ];
 
     protected $casts = [

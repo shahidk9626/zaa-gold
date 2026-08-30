@@ -130,9 +130,9 @@ class BookingService
      * The draft captures the customer's selected product, plan, and locked pricing
      * context, but does not generate certificate, schedule, receipt, or invoice.
      */
-    public function createDraftBookingForPayment($customerId, $productId, $emiPlanId, $remarks = null, $offerId = null): GoldBooking
+    public function createDraftBookingForPayment($customerId, $productId, $emiPlanId, $remarks = null, $offerId = null, $referralCode = null): GoldBooking
     {
-        return DB::transaction(function () use ($customerId, $productId, $emiPlanId, $remarks, $offerId) {
+        return DB::transaction(function () use ($customerId, $productId, $emiPlanId, $remarks, $offerId, $referralCode) {
             $product = Product::findOrFail($productId);
             $plan = EmiPlan::findOrFail($emiPlanId);
             $customer = User::findOrFail($customerId);
@@ -172,6 +172,7 @@ class BookingService
                 'estimated_completion_date' => $calculations['completion_date'],
                 'status' => 'Draft',
                 'remarks' => $remarks,
+                'referral_code' => $referralCode,
                 'created_by_id' => auth()->id(),
                 'updated_by_id' => auth()->id(),
             ];

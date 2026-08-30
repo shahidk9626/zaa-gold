@@ -242,6 +242,18 @@
                                     </select>
                                 </div>
 
+                                <div class="mb-3 border-bottom pb-2" id="referral-code-container">
+                                    <span class="text-muted small d-block mb-1 font-weight-bold">Referral Code</span>
+                                    <div class="input-group input-group-sm mb-1">
+                                        <input type="text" id="referral-code-input" class="form-control text-dark bg-white text-uppercase" placeholder="Enter Referral Code">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-primary btn-sm" type="button" id="apply-referral-btn">Apply</button>
+                                            <button class="btn btn-outline-danger btn-sm d-none" type="button" id="remove-referral-btn">Remove</button>
+                                        </div>
+                                    </div>
+                                    <small id="referral-feedback" class="form-text d-none"></small>
+                                </div>
+
                                 <div class="border-bottom pb-2 mb-3" id="calc-line-items-container">
                                     <!-- Dynamic line items will be populated by JS -->
                                 </div>
@@ -281,6 +293,7 @@
                                     <input type="hidden" name="product_id" value="{{ $product->id }}">
                                     <input type="hidden" name="emi_plan_id" id="form-emi-plan-id" value="">
                                     <input type="hidden" name="offer_id" id="form-offer-id" value="">
+                                    <input type="hidden" name="referral_code" id="form-referral-code" value="">
                                     
                                     <div class="form-group mb-3">
                                         <label class="font-weight-bold text-muted small">Special Remarks (Optional)</label>
@@ -655,6 +668,72 @@
                     // Submit the form
                     document.getElementById('checkout-form').submit();
                 }
+            }
+
+            // Handle Referral Code Apply/Remove
+            const referralInput = document.getElementById('referral-code-input');
+            const applyReferralBtn = document.getElementById('apply-referral-btn');
+            const removeReferralBtn = document.getElementById('remove-referral-btn');
+            const referralFeedback = document.getElementById('referral-feedback');
+            const formReferralCode = document.getElementById('form-referral-code');
+
+            if (applyReferralBtn) {
+                applyReferralBtn.addEventListener('click', function() {
+                    const code = referralInput.value.trim();
+                    if (!code) {
+                        showReferralFeedback('Please enter a referral code.', 'text-danger');
+                        return;
+                    }
+
+                    // Call backend to validate referral code
+                    let url = '{{ route('customer.referrals.validate') }}?code=' + encodeURIComponent(code);
+                    fetch(url, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => { throw err; });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            showReferralFeedback(data.message || 'Referral code applied successfully.', 'text-success');
+                            referralInput.disabled = true;
+                            applyReferralBtn.classList.add('d-none');
+                            removeReferralBtn.classList.remove('d-none');
+                            formReferralCode.value = code;
+                        } else {
+                            showReferralFeedback(data.message || 'Invalid referral code. Please check and try again.', 'text-danger');
+                            formReferralCode.value = '';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error validating referral code:', error);
+                        const errorMsg = error && error.message ? error.message : 'Error validating referral code. Please try again.';
+                        showReferralFeedback(errorMsg, 'text-danger');
+                        formReferralCode.value = '';
+                    });
+                });
+            }
+
+            if (removeReferralBtn) {
+                removeReferralBtn.addEventListener('click', function() {
+                    referralInput.value = '';
+                    referralInput.disabled = false;
+                    applyReferralBtn.classList.remove('d-none');
+                    removeReferralBtn.classList.add('d-none');
+                    referralFeedback.classList.add('d-none');
+                    formReferralCode.value = '';
+                });
+            }
+
+            function showReferralFeedback(message, className) {
+                referralFeedback.innerText = message;
+                referralFeedback.className = 'form-text ' + className;
+                referralFeedback.classList.remove('d-none');
             }
 
             function scrollToCalculator() {

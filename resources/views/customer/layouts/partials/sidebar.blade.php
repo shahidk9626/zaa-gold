@@ -83,6 +83,13 @@
     </li>
 
     <li class="nav-item">
+      <a class="nav-link {{ request()->routeIs('customer.referrals.*') ? 'active' : '' }}" href="{{ route('customer.referrals.index') }}">
+        <i class="mdi mdi-gift menu-icon"></i>
+        <span class="menu-title">Referrals</span>
+      </a>
+    </li>
+
+    <li class="nav-item">
       <a class="nav-link {{ request()->routeIs('customer.support.*') ? 'active' : '' }}" href="{{ route('customer.support.index') }}">
         <i class="mdi mdi-lifebuoy menu-icon"></i>
         <span class="menu-title">Support</span>

@@ -62,3 +62,27 @@ ALTER TABLE `customer_referrals` ADD CONSTRAINT `customer_referrals_staff_id_for
 ALTER TABLE `customer_referrals` ADD COLUMN `referrer_id` BIGINT(20) UNSIGNED DEFAULT NULL AFTER `staff_id`;
 ALTER TABLE `customer_referrals` ADD COLUMN `referrer_type` VARCHAR(30) DEFAULT NULL AFTER `referrer_id`;
 ALTER TABLE `customer_referrals` ADD CONSTRAINT `customer_referrals_referrer_id_foreign` FOREIGN KEY (`referrer_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+-- REFERRAL FLOW ENHANCEMENTS (PLAN-PURCHASE-BASED REFERRALS)
+-- Add referral_code to gold_bookings table
+ALTER TABLE `gold_bookings` ADD COLUMN `referral_code` VARCHAR(50) DEFAULT NULL AFTER `remarks`;
+
+-- Add columns to customer_referrals table
+ALTER TABLE `customer_referrals` 
+  ADD COLUMN `booking_id` BIGINT(20) UNSIGNED DEFAULT NULL AFTER `customer_id`,
+  ADD COLUMN `gold_weight` DECIMAL(10,3) DEFAULT NULL AFTER `booking_id`,
+  ADD COLUMN `cashback_rate` DECIMAL(15,2) DEFAULT NULL AFTER `gold_weight`,
+  ADD COLUMN `cashback_amount` DECIMAL(15,2) DEFAULT NULL AFTER `cashback_rate`,
+  ADD COLUMN `status` VARCHAR(30) DEFAULT 'Pending' AFTER `cashback_amount`,
+  ADD COLUMN `payment_reference_number` VARCHAR(100) DEFAULT NULL AFTER `status`,
+  ADD COLUMN `admin_remark` TEXT DEFAULT NULL AFTER `payment_reference_number`,
+  ADD COLUMN `processed_by` BIGINT(20) UNSIGNED DEFAULT NULL AFTER `admin_remark`,
+  ADD COLUMN `completed_at` TIMESTAMP NULL DEFAULT NULL AFTER `processed_by`,
+  ADD CONSTRAINT `customer_referrals_booking_id_foreign` FOREIGN KEY (`booking_id`) REFERENCES `gold_bookings` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `customer_referrals_processed_by_foreign` FOREIGN KEY (`processed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD INDEX `customer_referrals_status_index` (`status`);
+
+-- Insert global cashback rate setting
+INSERT INTO `system_settings` (`key`, `value`, `description`, `created_at`, `updated_at`)
+VALUES ('referral_cashback_rate', '500.00', 'Referral cashback rate per gram of gold', NOW(), NOW())
+ON DUPLICATE KEY UPDATE `updated_at` = NOW();

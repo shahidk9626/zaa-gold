@@ -8,91 +8,84 @@
                 <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
                     <div>
                         <h4 class="card-title text-dark font-weight-bold">Edit Referral Entry</h4>
-                        <p class="card-description text-muted">Update status or associate rewards with specific bookings.</p>
+                        <p class="card-description text-muted">Update status, link customer bookings, and process cashback payouts.</p>
                     </div>
                     <a href="{{ route('referrals.show', $referral->id) }}" class="btn btn-secondary btn-sm">
                         <i class="mdi mdi-arrow-left"></i> Cancel & Back
                     </a>
                 </div>
 
+                @if($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <form id="referralEditForm" action="{{ route('referrals.update', $referral->id) }}" method="POST" class="forms-sample">
                     @csrf
                     
                     <!-- Referral Code -->
                     <div class="form-group mb-3">
-                        <label class="font-weight-bold">Referral Code</label>
-                        <input type="text" name="referral_code" class="form-control bg-light text-dark" value="{{ old('referral_code', $referral->referral_code) }}" readonly>
-                        <small class="text-muted">Referral code cannot be changed once created.</small>
+                        <label class="font-weight-bold">Referral Code Used</label>
+                        <input type="text" class="form-control bg-light text-dark font-weight-bold" value="{{ $referral->referral_code }}" readonly>
                     </div>
 
                     <!-- Referrer Customer -->
                     <div class="form-group mb-3">
-                        <label class="font-weight-bold">Referrer</label>
-                        <select name="referrer_customer_id" class="form-control bg-light text-dark" disabled>
-                            <option value="{{ $referral->referrer_customer_id }}">{{ $referral->referrer->name ?? 'N/A' }}</option>
-                        </select>
-                        <input type="hidden" name="referrer_customer_id" value="{{ $referral->referrer_customer_id }}">
+                        <label class="font-weight-bold">Referrer (Recommender)</label>
+                        <input type="text" class="form-control bg-light text-dark" value="{{ $referral->referrer->name ?? 'N/A' }} (ID: #{{ $referral->referrer_id }})" readonly>
                     </div>
 
                     <!-- Referred Customer -->
                     <div class="form-group mb-3">
-                        <label class="font-weight-bold">Referred Customer</label>
-                        <select name="referred_customer_id" class="form-control bg-light text-dark" disabled>
-                            <option value="{{ $referral->referred_customer_id }}">{{ $referral->referred->name ?? 'N/A' }}</option>
-                        </select>
-                        <input type="hidden" name="referred_customer_id" value="{{ $referral->referred_customer_id }}">
+                        <label class="font-weight-bold">Referred Customer (Purchaser)</label>
+                        <input type="text" class="form-control bg-light text-dark" value="{{ $referral->customer->name ?? 'N/A' }} (ID: #{{ $referral->customer_id }})" readonly>
                     </div>
 
                     <!-- Booking Association -->
                     <div class="form-group mb-3">
-                        <label class="font-weight-bold">Associated Booking (Referred Customer's Purchase)</label>
+                        <label class="font-weight-bold text-dark">Associated Booking (Referred Customer's Purchase)</label>
                         <select name="booking_id" class="form-control bg-white text-dark select2">
                             <option value="">No Booking Associated</option>
                             @foreach($bookings as $bk)
                                 <option value="{{ $bk->id }}" {{ old('booking_id', $referral->booking_id) == $bk->id ? 'selected' : '' }}>
-                                    {{ $bk->booking_number }} - ₹{{ number_format($bk->grand_total, 2) }} ({{ $bk->status }})
+                                    #{{ $bk->booking_number }} - Gold Weight: {{ number_format($bk->gold_weight, 3) }}g - Grand Total: ₹{{ number_format($bk->grand_total, 2) }} ({{ $bk->status }})
                                 </option>
                             @endforeach
                         </select>
-                        <small class="text-muted">Only active bookings of the referred customer are listed here.</small>
+                        <small class="text-muted">Link this referral to the purchaser's specific Gold Plan booking.</small>
                     </div>
 
-                    <!-- Reward Type -->
-                    <div class="row">
-                        <div class="col-md-6 form-group mb-3">
-                            <label class="font-weight-bold">Reward Type</label>
-                            <select name="reward_type" class="form-control bg-white text-dark" required>
-                                <option value="Cash" {{ old('reward_type', $referral->reward_type) === 'Cash' ? 'selected' : '' }}>Cash</option>
-                                <option value="Gold Grams" {{ old('reward_type', $referral->reward_type) === 'Gold Grams' ? 'selected' : '' }}>Gold Grams</option>
-                                <option value="Discount" {{ old('reward_type', $referral->reward_type) === 'Discount' ? 'selected' : '' }}>Discount</option>
-                            </select>
-                        </div>
-
-                        <!-- Reward Amount -->
-                        <div class="col-md-6 form-group mb-3">
-                            <label class="font-weight-bold">Reward Amount (₹)</label>
-                            <input type="number" step="0.01" name="reward_amount" class="form-control bg-white text-dark" value="{{ old('reward_amount', $referral->reward_amount) }}" required>
-                        </div>
-                    </div>
-
-                    <!-- Reward Status -->
+                    <!-- Referral Cashback Status -->
                     <div class="form-group mb-3">
-                        <label class="font-weight-bold">Reward Status</label>
-                        <select name="reward_status" class="form-control bg-white text-dark" required>
-                            <option value="Pending" {{ old('reward_status', $referral->reward_status) === 'Pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="Eligible" {{ old('reward_status', $referral->reward_status) === 'Eligible' ? 'selected' : '' }}>Eligible</option>
-                            <option value="Rewarded" {{ old('reward_status', $referral->reward_status) === 'Rewarded' ? 'selected' : '' }}>Rewarded</option>
-                            <option value="Rejected" {{ old('reward_status', $referral->reward_status) === 'Rejected' ? 'selected' : '' }}>Rejected</option>
+                        <label class="font-weight-bold text-dark">Referral Cashback Status</label>
+                        <select name="status" id="referral_status" class="form-control bg-white text-dark" required>
+                            <option value="Pending" {{ old('status', $referral->status) === 'Pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="Under Review" {{ old('status', $referral->status) === 'Under Review' ? 'selected' : '' }}>Under Review</option>
+                            <option value="Approved" {{ old('status', $referral->status) === 'Approved' ? 'selected' : '' }}>Approved</option>
+                            <option value="Completed" {{ old('status', $referral->status) === 'Completed' ? 'selected' : '' }}>Completed</option>
+                            <option value="Rejected" {{ old('status', $referral->status) === 'Rejected' ? 'selected' : '' }}>Rejected</option>
                         </select>
+                    </div>
+
+                    <!-- Payment Reference Number (Required only if status is Completed) -->
+                    <div class="form-group mb-3" id="payment-ref-container">
+                        <label class="font-weight-bold text-dark">Payment Reference Number (UTR / Bank Transaction ID)</label>
+                        <input type="text" name="payment_reference_number" id="payment_reference_number" class="form-control bg-white text-dark" value="{{ old('payment_reference_number', $referral->payment_reference_number) }}" placeholder="Enter UTR, bank transfer reference, etc.">
+                        <small class="text-muted">Required only when marking status as Completed.</small>
                     </div>
 
                     <!-- Remarks -->
                     <div class="form-group mb-4">
-                        <label class="font-weight-bold">Remarks / Internal Notes</label>
-                        <textarea name="remarks" class="form-control bg-white text-dark" rows="3">{{ old('remarks', $referral->remarks) }}</textarea>
+                        <label class="font-weight-bold text-dark">Remarks / Internal Notes</label>
+                        <textarea name="remarks" class="form-control bg-white text-dark" rows="3" placeholder="Enter processing remarks, reasons for rejection, or payout notes...">{{ old('remarks', $referral->admin_remark) }}</textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-primary mr-2 px-4">Update Entry</button>
+                    <button type="submit" class="btn btn-primary mr-2 px-4">Update Referral</button>
                     <a href="{{ route('referrals.show', $referral->id) }}" class="btn btn-light px-4">Cancel</a>
                 </form>
             </div>
@@ -104,16 +97,31 @@
 @push('scripts')
 <script>
     $(document).ready(function () {
+        function togglePaymentRef() {
+            var status = $("#referral_status").val();
+            if (status === "Completed") {
+                $("#payment-ref-container").show();
+                $("#payment_reference_number").prop('required', true);
+            } else {
+                $("#payment-ref-container").hide();
+                $("#payment_reference_number").prop('required', false);
+            }
+        }
+
+        $("#referral_status").on("change", togglePaymentRef);
+        togglePaymentRef(); // Initial toggle on page load
+
         $("#referralEditForm").validate({
             rules: {
-                reward_type: "required",
-                reward_amount: {
-                    required: true,
-                    number: true,
-                    min: 0
-                },
-                reward_status: "required"
-            }
+                status: "required",
+                payment_reference_number: {
+                    required: function() {
+                        return $("#referral_status").val() === "Completed";
+                    }
+                }
+            },
+            errorClass: "text-danger small mt-1",
+            errorElement: "div"
         });
     });
 </script>

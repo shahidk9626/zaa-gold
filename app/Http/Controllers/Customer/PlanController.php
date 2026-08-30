@@ -13,6 +13,8 @@ use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
+use App\Models\User;
+use App\Models\CustomerReferral;
 
 class PlanController extends CustomerBaseController
 {
@@ -287,7 +289,8 @@ class PlanController extends CustomerBaseController
             'emi_plan_id' => 'required|exists:emi_plans,id',
             'offer_id' => 'nullable|string',
             'remarks' => 'nullable|string',
-            'terms' => 'accepted'
+            'terms' => 'accepted',
+            'referral_code' => 'nullable|string|max:50',
         ]);
 
         $customerId = $this->customerId();
@@ -315,6 +318,25 @@ class PlanController extends CustomerBaseController
             ])->withInput();
         }
 
+        $referralCode = null;
+        if ($request->filled('referral_code')) {
+            $code = trim($request->referral_code);
+            $referrer = User::where('referral_code', $code)->first();
+            if (!$referrer || $referrer->isStaffOrAdmin() || $referrer->status !== 'active') {
+                return back()->with('error', 'Invalid referral code. Please check and try again.')->withInput();
+            }
+            if ($referrer->id === $customerId) {
+                return back()->with('error', 'You cannot use your own referral code.')->withInput();
+            }
+            $alreadyReferred = CustomerReferral::where('customer_id', $customerId)
+                ->whereIn('status', ['Pending', 'Under Review', 'Approved', 'Completed'])
+                ->exists();
+            if ($alreadyReferred) {
+                return back()->with('error', 'You have already been referred or have an active referral.')->withInput();
+            }
+            $referralCode = $code;
+        }
+
         try {
             $plan = EmiPlan::findOrFail($request->emi_plan_id);
             $eligibleOffers = app(\App\Services\OfferEligibilityService::class)->getEligibleOffersForPlan($plan);
@@ -331,7 +353,8 @@ class PlanController extends CustomerBaseController
                 $request->product_id,
                 $request->emi_plan_id,
                 $request->remarks,
-                $offerId
+                $offerId,
+                $referralCode
             );
 
             $payment = $this->paymentService->initiateBookingGatewayPayment($booking);
@@ -341,5 +364,56 @@ class PlanController extends CustomerBaseController
         } catch (\Exception $e) {
             return back()->with('error', 'Booking failed: ' . $e->getMessage())->withInput();
         }
+    }
+
+    /**
+     * AJAX action to validate a referral code
+     */
+    public function validateReferral(Request $request): JsonResponse
+    {
+        $code = trim($request->input('code'));
+        if (empty($code)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please enter a referral code.'
+            ]);
+        }
+
+        $referrer = User::where('referral_code', $code)->first();
+        if (!$referrer || $referrer->isStaffOrAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid referral code. Please check and try again.'
+            ]);
+        }
+
+        if ($referrer->status !== 'active') {
+            return response()->json([
+                'success' => false,
+                'message' => 'This referral code belongs to an inactive user.'
+            ]);
+        }
+
+        if ($referrer->id === $this->customerId()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You cannot use your own referral code.'
+            ]);
+        }
+
+        $alreadyReferred = CustomerReferral::where('customer_id', $this->customerId())
+            ->whereIn('status', ['Pending', 'Under Review', 'Approved', 'Completed'])
+            ->exists();
+        if ($alreadyReferred) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You have already been referred or have an active referral.'
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Referral code applied successfully.'
+        ]);
     }
 }

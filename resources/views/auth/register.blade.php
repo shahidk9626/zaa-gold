@@ -77,20 +77,6 @@
             @enderror
         </div>
 
-        <!-- Referral Code -->
-        <div class="form-group mb-4">
-            <label for="referral_code">Referral Code <span class="text-muted" style="font-size: 0.85rem;">(Optional)</span></label>
-            <input id="referral_code" type="text" name="referral_code" 
-                   class="form-control @error('referral_code') is-invalid @enderror" 
-                   value="{{ old('referral_code') }}" 
-                   placeholder="Enter referral code" />
-            @error('referral_code')
-                <span class="invalid-feedback" role="alert">
-                    <strong>{{ $message }}</strong>
-                </span>
-            @enderror
-        </div>
-
         <!-- Submit Button -->
         <button type="submit" class="btn btn-primary btn-block py-3 font-weight-bold" style="border-radius: 0.375rem; font-size: 1rem;">
             Register Account

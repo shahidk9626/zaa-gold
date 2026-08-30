@@ -33,12 +33,11 @@ class DashboardController extends CustomerBaseController
         $isProfileComplete = $this->onboardingService->isProfileComplete($user);
         $showReminderModal = $this->onboardingService->shouldShowProfileReminder($user);
 
-        if ($showReminderModal) {
-            // Set timestamp in session so that it follows the configurable interval
-            session(['last_kyc_reminder_shown_at' => time()]);
-        }
+        $totalEarnedCashback = \App\Models\CustomerReferral::where('referrer_id', $customerId)->where('status', 'Completed')->sum('cashback_amount');
+        $pendingCashback = \App\Models\CustomerReferral::where('referrer_id', $customerId)->whereIn('status', ['Pending', 'Under Review', 'Approved'])->sum('cashback_amount');
+        $completedCashback = $totalEarnedCashback;
 
-        return view('customer.dashboard', compact('plans', 'goldPrice', 'recentActivity', 'kycStatus', 'isProfileComplete', 'showReminderModal'));
+        return view('customer.dashboard', compact('plans', 'goldPrice', 'recentActivity', 'kycStatus', 'isProfileComplete', 'showReminderModal', 'totalEarnedCashback', 'pendingCashback', 'completedCashback'));
     }
 
     public function dismissReminder(Request $request): JsonResponse

@@ -63,6 +63,10 @@ class PaymentProcessingService
                 $booking->booking_date = now();
                 $booking->status_change_remarks = 'Confirmed after Cashfree payment verification.';
                 $booking->save();
+
+                if ($booking->referral_code) {
+                    $this->processReferralOnBookingConfirmation($booking);
+                }
             }
 
             if (!$booking->certificate()->exists()) {
@@ -217,5 +221,48 @@ class PaymentProcessingService
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
         ]);
+    }
+
+    protected function processReferralOnBookingConfirmation(GoldBooking $booking): void
+    {
+        try {
+            $referrer = \App\Models\User::where('referral_code', $booking->referral_code)->first();
+            if ($referrer) {
+                // Double check to prevent duplicate referral records
+                $exists = \App\Models\CustomerReferral::where('customer_id', $booking->customer_id)->exists();
+                if (!$exists) {
+                    $rate = (float) \App\Models\SystemSetting::get('referral_cashback_rate', 500.00);
+                    $cashback = (float) $booking->gold_weight * $rate;
+                    $isStaff = $referrer->isStaffOrAdmin();
+
+                    \App\Models\CustomerReferral::create([
+                        'staff_id' => $isStaff ? $referrer->id : null,
+                        'referrer_id' => $referrer->id,
+                        'referrer_type' => $isStaff ? 'staff' : 'customer',
+                        'customer_id' => $booking->customer_id,
+                        'referral_code' => $booking->referral_code,
+                        'referred_at' => now(),
+                        'booking_id' => $booking->id,
+                        'gold_weight' => $booking->gold_weight,
+                        'cashback_rate' => $rate,
+                        'cashback_amount' => $cashback,
+                        'status' => 'Pending',
+                    ]);
+
+                    // Log activity
+                    ActivityLog::create([
+                        'module_name' => 'referral',
+                        'record_id' => $booking->id,
+                        'action_type' => 'referral_created',
+                        'description' => "Referral created for Booking {$booking->booking_number}. Referrer: {$referrer->name}, Cashback: ₹{$cashback}",
+                        'created_by_id' => $booking->customer_id,
+                        'ip_address' => request()->ip(),
+                        'user_agent' => request()->userAgent(),
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to process referral for booking {$booking->id}: " . $e->getMessage());
+        }
     }
 }
