@@ -200,7 +200,7 @@
                 <div class="company-details">
                     AurOnGold Bullion Trading LLC<br>
                     123 Financial District, Sector 4<br>
-                    support@aurongold.com | +91 98765 43210
+                    support@aurongold.in  | +91 7337616333 
                 </div>
             </td>
             <td>

@@ -133,7 +133,7 @@
         </div>
         <div class="footer">
             <p>&copy; {{ date('Y') }} AurOnGold. All rights reserved.</p>
-            <p>Support Contact: support@aurongold.com | +91 98765 43210</p>
+            <p>Support Contact: support@aurongold.in  | +91 7337616333</p>
         </div>
     </div>
 </body>

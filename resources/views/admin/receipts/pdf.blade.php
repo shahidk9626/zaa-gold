@@ -379,7 +379,7 @@
                                 <tr>
                                     <td class="info-label">Gold Purity</td>
                                     <td class="info-colon">:</td>
-                                    <td class="info-value" style="font-weight: normal;">{{ $product->gold_purity ?? '24KT (999.9) Fine Gold' }}</td>
+                                    <td class="info-value" style="font-weight: normal;">{{ $product->gold_purity ?? '24KT (999.9)' }}</td>
                                 </tr>
                             </table>
                         </td>

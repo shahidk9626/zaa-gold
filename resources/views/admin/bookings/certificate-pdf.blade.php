@@ -281,7 +281,7 @@
                     <table width="100%">
                         <tr>
                             <td>
-                                <strong style="color: #111111; font-size: 10px;">🪙 Today's Gold Price 24KT (1 Gm 999.9 Fine Gold)</strong><br>
+                                <strong style="color: #111111; font-size: 10px;">🪙 Today's Gold Price 24KT (1 Gm 999.9)</strong><br>
                                 <span style="font-size: 9px; color: #555555;">(Date: {{ $booking->booking_date->format('d/m/Y') }}) &nbsp;:&nbsp; <strong>₹{{ number_format($booking->locked_price_per_gram, 2) }}</strong></span>
                             </td>
                             <td align="right" valign="middle">
