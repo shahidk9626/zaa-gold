@@ -121,8 +121,8 @@
                     <label class="font-weight-medium small text-muted">Purity / Karat</label>
                     <select name="purity" class="form-control">
                         <option value="">All Purities</option>
-                        <option value="22K" {{ request('purity') == '22K' ? 'selected' : '' }}>22K Gold (916 fine gold)</option>
-                        <option value="24K" {{ request('purity') == '24K' ? 'selected' : '' }}>24K Gold (999.99 fine gold)</option>
+                        <option value="22K" {{ request('purity') == '22K' ? 'selected' : '' }}>22K Gold (916)</option>
+                        <option value="24K" {{ request('purity') == '24K' ? 'selected' : '' }}>24K Gold (999.99)</option>
                     </select>
                 </div>
 

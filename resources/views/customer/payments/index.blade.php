@@ -88,9 +88,9 @@
                                     <td class="font-weight-bold text-primary">{{ $transaction->booking->booking_number ?? 'N/A' }}</td>
                                     <td>
                                         @if($transaction->emiSchedule)
-                                            EMI #{{ $transaction->emiSchedule->installment_number }}
+                                            EMAP #{{ $transaction->emiSchedule->installment_number }}
                                         @else
-                                            {{ $transaction->payment_type === 'booking' ? 'Downpayment' : ucfirst($transaction->payment_type) }}
+                                            {{ $transaction->payment_type === 'booking' ? 'EMAP #1' : ucfirst($transaction->payment_type) }}
                                         @endif
                                     </td>
                                     <td>{{ ucfirst($transaction->gateway) }}</td>
