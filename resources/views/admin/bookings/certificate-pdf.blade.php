@@ -11,7 +11,17 @@
     // Calculation breakups
     $goldValue = (float) $booking->locked_gold_value;
     $totalPrice = (float) $booking->grand_total;
-    $otherCharges = max(0, $totalPrice - $goldValue);
+
+    $financeCharge = (float) ($booking->finance_charge_amount ?? 0);
+    $storageCharge = (float) ($booking->storage_charge_amount ?? 0);
+    $gstOnGold = (float) ($booking->gst_on_gold_amount ?? 0);
+    $gstOnCharges = (float) ($booking->gst_on_charges_amount ?? 0);
+    $savingsAmount = (float) ($booking->savings_amount ?? 0);
+
+    $rawCharges = $financeCharge + $storageCharge + $gstOnGold + $gstOnCharges;
+    if ($rawCharges <= 0) {
+        $rawCharges = max(0, $totalPrice - $goldValue + $savingsAmount);
+    }
 
     $logoPath = public_path('assets/images/logo.png');
     $logoExists = file_exists($logoPath);
@@ -298,8 +308,14 @@
                     </tr>
                     <tr>
                         <td style="color: #333333;">All Other Charges</td>
-                        <td align="right" style="font-weight: bold; color: #111111;">₹{{ number_format($otherCharges, 2) }}</td>
+                        <td align="right" style="font-weight: bold; color: #111111;">₹{{ number_format($rawCharges, 2) }}</td>
                     </tr>
+                    @if($savingsAmount > 0)
+                    <tr>
+                        <td style="color: #c53030;">Promo Savings / Discount</td>
+                        <td align="right" style="font-weight: bold; color: #c53030;">-₹{{ number_format($savingsAmount, 2) }}</td>
+                    </tr>
+                    @endif
                     <tr style="background-color: #FFFDF5;">
                         <td style="font-weight: bold; color: #0B1E36; font-size: 10.5px;">Total Price (All Inclusive)</td>
                         <td align="right" style="font-weight: bold; color: #A66E14; font-size: 11.5px;">₹{{ number_format($totalPrice, 2) }}</td>

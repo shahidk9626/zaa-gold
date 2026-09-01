@@ -78,12 +78,10 @@ class InvoiceController extends Controller
     {
         $invoice = GstInvoice::findOrFail($id);
 
-        // Regenerate PDF if it doesn't exist in local disk
-        if (empty($invoice->pdf_path) || !Storage::disk('public')->exists($invoice->pdf_path)) {
-            $pdfPath = $this->invoiceService->generateInvoicePdf($invoice);
-            $invoice->pdf_path = $pdfPath;
-            $invoice->save();
-        }
+        // Regenerate PDF to ensure latest template and accurate breakdown are served
+        $pdfPath = $this->invoiceService->generateInvoicePdf($invoice);
+        $invoice->pdf_path = $pdfPath;
+        $invoice->save();
 
         // Log download activity
         $this->logActivityDirect('invoice_downloaded', "GST Invoice {$invoice->invoice_number} downloaded", $invoice->booking_id);

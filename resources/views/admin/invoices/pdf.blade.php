@@ -24,41 +24,38 @@
     $isKarnataka = empty($customerState) || in_array(strtolower($customerState), ['karnataka', 'ka', '29', 'karnataka (29)']);
     $placeOfSupply = $isKarnataka ? 'Karnataka (29)' : ($customerState . ' (Inter-state)');
 
-    // Page 1: Invoice Numbers & Amounts
-    $goldValue = (float)$invoice->gold_value;
-    $goldWeight = (float)$invoice->gold_weight;
-    $lockedPrice = (float)$invoice->locked_gold_price;
-    $taxableValue = $goldValue;
+    // Page 1: Gold Tax Invoice Amounts
+    $goldValue = (float)($invoice->gold_value ?? $booking->locked_gold_value ?? 0);
+    $goldWeight = (float)($invoice->gold_weight ?? $booking->gold_weight ?? 0);
+    $lockedPrice = (float)($invoice->locked_gold_price ?? $booking->locked_price_per_gram ?? 0);
+    $gstOnGold = (float)($invoice->gst_on_gold_amount ?? $booking->gst_on_gold_amount ?? 0);
 
-    $totalTax = (float)($invoice->cgst_amount + $invoice->sgst_amount + $invoice->igst_amount);
-    if ($totalTax <= 0) {
-        $totalTax = (float)($invoice->gst_on_gold_amount + $invoice->gst_on_charges_amount);
-    }
-    
+    $page1TaxableValue = $goldValue;
+    $page1TotalTax = $gstOnGold;
+
     if ($isKarnataka) {
-        $cgstAmount = round($totalTax / 2, 2);
-        $sgstAmount = $totalTax - $cgstAmount;
+        $cgstAmount = round($page1TotalTax / 2, 2);
+        $sgstAmount = $page1TotalTax - $cgstAmount;
         $igstAmount = 0.00;
     } else {
         $cgstAmount = 0.00;
         $sgstAmount = 0.00;
-        $igstAmount = $totalTax;
+        $igstAmount = $page1TotalTax;
     }
 
-    $grandTotal = (float)$invoice->grand_total;
+    $page1GrandTotal = $page1TaxableValue + $page1TotalTax;
 
-    // Helper for Amount in Words
+    // Helper for Amount in Words (Page 1)
     $invoiceService = app(\App\Services\InvoiceService::class);
-    $page1AmountInWords = $amountInWords ?? $invoiceService->convertAmountToWords($grandTotal);
+    $page1AmountInWords = $amountInWords ?? $invoiceService->convertAmountToWords($page1GrandTotal);
 
-    // Page 2: Receipt Breakdown Charges
+    // Page 2: Receipt Breakdown Charges & Savings
     $financeCharge = (float)($invoice->finance_charge ?? $booking->finance_charge_amount ?? 0);
     $storageCharge = (float)($invoice->storage_charge ?? $booking->storage_charge_amount ?? 0);
-    $otherCharges = (float)($invoice->gst_on_charges_amount ?? $booking->gst_on_charges_amount ?? 0);
-    $totalReceiptCharges = $financeCharge + $storageCharge + $otherCharges;
-    if ($totalReceiptCharges <= 0) {
-        $totalReceiptCharges = max(0, $grandTotal - $goldValue);
-    }
+    $gstOnCharges = (float)($invoice->gst_on_charges_amount ?? $booking->gst_on_charges_amount ?? 0);
+    $savingsAmount = (float)($booking->savings_amount ?? 0);
+
+    $totalReceiptCharges = max(0, $financeCharge + $storageCharge + $gstOnCharges - $savingsAmount);
     $page2AmountInWords = $invoiceService->convertAmountToWords($totalReceiptCharges);
 
     $logoPath = public_path('assets/images/logo.png');
@@ -366,7 +363,7 @@
                     <td align="center">1</td>
                     <td>
                         <strong>{{ $product->name ?? '1 g 24KT (999.9) Fine Gold' }}</strong><br>
-                        <span style="font-size: 7.5px; color: #555555;">Gold Value</span>
+                        <span style="font-size: 7.5px; color: #555555;">Gold Value ({{ $booking->gold_type ?? '24KT' }})</span>
                     </td>
                     <td align="center">7108</td>
                     <td align="center">{{ number_format($goldWeight, 3) }}</td>
@@ -379,7 +376,7 @@
                 <tr class="summary-row">
                     <td colspan="5" style="border: none;"></td>
                     <td align="right" style="font-weight: bold; background-color: #FAFAFA;">TAXABLE VALUE</td>
-                    <td align="right" style="font-weight: bold; background-color: #FAFAFA;">₹{{ number_format($taxableValue, 2) }}</td>
+                    <td align="right" style="font-weight: bold; background-color: #FAFAFA;">₹{{ number_format($page1TaxableValue, 2) }}</td>
                 </tr>
 
                 <!-- GST BREAKUP: KARNATAKA (CGST+SGST) VS INTER-STATE (IGST) -->
@@ -406,7 +403,7 @@
                 <tr class="total-banner-row">
                     <td colspan="5" style="border: none; background-color: #FFFFFF;"></td>
                     <td align="right">TOTAL AMOUNT (INR)</td>
-                    <td align="right">₹{{ number_format($grandTotal, 2) }}</td>
+                    <td align="right">₹{{ number_format($page1GrandTotal, 2) }}</td>
                 </tr>
             </tbody>
         </table>
@@ -591,21 +588,47 @@
                 </tr>
             </thead>
             <tbody>
+                @php $receiptSr = 1; @endphp
+                @if($financeCharge > 0)
                 <tr>
-                    <td align="center">1</td>
+                    <td align="center">{{ $receiptSr++ }}</td>
                     <td>Gold Price Lock Charges</td>
                     <td align="right">₹{{ number_format($financeCharge, 2) }}</td>
                 </tr>
+                @endif
+
+                @if($storageCharge > 0)
                 <tr>
-                    <td align="center">2</td>
+                    <td align="center">{{ $receiptSr++ }}</td>
                     <td>Service Charges</td>
                     <td align="right">₹{{ number_format($storageCharge, 2) }}</td>
                 </tr>
+                @endif
+
+                @if($gstOnCharges > 0)
                 <tr>
-                    <td align="center">3</td>
-                    <td>Other Charges (All Inclusive)</td>
-                    <td align="right">₹{{ number_format($otherCharges, 2) }}</td>
+                    <td align="center">{{ $receiptSr++ }}</td>
+                    <td>GST on Service Charges ({{ number_format($booking->gst_on_charges_percent ?? 18.00, 2) }}%)</td>
+                    <td align="right">₹{{ number_format($gstOnCharges, 2) }}</td>
                 </tr>
+                @endif
+
+                @if($savingsAmount > 0)
+                <tr>
+                    <td align="center">{{ $receiptSr++ }}</td>
+                    <td style="color: #c53030;">Promo Savings / Discount</td>
+                    <td align="right" style="color: #c53030;">-₹{{ number_format($savingsAmount, 2) }}</td>
+                </tr>
+                @endif
+
+                @if($totalReceiptCharges <= 0 && $financeCharge <= 0 && $storageCharge <= 0)
+                <tr>
+                    <td align="center">1</td>
+                    <td>Other Charges (All Inclusive)</td>
+                    <td align="right">₹0.00</td>
+                </tr>
+                @endif
+
                 <tr class="total-banner-row">
                     <td colspan="2" align="right">TOTAL CHARGES (ALL INCLUSIVE)</td>
                     <td align="right">₹{{ number_format($totalReceiptCharges, 2) }}</td>
