@@ -257,4 +257,23 @@ class FinancialReportsTest extends TestCase
         $disposition = $response->headers->get('Content-Disposition');
         $this->assertMatchesRegularExpression('/attachment; filename="Financial_Reports_\d{14}\.xlsx"/', $disposition);
     }
+
+    /**
+     * Test receipt list search filter handles search terms without SQL errors.
+     */
+    public function test_receipt_index_search_query_executes_without_errors(): void
+    {
+        // 1. Non-matching search string (verifies no 500 error / SQL error)
+        $response = $this->actingAs($this->admin)
+            ->get(route('receipts.index', ['search' => 'asasdasd']));
+
+        $response->assertStatus(200);
+
+        // 2. Matching search string (verifies result returned)
+        $matchingResponse = $this->actingAs($this->admin)
+            ->get(route('receipts.index', ['search' => 'John']));
+
+        $matchingResponse->assertStatus(200);
+        $matchingResponse->assertSee('RCP260000001');
+    }
 }

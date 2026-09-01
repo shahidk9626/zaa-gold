@@ -30,8 +30,10 @@ class ReceiptController extends Controller
                          ->orWhereHas('customer', function ($cq) use ($search) {
                              $cq->where('name', 'like', '%' . $search . '%')
                                 ->orWhere('phone', 'like', '%' . $search . '%')
+                                ->orWhere('whatsapp_number', 'like', '%' . $search . '%')
                                 ->orWhereHas('customerDetail', function ($cdq) use ($search) {
-                                    $cdq->where('phone_number', 'like', '%' . $search . '%');
+                                    $cdq->where('alternate_number', 'like', '%' . $search . '%')
+                                       ->orWhere('emergency_contact', 'like', '%' . $search . '%');
                                 });
                          });
                   });

@@ -47,4 +47,9 @@ class CustomerDetail extends Model
     {
         return $this->hasMany(CustomerDocument::class, 'customer_detail_id');
     }
+
+    public function getPhoneNumberAttribute()
+    {
+        return $this->alternate_number ?? $this->emergency_contact;
+    }
 }
