@@ -131,7 +131,7 @@
 
 
                     {{-- Replied from Team Section --}}
-                    <div class="support-reply-box p-4 mb-4">
+                    <!-- <div class="support-reply-box p-4 mb-4">
                         <div class="d-flex align-items-center mb-3">
                             <div class="icon-circle-check mr-3">
                                 <i class="mdi mdi-check"></i>
@@ -152,7 +152,7 @@
                             <p class="mb-4">We will get back to you shortly.</p>
                             <p class="mb-0 font-weight-bold">Thanks & Regards,<br><span class="text-muted font-weight-normal text-decoration-none" style="text-decoration: none !important; border-bottom: none !important; display: inline-block;">Auron Gold Support Team</span></p>
                         </div>
-                    </div>
+                    </div> -->
 
                     {{-- Footer Banner --}}
                     <div class="bg-light p-3 text-center rounded border" style="border-color: #f2e3d3 !important;">
