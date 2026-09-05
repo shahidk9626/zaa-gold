@@ -86,3 +86,6 @@ ALTER TABLE `customer_referrals`
 INSERT INTO `system_settings` (`key`, `value`, `description`, `created_at`, `updated_at`)
 VALUES ('referral_cashback_rate', '500.00', 'Referral cashback rate per gram of gold', NOW(), NOW())
 ON DUPLICATE KEY UPDATE `updated_at` = NOW();
+
+-- ADD bank_document COLUMN TO kycs TABLE
+ALTER TABLE `kycs` ADD COLUMN `bank_document` VARCHAR(255) DEFAULT NULL AFTER `back_image`;

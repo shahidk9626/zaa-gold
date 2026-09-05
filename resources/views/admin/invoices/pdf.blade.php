@@ -362,7 +362,7 @@
                 <tr>
                     <td align="center">1</td>
                     <td>
-                        <strong>{{ $product->name ?? '1 g 24KT (999.9) Fine Gold' }}</strong><br>
+                        <strong>{{ $product->name ?? '1 g 24KT (999) Fine Gold' }}</strong><br>
                         <span style="font-size: 7.5px; color: #555555;">Gold Value ({{ $booking->gold_type ?? '24KT' }})</span>
                     </td>
                     <td align="center">7108</td>

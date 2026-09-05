@@ -150,7 +150,7 @@
                             <p class="mb-2">Thank you for reaching out to us.</p>
                             <p class="mb-2">We have received your query and our team is working on it.</p>
                             <p class="mb-4">We will get back to you shortly.</p>
-                            <p class="mb-0 font-weight-bold">Thanks & Regards,<br><span class="text-muted font-weight-normal">Auron Gold Support Team</span></p>
+                            <p class="mb-0 font-weight-bold">Thanks & Regards,<br><span class="text-muted font-weight-normal text-decoration-none" style="text-decoration: none !important; border-bottom: none !important; display: inline-block;">Auron Gold Support Team</span></p>
                         </div>
                     </div>
 

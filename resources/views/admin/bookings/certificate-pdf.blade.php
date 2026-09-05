@@ -291,7 +291,7 @@
                     <table width="100%">
                         <tr>
                             <td>
-                                <strong style="color: #111111; font-size: 10px;">🪙 Today's Gold Price 24KT (1 Gm 999.9)</strong><br>
+                                <strong style="color: #111111; font-size: 10px;">🪙 Today's Gold Price 24KT (1 Gm 999)</strong><br>
                                 <span style="font-size: 9px; color: #555555;">(Date: {{ $booking->booking_date->format('d/m/Y') }}) &nbsp;:&nbsp; <strong>₹{{ number_format($booking->locked_price_per_gram, 2) }}</strong></span>
                             </td>
                             <td align="right" valign="middle">
@@ -427,7 +427,6 @@
                             Harshith
                         </div>
                     @endif
-                    <div style="border-top: 1.5px solid #888888; width: 140px; margin-top: 3px;"></div>
                     <div style="font-size: 9.5px; font-weight: bold; color: #111111; margin-top: 2px;">Authorised Signatory</div>
                 </td>
             </tr>
