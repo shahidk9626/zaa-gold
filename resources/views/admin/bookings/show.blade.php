@@ -137,6 +137,11 @@
                     <a href="{{ route('bookings.index') }}" class="btn btn-secondary px-4">
                         <i class="mdi mdi-arrow-left mr-1"></i> Back to list
                     </a>
+                    @if(auth()->user()->isSuperAdmin())
+                    <button type="button" class="btn btn-danger px-4 ml-2" data-delete-url="{{ route('bookings.destroy', $booking->id) }}" data-booking-number="{{ $booking->booking_number }}" data-booking-status="{{ $booking->status }}" onclick="confirmDeleteBooking(this.dataset.deleteUrl, this.dataset.bookingNumber, this.dataset.bookingStatus)">
+                        <i class="mdi mdi-delete mr-1"></i> Delete Booking
+                    </button>
+                    @endif
                 </div>
             </div>
         </div>
@@ -1140,4 +1145,7 @@
         }).trigger('change');
     });
 </script>
+@if(auth()->user()->isSuperAdmin())
+    @include('admin.bookings.partials.delete-booking')
+@endif
 @endpush

@@ -166,6 +166,14 @@ class User extends Authenticatable
         return $this->role?->slug === 'customer';
     }
 
+    /**
+     * Super Admin rule shared with hasPermission(): User ID 1 or the super-admin role.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->id === 1 || $this->role?->slug === 'super-admin';
+    }
+
     public function isStaffOrAdmin(): bool
     {
         return in_array($this->role?->slug, ['super-admin', 'admin', 'staff'], true);

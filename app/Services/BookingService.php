@@ -213,7 +213,7 @@ class BookingService
         $year = now()->format('y'); // e.g. "26" for 2026
         $prefix = "ZG" . $year;
 
-        $latest = GoldBooking::where('booking_number', 'like', $prefix . '%')
+        $latest = GoldBooking::withTrashed()->where('booking_number', 'like', $prefix . '%')
             ->latest('id')
             ->first();
 
@@ -231,7 +231,7 @@ class BookingService
     {
         do {
             $reference = 'DRAFT-' . now()->format('ymdHis') . '-' . strtoupper(Str::random(6));
-        } while (GoldBooking::where('booking_number', $reference)->exists());
+        } while (GoldBooking::withTrashed()->where('booking_number', $reference)->exists());
 
         return $reference;
     }
@@ -244,7 +244,7 @@ class BookingService
         $year = now()->format('y'); // e.g. "26" for 2026
         $prefix = "PLC" . $year;
 
-        $latest = PriceLockCertificate::where('certificate_number', 'like', $prefix . '%')
+        $latest = PriceLockCertificate::withTrashed()->where('certificate_number', 'like', $prefix . '%')
             ->latest('id')
             ->first();
 

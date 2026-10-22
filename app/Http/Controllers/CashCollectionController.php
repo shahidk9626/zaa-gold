@@ -106,6 +106,10 @@ class CashCollectionController extends Controller
             return back()->with('error', 'This cash collection is already processed.');
         }
 
+        if (!GoldBooking::whereKey($ccr->booking_id)->exists()) {
+            return back()->with('error', 'The booking for this cash collection has been deleted. It cannot be verified.');
+        }
+
         DB::transaction(function () use ($ccr, $request) {
             $now = now();
             $adminId = Auth::id();

@@ -41,7 +41,9 @@ class GatewayPaymentController extends Controller
             ]);
         }
 
-        if (!in_array($transaction->payment_status, ['Pending', 'Processing'], true)) {
+        // Booking soft-deleted by Super Admin: the link stays on record but can no longer be paid.
+        if (!in_array($transaction->payment_status, ['Pending', 'Processing'], true)
+            || ($transaction->booking_id && !$transaction->booking)) {
             return view('customer.payments.gateway-result', [
                 'status' => 'failed',
                 'message' => 'This payment link is no longer active.',

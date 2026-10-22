@@ -187,7 +187,7 @@ class InvoiceService
         $year = now()->format('y'); // e.g. "26" for 2026
         $prefix = "INV" . $year;
 
-        $latest = GstInvoice::where('invoice_number', 'like', $prefix . '%')
+        $latest = GstInvoice::withTrashed()->where('invoice_number', 'like', $prefix . '%')
             ->latest('id')
             ->first();
 

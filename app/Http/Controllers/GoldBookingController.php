@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\EmiPlan;
 use App\Models\User;
 use App\Models\ActivityLog;
+use App\Services\BookingDeletionService;
 use App\Services\BookingService;
 use App\Services\EmiCalculationService;
 use App\Services\PaymentService;
@@ -80,6 +81,7 @@ class GoldBookingController extends Controller
                     'booking_date' => $booking->booking_date->format('d M Y'),
                     'status' => $booking->status,
                     'view_url' => route('bookings.show', $booking->id),
+                    'delete_url' => route('bookings.destroy', $booking->id),
                 ];
             });
             return response()->json(['data' => $bookings]);
@@ -179,6 +181,7 @@ class GoldBookingController extends Controller
     {
         abort_unless(auth()->user()->isStaffOrAdmin(), 403);
         abort_unless($transaction->payment_type === 'booking', 404);
+        abort_unless($transaction->booking, 404);
 
         $session = $transaction->gateway_response ?? [];
 
@@ -339,6 +342,36 @@ class GoldBookingController extends Controller
         $this->bookingService->changeStatus($booking, $request->status, $request->remarks);
 
         return back()->with('success', 'Booking status updated successfully.');
+    }
+
+    /**
+     * Soft-delete a booking and its booking-owned records (Super Admin only, enforced by route middleware)
+     */
+    public function destroy(Request $request, $id, BookingDeletionService $deletionService)
+    {
+        $booking = GoldBooking::withTrashed()->find($id);
+
+        if (!$booking) {
+            return redirect()->route('bookings.index')->with('error', 'Booking not found.');
+        }
+
+        if ($booking->trashed()) {
+            return redirect()->route('bookings.index')->with('success', "Booking {$booking->booking_number} has already been deleted.");
+        }
+
+        try {
+            $counts = $deletionService->delete($booking->id, $request->user());
+        } catch (\Throwable $e) {
+            report($e);
+            return redirect()->back()->with('error', 'Booking could not be deleted. No records were changed.');
+        }
+
+        if ($counts === null) {
+            return redirect()->route('bookings.index')->with('success', "Booking {$booking->booking_number} has already been deleted.");
+        }
+
+        return redirect()->route('bookings.index')
+            ->with('success', "Booking {$booking->booking_number} and its related records were deleted successfully.");
     }
 
     /**

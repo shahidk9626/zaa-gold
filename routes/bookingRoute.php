@@ -32,6 +32,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/admin/bookings/{id}/status', [GoldBookingController::class, 'changeStatus'])->name('bookings.change_status');
     });
 
+    // Soft-delete booking and its booking-owned records
+    Route::middleware('super-admin')->group(function () {
+        Route::delete('/admin/bookings/{id}', [GoldBookingController::class, 'destroy'])->whereNumber('id')->name('bookings.destroy');
+    });
+
     // Export bookings list
     Route::middleware('permission:booking.export')->group(function () {
         Route::get('/admin/bookings/export/csv', [GoldBookingController::class, 'exportCsv'])->name('bookings.export');

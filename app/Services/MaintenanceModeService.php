@@ -47,8 +47,8 @@ class MaintenanceModeService
         if (!$user) {
             return false;
         }
-        
-        return $user->id === 1 || ($user->role && $user->role->slug === 'super-admin');
+
+        return $user->isSuperAdmin();
     }
 
     /**

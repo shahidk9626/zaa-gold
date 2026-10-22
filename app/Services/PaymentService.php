@@ -335,7 +335,7 @@ class PaymentService
         $year = now()->format('y'); // e.g. "26" for 2026
         $prefix = "PAY" . $year;
 
-        $latest = BookingPayment::where('payment_number', 'like', $prefix . '%')
+        $latest = BookingPayment::withTrashed()->where('payment_number', 'like', $prefix . '%')
             ->latest('id')
             ->first();
 
@@ -357,7 +357,7 @@ class PaymentService
         $year = now()->format('y'); // e.g. "26" for 2026
         $prefix = "RCP" . $year;
 
-        $latest = BookingPayment::where('receipt_number', 'like', $prefix . '%')
+        $latest = BookingPayment::withTrashed()->where('receipt_number', 'like', $prefix . '%')
             ->latest('id')
             ->first();
 

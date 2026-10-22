@@ -72,12 +72,15 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->group(base_path('routes/websiteEnquiryRoute.php'));
             Route::middleware('web')
                 ->group(base_path('routes/systemSettingsRoute.php'));
+            Route::middleware('web')
+                ->group(base_path('routes/superAdminSettingsRoute.php'));
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'permission' => \App\Http\Middleware\CheckPermission::class,
             'customer' => \App\Http\Middleware\EnsureCustomer::class,
+            'super-admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
         ]);
 
         $middleware->web(append: [

@@ -303,6 +303,9 @@
           <li class="nav-item">
             <a class="nav-link" href="{{ route('admin.system-settings.index') }}">System settings</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('admin.super-admin-settings.index') }}">Super Admin account</a>
+          </li>
           @endif
         </ul>
       </div>

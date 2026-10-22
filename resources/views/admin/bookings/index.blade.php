@@ -26,6 +26,27 @@
         </div>
     </div>
 
+    @if(session('success'))
+        <div class="col-12 mb-4">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="mdi mdi-check-circle mr-1"></i> {{ session('success') }}
+                <button type="button" class="close text-dark" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="col-12 mb-4">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="mdi mdi-alert-circle mr-1"></i> {{ session('error') }}
+                <button type="button" class="close text-dark" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+    @endif
+
     <!-- Filters Panel -->
     <div class="col-12 mb-4">
         <div class="card bg-white border shadow-sm p-4">
@@ -188,6 +209,11 @@
                                 <i class="mdi mdi-eye"></i> View Details
                             </a>
                             @endif
+                            @if(auth()->user()->isSuperAdmin())
+                            <button type="button" class="btn btn-sm btn-danger px-3 mt-1 js-delete-booking">
+                                <i class="mdi mdi-delete"></i> Delete
+                            </button>
+                            @endif
                         `;
                     }
                 }
@@ -207,8 +233,19 @@
             e.preventDefault();
             table.ajax.reload();
         });
+
+        @if(auth()->user()->isSuperAdmin())
+        $('#bookingsTable').on('click', '.js-delete-booking', function () {
+            const row = table.row($(this).closest('tr')).data();
+            if (!row) return;
+            confirmDeleteBooking(row.delete_url, row.booking_number, row.status);
+        });
+        @endif
     });
 </script>
+@if(auth()->user()->isSuperAdmin())
+    @include('admin.bookings.partials.delete-booking')
+@endif
 <style>
     .dataTables_wrapper .dataTables_length,
     .dataTables_wrapper .dataTables_filter,

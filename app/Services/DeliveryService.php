@@ -381,7 +381,7 @@ class DeliveryService
         $year = now()->format('y'); // e.g. "26" for 2026
         $prefix = "DEL" . $year;
 
-        $latest = BookingDelivery::where('delivery_number', 'like', $prefix . '%')
+        $latest = BookingDelivery::withTrashed()->where('delivery_number', 'like', $prefix . '%')
             ->latest('id')
             ->first();
 

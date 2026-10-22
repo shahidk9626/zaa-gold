@@ -174,7 +174,7 @@ class CancellationService
         $year = now()->format('y');
         $prefix = "CAN" . $year;
 
-        $latest = CancellationRequest::where('request_number', 'like', $prefix . '%')
+        $latest = CancellationRequest::withTrashed()->where('request_number', 'like', $prefix . '%')
             ->latest('id')
             ->first();
 
