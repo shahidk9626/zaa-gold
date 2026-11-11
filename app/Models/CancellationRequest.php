@@ -16,6 +16,7 @@ class CancellationRequest extends Model
         'booking_id',
         'customer_id',
         'cancellation_reason',
+        'original_plan_amount',
         'cancellation_charge_percent',
         'cancellation_charge_amount',
         'total_amount_paid',
@@ -35,6 +36,7 @@ class CancellationRequest extends Model
     ];
 
     protected $casts = [
+        'original_plan_amount' => 'decimal:2',
         'cancellation_charge_percent' => 'decimal:2',
         'cancellation_charge_amount' => 'decimal:2',
         'total_amount_paid' => 'decimal:2',

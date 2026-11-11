@@ -387,11 +387,15 @@
                         <table class="table table-bordered mb-4">
                             <tbody>
                                 <tr>
+                                    <th class="bg-light text-dark font-weight-bold">Original Plan Amount</th>
+                                    <td align="right" class="font-weight-bold text-dark"><span id="lblOriginalPlanAmount">₹0.00</span></td>
+                                </tr>
+                                <tr>
                                     <th class="bg-light text-dark font-weight-bold">Total Amount Paid</th>
                                     <td align="right" class="font-weight-bold text-dark"><span id="lblTotalPaid">₹0.00</span></td>
                                 </tr>
                                 <tr>
-                                    <th class="bg-light text-dark font-weight-bold">Cancellation Charges (<span id="lblChargePercent">0</span>%)</th>
+                                    <th class="bg-light text-dark font-weight-bold">Cancellation Charge (<span id="lblChargePercent">0</span>% of Original Plan Amount)</th>
                                     <td align="right" class="text-danger font-weight-bold">- <span id="lblChargeAmount">₹0.00</span></td>
                                 </tr>
                                 <tr class="table-success text-success">
@@ -540,6 +544,7 @@
                     .then(data => {
                         $('#cancellationLoading').addClass('d-none');
                         if (data.success) {
+                            $('#lblOriginalPlanAmount').text('₹' + Number(data.original_plan_amount).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
                             $('#lblTotalPaid').text('₹' + Number(data.total_amount_paid).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
                             $('#lblChargePercent').text(data.cancellation_charge_percent);
                             $('#lblChargeAmount').text('₹' + Number(data.cancellation_charge_amount).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}));

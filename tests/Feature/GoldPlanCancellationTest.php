@@ -163,14 +163,73 @@ class GoldPlanCancellationTest extends TestCase
         $calc = $this->calcService->calculateRefund($booking);
 
         // Assertions
+        $this->assertEquals(30900.00, $calc['original_plan_amount']);
         $this->assertEquals(9270.00, $calc['total_amount_paid']);
         $this->assertEquals(4.00, $calc['cancellation_charge_percent']);
-        
-        $expectedCharge = round(9270.00 * 0.04, 2); // 370.80
+
+        // Charge is 4% of the ORIGINAL total plan amount (grand_total), NOT amount paid.
+        $expectedCharge = round(30900.00 * 0.04, 2); // 1236.00
         $this->assertEquals($expectedCharge, $calc['cancellation_charge_amount']);
-        
-        $expectedRefund = round(9270.00 - $expectedCharge, 2); // 8899.20
+
+        // Refund = paid - charge
+        $expectedRefund = round(9270.00 - $expectedCharge, 2); // 8034.00
         $this->assertEquals($expectedRefund, $calc['refund_amount']);
+    }
+
+    /**
+     * Cancellation charge must stay constant (percent of original plan amount)
+     * no matter how many EMIs have been paid. Mirrors the acceptance criteria:
+     * a ₹30,900 plan at 6% always yields a ₹1,854.00 charge.
+     */
+    public function test_cancellation_charge_is_constant_regardless_of_emis_paid()
+    {
+        $expectedCharge = round(30900.00 * 0.06, 2); // 1854.00
+
+        foreach ([0, 1, 3, 6, 9] as $emisPaid) {
+            $setup = $this->setupBooking(6.00);
+            $booking = $setup['booking'];
+
+            for ($i = 1; $i <= $emisPaid; $i++) {
+                $schedule = BookingEmiSchedule::where('booking_id', $booking->id)
+                    ->where('installment_number', $i)
+                    ->first();
+                $schedule->update(['status' => 'Paid', 'paid_at' => now()]);
+                $this->createPayment($booking, $schedule, 'REC-' . $booking->id . '-' . $i);
+            }
+
+            $calc = $this->calcService->calculateRefund($booking);
+            $expectedPaid = round($emisPaid * 3090.00, 2);
+
+            $this->assertEquals(30900.00, $calc['original_plan_amount'], "Original plan amount wrong for {$emisPaid} EMIs");
+            $this->assertEquals($expectedPaid, $calc['total_amount_paid'], "Total paid wrong for {$emisPaid} EMIs");
+            $this->assertEquals($expectedCharge, $calc['cancellation_charge_amount'], "Charge should be constant for {$emisPaid} EMIs");
+
+            // Refund never negative, and follows paid - charge policy.
+            $expectedRefund = max(0.00, round($expectedPaid - $expectedCharge, 2));
+            $this->assertEquals($expectedRefund, $calc['refund_amount'], "Refund wrong for {$emisPaid} EMIs");
+            $this->assertGreaterThanOrEqual(0.00, $calc['refund_amount'], "Refund must never be negative");
+        }
+    }
+
+    /**
+     * The persisted cancellation request stores the original plan amount snapshot
+     * and the charge computed against it.
+     */
+    public function test_cancellation_request_persists_original_plan_amount_snapshot()
+    {
+        $setup = $this->setupBooking(6.00);
+        $booking = $setup['booking'];
+        $customer = $setup['customer'];
+        $this->actingAs($customer);
+
+        $request = $this->cancellationService->createRequest($booking, 'Relocating abroad.');
+
+        $this->assertDatabaseHas('cancellation_requests', [
+            'id' => $request->id,
+            'original_plan_amount' => 30900.00,
+            'cancellation_charge_percent' => 6.00,
+            'cancellation_charge_amount' => round(30900.00 * 0.06, 2), // 1854.00
+        ]);
     }
 
     /**

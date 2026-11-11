@@ -67,12 +67,19 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @php
+                                $originalPlanAmount = $cancellationRequest->original_plan_amount ?? optional($cancellationRequest->booking)->grand_total;
+                            @endphp
+                            <tr>
+                                <td><strong>Original Plan Amount</strong> (Locked at Booking)</td>
+                                <td align="right" class="font-weight-bold text-dark">₹{{ number_format($originalPlanAmount, 2) }}</td>
+                            </tr>
                             <tr>
                                 <td><strong>Total Amount Paid</strong> (Successful Payments Only)</td>
                                 <td align="right" class="font-weight-bold text-dark">₹{{ number_format($cancellationRequest->total_amount_paid, 2) }}</td>
                             </tr>
                             <tr>
-                                <td class="text-danger"><strong>Cancellation Charges Deduciton</strong> ({{ number_format($cancellationRequest->cancellation_charge_percent, 2) }}%)</td>
+                                <td class="text-danger"><strong>Cancellation Charges Deduction</strong> ({{ number_format($cancellationRequest->cancellation_charge_percent, 2) }}% of Original Plan Amount)</td>
                                 <td align="right" class="text-danger font-weight-bold">- ₹{{ number_format($cancellationRequest->cancellation_charge_amount, 2) }}</td>
                             </tr>
                             <tr class="table-success text-success" style="font-size: 1.1rem;">

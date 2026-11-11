@@ -56,6 +56,7 @@ class CancellationService
                 'booking_id' => $booking->id,
                 'customer_id' => $booking->customer_id,
                 'cancellation_reason' => mb_substr($reason, 0, 500),
+                'original_plan_amount' => $refundDetails['original_plan_amount'],
                 'cancellation_charge_percent' => $refundDetails['cancellation_charge_percent'],
                 'cancellation_charge_amount' => $refundDetails['cancellation_charge_amount'],
                 'total_amount_paid' => $refundDetails['total_amount_paid'],
